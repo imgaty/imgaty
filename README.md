@@ -4,9 +4,9 @@
   <picture>
     <source
       media="(prefers-color-scheme: dark)"
-      srcset="https://capsule-render.vercel.app/api?type=waving&height=200&color=0:0d1117,50:1e3a5f,100:3b82f6&text=@imgaty&textBg=false&animation=fadeIn&fontColor=e0f2fe&fontSize=52&fontAlignY=35&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=55&descSize=16&descColor=bfdbfe"
+      srcset="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:93c5fd,50:60a5fa,100:bfdbfe&text=@imgaty&textBg=false&animation=fadeIn&fontColor=e0f2fe&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=e0f2fe"
     />
-    <img src="https://capsule-render.vercel.app/api?type=waving&height=200&color=0:dbeafe,50:93c5fd,100:60a5fa&text=@imgaty&textBg=false&animation=fadeIn&fontColor=1e3a5f&fontSize=52&fontAlignY=35&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=55&descSize=16&descColor=1e3a5f" />
+    <img src="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:1e3a5f,50:1e40af,100:2563eb&text=@imgaty&textBg=false&animation=fadeIn&fontColor=0f172a&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=0f172a" />
   </picture>
 </div>
 
@@ -30,7 +30,7 @@
           srcset="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=true&background_color=00000000&bar_color=bfdbfe"
         />
         <img
-          src="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=true&background_color=ff0000&bar_color=1e3a5f"
+          src="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=true&background_color=00000000&bar_color=1e3a5f"
         />
       </picture>
       <br>
