@@ -30,7 +30,7 @@
           srcset="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=true&background_color=00000000&bar_color=bfdbfe"
         />
         <img
-          src="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=true&background_color=00000000&bar_color=1e3a5f"
+          src="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=true&background_color=ff0000&bar_color=1e3a5f"
         />
       </picture>
       <br>
