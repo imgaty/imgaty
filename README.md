@@ -4,9 +4,9 @@
   <picture>
     <source
       media="(prefers-color-scheme: dark)"
-      srcset="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:93c5fd,50:60a5fa,100:bfdbfe&text=@imgaty&textBg=false&animation=fadeIn&fontColor=e0f2fe&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=e0f2fe"
+      srcset="https://capsule-render.vercel.app/api?type=soft&height=150&color=0:1e3a5f,50:2563eb,100:93c5fd&text=@imgaty&textBg=false&animation=fadeIn&fontColor=e0f2fe&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=72&descSize=16&descColor=bfdbfe&section=header"
     />
-    <img src="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:1e3a5f,50:1e40af,100:2563eb&text=@imgaty&textBg=false&animation=fadeIn&fontColor=0f172a&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=0f172a" />
+    <img src="https://capsule-render.vercel.app/api?type=soft&height=150&color=0:dbeafe,50:93c5fd,100:60a5fa&text=@imgaty&textBg=false&animation=fadeIn&fontColor=1e3a5f&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=72&descSize=16&descColor=1e3a5f&section=header" />
   </picture>
 </div>
 
