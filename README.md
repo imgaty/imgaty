@@ -2,7 +2,12 @@
 
 <div align="center">
   <picture>
-    <img src="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:bfdbfe,50:93c5fd,100:60a5fa&text=@imgaty&textBg=false&animation=fadeIn&fontColor=1e3a5f&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=1e3a5f" />
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:dbeafe,50:bfdbfe,100:93c5fd&text=@imgaty&textBg=false&animation=fadeIn&fontColor=f0f7ff&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=e0eeff"
+    />
+    <img src="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:dbeafe,50:bfdbfe,100:93c5fd&text=@imgaty&textBg=false&animation=fadeIn&fontColor=1e3a5f&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=1e3a5f" />
+  </picture>
 </div>
 
 <table>
