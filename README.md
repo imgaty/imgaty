@@ -27,8 +27,6 @@
           src="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=false&background_color=00000000&bar_color=1e3a5f"
         />
       </picture>
-      <br>
-      <img width="700" height="1">
     </th>
   </tr>
 </table>
