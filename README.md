@@ -6,7 +6,7 @@
 
 <table>
   <tr>
-    <th width="425" align="middle" valign="middle">
+    <th align="middle" valign="middle">
       <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&layout=compact&theme=graywhite&bg_color=fff&title_color=36454F&text_color=36454F&border_radius=10&hide_border=true" />
     </th>
     <th rowspan="3" valign="middle" align="center">
