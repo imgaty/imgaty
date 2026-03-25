@@ -6,7 +6,7 @@
 
 <table>
   <tr>
-    <th align="left">
+    <th width="350" align="left">
       <picture>
         <source
           media="(prefers-color-scheme: dark)"
