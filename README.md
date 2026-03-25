@@ -7,14 +7,15 @@
 <table>
   <tr>
     <th align="left">
-      <picture>
-        <source
-          media="(prefers-color-scheme: dark)"
-          srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&theme=dark&bg_color=00000000&title_color=bfdbfe&text_color=bfdbfe&icon_color=818cf8&hide_border=true&border_radius=10"
-        />
-        <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&theme=graywhite&bg_color=00000000&title_color=1e3a5f&text_color=1e3a5f&border_radius=10&hide_border=true" />
-      </picture>
+        <picture>
+          <source
+            media="(prefers-color-scheme: dark)"
+            srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&layout=compact&theme=dark&bg_color=00000000&title_color=fff&text_color=94a3b8&icon_color=818cf8&hide_border=true&border_radius=10"
+          />
+          <img width="340" src="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&layout=compact&theme=graywhite&bg_color=fff&title_color=36454F&text_color=36454F&border_radius=10&hide_border=true" />
+        </picture>
     </th>
+    <!-- -->
     <th rowspan="3" valign="middle" align="center">
       <img width="700" height="1">
       <br>
