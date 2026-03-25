@@ -4,7 +4,7 @@
   <picture>
     <source
       media="(prefers-color-scheme: dark)"
-      srcset="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:0d1117,50:0f2d54,100:0d1117&text=@imgaty&textBg=false&animation=fadeIn&fontColor=60a5fa&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=93c5fd"
+      srcset="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:0d1117,50:1d4ed8,100:0d1117&text=@imgaty&textBg=false&animation=fadeIn&fontColor=e0f2fe&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=bae6fd"
     />
     <img src="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:bfdbfe,50:93c5fd,100:60a5fa&text=@imgaty&textBg=false&animation=fadeIn&fontColor=1e3a5f&fontSize=52&fontAlignY=50&desc=Professional%20Copilot%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=1e3a5f" />
   </picture>
