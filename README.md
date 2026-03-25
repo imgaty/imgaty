@@ -6,27 +6,16 @@
 
 <table>
   <tr>
-    <th width="350" align="left">
-      <picture>
-        <source
-          media="(prefers-color-scheme: dark)"
-          srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&layout=compact&theme=dark&bg_color=000&title_color=fff&text_color=94a3b8&icon_color=818cf8&hide_border=true&border_radius=10"
-        />
-        <img width="350" src="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&layout=compact&theme=graywhite&bg_color=fff&title_color=36454F&text_color=36454F&border_radius=10&hide_border=true" />
-      </picture>
+    <th width="425" align="middle" valign="middle">
+      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=imgaty&layout=compact&theme=graywhite&bg_color=fff&title_color=36454F&text_color=36454F&border_radius=10&hide_border=true" />
     </th>
     <th rowspan="3" valign="middle" align="center">
-      <img width="700" height="1">
+      <img width="600" height="1">
       <br>
-      <picture>
-        <source
-          media="(prefers-color-scheme: dark)"
-          srcset="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=true&background_color=00000000&bar_color=bfdbfe"
-        />
-        <img width="500"
-          src="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=false&background_color=00000000&bar_color=1e3a5f"
-        />
-      </picture>
+      <img src="https://spotify-github-profile.kittinanx.com/api/view?uid=oq8gfwjq4l4vvx31nujzsxuau&cover_image=true&theme=spotify-embed&show_offline=false&interchange=false&profanity=false&background_color=00000000&bar_color=1e3a5f"
+      />
+      <br>
+      <img width="600" height="1">
     </th>
   </tr>
 </table>
