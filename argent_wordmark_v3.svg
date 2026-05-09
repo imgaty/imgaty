@@ -1,0 +1,25 @@
+<svg viewBox="0 0 1000 310" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Argent wordmark</title>
+  <desc id="desc">
+    Hand-crafted Argent wordmark using an equilateral triangle for A and custom outline paths for rgent.
+    Baselines align and spacing is consistent across letters.
+  </desc>
+
+  <polygon points="50,220 240,220 145,55" fill="#000000" />
+
+  <path
+    fill="#000000"
+    fill-rule="evenodd"
+    d="
+      M272 92H320V124L336 108H376V140H350L320 168V220H272Z
+
+      M408 132C408 104 430 86 462 86H502C534 86 556 104 556 132V174C556 198 540 215 514 220C540 225 556 244 556 270V278H508V270C508 256 498 248 482 248H462C430 248 408 230 408 202ZM456 118C442 118 432 126 432 138V196C432 208 442 216 456 216H498C512 216 522 208 522 196V138C522 126 512 118 498 118Z
+
+      M576 92H678V124H624V144H670V176H624V188H678V220H576Z
+
+      M710 92H758V124L774 108H814C848 108 870 130 870 164V220H822V172C822 152 810 140 790 140H758V220H710Z
+
+      M886 92H972V124H953V220H905V124H886Z
+    "
+  />
+</svg>
