@@ -5,7 +5,7 @@
     Baselines align and spacing is consistent across letters.
   </desc>
 
-  <polygon points="50,220 240,220 145,55.455" fill="#000000" />
+  <polygon points="50,220 240,220 145,55.5" fill="#000000" />
 
   <path
     fill="#000000"
