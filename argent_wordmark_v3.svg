@@ -1,11 +1,11 @@
 <svg viewBox="0 0 1000 310" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Argent wordmark</title>
   <desc id="desc">
-    Handcrafted Argent wordmark using an equilateral triangle for A and custom outline paths for the letters rgent.
+    Handcrafted Argent wordmark using an equilateral triangle for A and custom outlined paths for the letters rgent.
     Baselines align and spacing is consistent across letters.
   </desc>
 
-  <polygon points="50,220 240,220 145,55.5" fill="#000000" />
+  <polygon points="50,220 240,220 145,56" fill="#000000" />
 
   <path
     fill="#000000"
