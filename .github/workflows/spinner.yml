@@ -15,19 +15,16 @@ concurrency:
 jobs:
   regenerate:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
 
       - name: Generate today's spinner
         run: node generate.mjs
 
       - name: Commit if anything changed
         run: |
-          git add spinner.svg README.md
+          git add spinner.svg spinner-mobile.svg README.md
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
