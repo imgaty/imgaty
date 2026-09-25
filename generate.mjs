@@ -476,7 +476,7 @@ function renderSvg(episodes, version, claudeVersion) {
     const ROW = 30;
     const EMPTY = -1;
     const row = (r, x, cells, attrs, body) =>
-        `<text${attrs && ` ${attrs}`} x="${round(x)}" y="${round(G.spinnerBase + r * ROW)}" textLength="${len(cells)}">${body}</text>`;
+        `<text${attrs && ` ${attrs}`} x="${round(x)}" y="${round(G.spinnerBase + r * ROW)}"${cells ? ` textLength="${len(cells)}"` : ''}>${body}</text>`;
     const digits = Math.ceil(Math.log10(T / 0.002));
     const keyTimes = (steps) => steps.map(([t]) => round(t / T, digits)).join(';');
     const animate = (attr, steps, value, type = 'translate') =>
@@ -537,10 +537,10 @@ function renderSvg(episodes, version, claudeVersion) {
                 if ((st.start + st.ticks) * TICK <= start) continue;
                 statusSteps.push([t0 + start, statusRows.length]);
                 lastStatusRow[g] = statusRows.length;
-                statusRows.push(row(statusRows.length, statusX, width(st.parts), '', statusText(st)));
+                statusRows.push(row(statusRows.length, statusX, 0, '', statusText(st)));
             }
             const last = line.status.at(-1);
-            if (last) lastStatusRows.push(row(g, statusX, width(last.parts), 'class="d"', statusText(last)));
+            if (last) lastStatusRows.push(row(g, statusX, 0, 'class="d"', statusText(last)));
             g++;
         });
 
@@ -581,7 +581,7 @@ function renderSvg(episodes, version, claudeVersion) {
         const fall = [[0, '0 0']];
         for (let t = e.slide; t < e.back; t += 1 / TYPE.fps) fall.push([t, `0 ${round(drop * ((t - e.slide) / STORY.slide) ** 2)}`]);
         fall.push([e.back, '0 0']);
-        return `<text x="${G.textX}" y="${G.userBase}" textLength="${len(e.chars.length + 2)}" display="none"><tspan class="d">&gt; </tspan><tspan class="t">${xml(e.prompt)}</tspan>${during([e.sent, e.back])}${animate('transform', fall, (v) => v)}</text>`;
+        return `<g display="none">${during([e.sent, e.back])}${animate('transform', fall, (v) => v)}<text class="d" x="${G.textX}" y="${G.userBase}">&gt;</text><text class="t" x="${round(G.textX + 2 * V.cell)}" y="${G.userBase}" textLength="${len(e.chars.length)}">${xml(e.prompt)}</text></g>`;
     });
     const hour = Math.floor(rng.range(1, 13));
     const limitText = `You've hit your session limit · resets ${hour}${rng.range(0, 1) < 0.5 ? 'am' : 'pm'} (UTC)`;
