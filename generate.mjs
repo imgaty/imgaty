@@ -438,9 +438,9 @@ function renderSvg(episodes, version, claudeVersion, name) {
     const T = clock;
     const rewinds = eps.map((e) => [e.rewind, e.back]);
 
-    const ROW = 30, EMPTY = -1, HEAD = 2 * V.width;
-    const row = (r, x, cells, attrs, body) =>
-        `<text${attrs && ` ${attrs}`} x="${round(x)}" y="${round(G.spinnerBase + r * ROW)}"${cells ? ` textLength="${len(cells)}"` : ''}>${body}</text>`;
+    const EMPTY = -1, HEAD = 2 * V.width;
+    const row = (id, x, cells, attrs, body) =>
+        `<text id="${id}"${attrs && ` ${attrs}`} x="${round(x)}" y="${G.spinnerBase}"${cells ? ` textLength="${len(cells)}"` : ''}>${body}</text>`;
     const digits = Math.ceil(Math.log10(T / 0.01));
     const animate = (attr, steps, { type = 'translate', mode = 'discrete', add = false } = {}) => {
         const keys = [];
@@ -452,7 +452,9 @@ function renderSvg(episodes, version, claudeVersion, name) {
         const tag = attr === 'transform' ? `animateTransform type="${type}"` : 'animate';
         return `<${tag} attributeName="${attr}"${add ? ' additive="sum"' : ''} calcMode="${mode}" dur="${round(T, 3)}s" repeatCount="indefinite" keyTimes="${keys.map(([k]) => k).join(';')}" values="${keys.map(([, v]) => v).join(';')}"/>`;
     };
-    const onRow = (steps) => animate('transform', steps.map(([t, r]) => [t, `0 ${-r * ROW}`]));
+    // Point each <use> at the one row it shows. Sliding a strip of every row behind a clip made WebKit re-measure
+    // all of them on every frame (it re-applies SMIL transforms even when they don't change), which lagged Safari.
+    const onRow = (prefix, steps) => animate('xlink:href', steps.map(([t, r]) => [t, r === EMPTY ? '#none' : `#${prefix}${r}`]));
     const spans = (attr, on, off, list) => animate(attr, [[0, off], ...list.flatMap(([a, b]) => [[a, on], [b, off]])]);
     const during = (...list) => spans('display', 'inline', 'none', list);
 
@@ -482,7 +484,7 @@ function renderSvg(episodes, version, claudeVersion, name) {
             head.push([t0, G.textX], [t0 + typing, V.width]);
             glide.push([t0, 0], [t0 + typing, len(cells)], [t0 + typing + 0.05, 0]);
             oldShift.push([t0, 0], [t0 + typing, len(cells - was)], [t0 + typing + 0.05, 0]);
-            verbRows.push(row(g, G.textX, cells, line.freakout ? `style="fill:${theme.error}"` : `fill="url(#s${cells})"`, xml(line.freakout ? line.text : `${line.text}…`)));
+            verbRows.push(row(`v${g}`, G.textX, cells, line.freakout ? `style="fill:${theme.error}"` : `fill="url(#s${cells})"`, xml(line.freakout ? line.text : `${line.text}…`)));
             verbSteps.push([t0, g]);
             statusSteps.push([t0, EMPTY]);
             lastStatusRow[g] = EMPTY;
@@ -490,7 +492,7 @@ function renderSvg(episodes, version, claudeVersion, name) {
                 const start = Math.max(st.start * TICK, typing);
                 if ((st.start + st.ticks) * TICK <= start) continue;
                 statusSteps.push([t0 + start, (lastStatusRow[g] = statusRows.length)]);
-                statusRows.push(row(statusRows.length, G.textX + (cells + 1) * V.cell, 0, '', statusText(st)));
+                statusRows.push(row(`r${statusRows.length}`, G.textX + (cells + 1) * V.cell, 0, 'class="d"', statusText(st)));
             }
             g++;
         });
@@ -587,7 +589,10 @@ ${shimmerDefs.join('\n')}
 <linearGradient id="tracking" x2="0" y2="1"><stop offset="0" style="stop-color:${theme.text}" stop-opacity="0"/><stop offset="0.5" style="stop-color:${theme.text}" stop-opacity="0.22"/><stop offset="1" style="stop-color:${theme.text}" stop-opacity="0"/></linearGradient>
 <clipPath id="screen"><rect x="0.5" y="0.5" width="${V.width - 1}" height="${G.height - 1}" rx="10"/></clipPath>
 <filter id="vhs" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
-<feTurbulence type="fractalNoise" baseFrequency="0 0.035" numOctaves="2" seed="1" result="noise"><animate attributeName="seed" values="1;7;3;9;5;2;8;4" dur="0.4s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>
+<!-- The noise only varies down the page (x frequency 0), so render one narrow column and tile it: full-width
+     turbulence was slow in WebKit and blanked the whole screen during rewinds in Safari. -->
+<feTurbulence x="0" width="16" type="fractalNoise" baseFrequency="0 0.035" numOctaves="2" seed="1" result="column"><animate attributeName="seed" values="1;7;3;9;5;2;8;4" dur="0.4s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>
+<feTile in="column" result="noise"/>
 <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0 1" result="map"/>
 <feDisplacementMap in="SourceGraphic" in2="map" scale="16" xChannelSelector="R" yChannelSelector="G" result="warp"/>
 <feColorMatrix in="warp" type="matrix" values="0 0 0 0 1 0 0 0 0 0.1 0 0 0 0 0.25 0 0 0 0.6 0"/>
@@ -599,12 +604,9 @@ ${shimmerDefs.join('\n')}
 <pattern id="scan" width="8" height="3" patternUnits="userSpaceOnUse"><rect width="8" height="1" style="fill:${theme.text}" opacity="0.06"/></pattern>
 ${clawd.defs}
 <clipPath id="input"><rect x="${round(inputX)}" y="${inputY}" height="${V.caret}" width="0">${animate('width', typedCells.map(([t, c]) => [t, len(c)]))}</rect></clipPath>
-<g id="status" class="d">
+<g id="none"/>
 ${statusRows.join('\n')}
-</g>
-<g id="verbs">
 ${verbRows.join('\n')}
-</g>
 </defs>
 <rect x="0.5" y="0.5" width="${V.width - 1}" height="${G.height - 1}" rx="10" style="fill:${theme.bg};stroke:${theme.frame}"/>
 <g clip-path="url(#screen)">
@@ -627,9 +629,9 @@ ${user.join('\n')}
 ${GLYPH_SHAPES.map((d, g) => `<path class="g" style="animation-name:g${g}" transform="${glyphAt}" d="${d}"/>`).join('\n')}
 </g>
 <path display="none" transform="${glyphAt}" d="${GLYPH_SHAPES[4]}" style="fill:${theme.error}">${during(...freakouts.map((f) => [f.start, f.end]))}</path>
-<g clip-path="url(#typed)"><use xlink:href="#verbs">${onRow(verbSteps)}</use></g>
-<g clip-path="url(#old)"><g>${animate('transform', [...oldShift, [T, 0]], { mode: 'linear' })}<use xlink:href="#verbs">${onRow(oldRows)}</use><use xlink:href="#status">${onRow(oldStatus)}</use></g></g>
-<g clip-path="url(#line)"><use xlink:href="#status">${onRow(statusSteps)}</use></g>
+<g clip-path="url(#typed)"><use xlink:href="#none">${onRow('v', verbSteps)}</use></g>
+<g clip-path="url(#old)"><g>${animate('transform', [...oldShift, [T, 0]], { mode: 'linear' })}<use xlink:href="#none">${onRow('v', oldRows)}</use><use xlink:href="#none">${onRow('r', oldStatus)}</use></g></g>
+<g clip-path="url(#line)"><use xlink:href="#none">${onRow('r', statusSteps)}</use></g>
 <use xlink:href="#head" fill="url(#caret)"/>
 </g>
 <rect x="${G.left}" y="${G.boxTop}" width="${G.right - G.left}" height="${G.boxBottom - G.boxTop}" rx="5" fill="none" style="stroke:${theme.border}"/>

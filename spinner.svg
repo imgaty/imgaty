@@ -71,7 +71,10 @@ text{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono
 <linearGradient id="tracking" x2="0" y2="1"><stop offset="0" style="stop-color:var(--text)" stop-opacity="0"/><stop offset="0.5" style="stop-color:var(--text)" stop-opacity="0.22"/><stop offset="1" style="stop-color:var(--text)" stop-opacity="0"/></linearGradient>
 <clipPath id="screen"><rect x="0.5" y="0.5" width="819" height="273" rx="10"/></clipPath>
 <filter id="vhs" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
-<feTurbulence type="fractalNoise" baseFrequency="0 0.035" numOctaves="2" seed="1" result="noise"><animate attributeName="seed" values="1;7;3;9;5;2;8;4" dur="0.4s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>
+<!-- The noise only varies down the page (x frequency 0), so render one narrow column and tile it: full-width
+     turbulence was slow in WebKit and blanked the whole screen during rewinds in Safari. -->
+<feTurbulence x="0" width="16" type="fractalNoise" baseFrequency="0 0.035" numOctaves="2" seed="1" result="column"><animate attributeName="seed" values="1;7;3;9;5;2;8;4" dur="0.4s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>
+<feTile in="column" result="noise"/>
 <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0 1" result="map"/>
 <feDisplacementMap in="SourceGraphic" in2="map" scale="16" xChannelSelector="R" yChannelSelector="G" result="warp"/>
 <feColorMatrix in="warp" type="matrix" values="0 0 0 0 1 0 0 0 0 0.1 0 0 0 0 0.25 0 0 0 0.6 0"/>
@@ -83,464 +86,461 @@ text{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono
 <pattern id="scan" width="8" height="3" patternUnits="userSpaceOnUse"><rect width="8" height="1" style="fill:var(--text)" opacity="0.06"/></pattern>
 <clipPath id="clawd"><rect x="41.3" y="33.5" width="75.6" height="54"/></clipPath>
 <clipPath id="input"><rect x="58.1" y="200.5" height="18" width="0"><animate attributeName="width" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.00209;0.00222;0.00244;0.00262;0.00282;0.00306;0.00325;0.00345;0.00372;0.00385;0.00401;0.00424;0.00573;0.32915;0.32926;0.32937;0.32948;0.32958;0.32969;0.3298;0.3299;0.33001;0.33012;0.33022;0.33033;0.33044;0.33263;0.3328;0.33302;0.33323;0.33345;0.33354;0.33506;0.65848;0.65868;0.65888;0.65908;0.65927;0.65947;0.65967;0.66196;0.66212;0.66234;0.66249;0.66262;0.66287;0.66309;0.66322;0.66341;0.66358;0.66367;0.66377;0.66394;0.66415;0.66431;0.66453;0.66468;0.66488;0.66649;0.99861;0.99868;0.99875;0.99883;0.9989;0.99897;0.99905;0.99912;0.99919;0.99927;0.99934;0.99941;0.99949;0.99956;0.99963;0.99971;0.99978;0.99985;0.99993" values="0;8.4;16.8;25.2;33.6;42;50.4;58.8;67.2;75.6;84;92.4;100.8;0;100.8;92.4;84;75.6;67.2;58.8;50.4;42;33.6;25.2;16.8;8.4;0;8.4;16.8;25.2;33.6;42;50.4;0;50.4;42;33.6;25.2;16.8;8.4;0;8.4;16.8;25.2;33.6;42;50.4;58.8;67.2;75.6;84;92.4;100.8;109.2;117.6;126;134.4;142.8;151.2;0;151.2;142.8;134.4;126;117.6;109.2;100.8;92.4;84;75.6;67.2;58.8;50.4;42;33.6;25.2;16.8;8.4;0"/></rect></clipPath>
-<g id="status" class="d">
-<text x="326.9" y="166.5">(3s · ↑ 521 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="196.5">(4s · ↑ 541 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="226.5">(4s · ↑ 585 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="256.5">(5s · ↑ 612 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="286.5">(6s · ↑ 744 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="316.5">(6s · ↑ 805 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="346.5">(7s · ↑ 850 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="376.5">(7s · ↑ 948 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="108.5" y="406.5">(8s · ↑ 1.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="108.5" y="436.5">(9s · ↑ 1.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="108.5" y="466.5">(9s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="108.5" y="496.5">(10s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="192.5" y="526.5">(11s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="192.5" y="556.5">(11s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="192.5" y="586.5">(12s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="192.5" y="616.5">(12s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="394.1" y="646.5">(13s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="394.1" y="676.5">(14s · ↑ 1.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="394.1" y="706.5">(14s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="394.1" y="736.5">(15s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="766.5">(16s · ↑ 1.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="796.5">(16s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="826.5">(17s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="251.3" y="856.5">(18s · ↑ 2.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="251.3" y="886.5">(19s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="251.3" y="916.5">(20s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="946.5">(21s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="976.5">(21s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="1006.5">(22s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="1036.5">(22s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="1066.5">(23s · ↑ 2.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="1096.5">(24s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="1126.5">(24s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="1156.5">(25s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1186.5">(25s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1216.5">(26s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1246.5">(26s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1276.5">(27s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1306.5">(27s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="1336.5">(28s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="1366.5">(29s · ↑ 3.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="1396.5">(30s · ↑ 3.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1426.5">(31s · ↑ 3.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1456.5">(31s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1486.5">(32s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="1516.5">(32s · ↑ 3.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="377.3" y="1546.5">(33s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="377.3" y="1576.5">(34s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="377.3" y="1606.5">(35s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="1636.5">(36s · ↑ 3.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="1666.5">(36s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="1696.5">(37s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="1726.5">(37s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="1756.5">(38s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="1786.5">(39s · ↑ 4.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="1816.5">(39s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="1846.5">(40s · ↑ 4.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="1876.5">(41s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="1906.5">(42s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="1936.5">(42s · ↑ 4.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="1966.5">(43s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="1996.5">(44s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="2026.5">(44s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="2056.5">(45s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="2086.5">(46s · ↑ 5.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="2116.5">(47s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="2146.5">(47s · ↑ 5.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="2176.5">(48s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="2206.5">(49s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="2236.5">(50s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="310.1" y="2266.5">(51s · ↑ 5.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="310.1" y="2296.5">(51s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="310.1" y="2326.5">(52s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="2356.5">(53s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="2386.5">(54s · ↑ 6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="2416.5">(54s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="2446.5">(55s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="2476.5">(56s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="2506.5">(57s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="352.1" y="2536.5">(58s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="352.1" y="2566.5">(59s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="352.1" y="2596.5">(59s · ↑ 6.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="352.1" y="2626.5">(1m 0s · ↑ 6.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="2656.5">(1m 1s · ↑ 6.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="2686.5">(1m 1s · ↑ 6.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="2716.5">(1m 2s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="2746.5">(1m 2s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="2776.5">(1m 3s · ↑ 7.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="2806.5">(1m 4s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="2836.5">(1m 5s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="343.7" y="2866.5">(1m 6s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="343.7" y="2896.5">(1m 6s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="343.7" y="2926.5">(1m 7s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="343.7" y="2956.5">(1m 7s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="2986.5">(1m 8s · ↑ 7.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="3016.5">(1m 9s · ↑ 7.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="3046.5">(1m 9s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="3076.5">(1m 10s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="3106.5">(1m 11s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="3136.5">(1m 12s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="3166.5">(1m 13s · ↑ 8.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="3196.5">(1m 14s · ↑ 8.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="3226.5">(1m 14s · ↑ 8.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="3256.5">(1m 15s · ↑ 8.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="3286.5">(1m 16s · ↑ 8.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="3316.5">(1m 17s · ↑ 8.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="3346.5">(1m 17s · ↑ 8.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="3376.5">(1m 18s · ↑ 8.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="3406.5">(1m 19s · ↑ 8.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="3436.5">(1m 19s · ↑ 8.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="3466.5">(1m 20s · ↑ 8.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="3496.5">(1m 21s · ↑ 9.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="3526.5">(1m 22s · ↑ 9.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="3556.5">(1m 23s · ↑ 9.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="3586.5">(1m 24s · ↑ 9.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="3616.5">(1m 25s · ↑ 9.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="3646.5">(1m 26s · ↑ 9.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="3676.5">(1m 27s · ↑ 9.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="3706.5">(1m 28s · ↑ 9.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="3736.5">(1m 29s · ↑ 9.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="3766.5">(1m 29s · ↑ 9.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="3796.5">(1m 30s · ↑ 9.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="251.3" y="3826.5">(2s · ↑ 375 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="251.3" y="3856.5">(3s · ↑ 397 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="251.3" y="3886.5">(3s · ↑ 426 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="251.3" y="3916.5">(4s · ↑ 462 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="3946.5">(5s · ↑ 586 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="3976.5">(5s · ↑ 690 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="4006.5">(6s · ↑ 729 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="4036.5">(6s · ↑ 761 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="4066.5">(7s · ↑ 864 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="4096.5">(8s · ↑ 907 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="4126.5">(8s · ↑ 976 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="4156.5">(9s · ↑ 1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="4186.5">(10s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="4216.5">(11s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="4246.5">(12s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="4276.5">(13s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="4306.5">(13s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="4336.5">(14s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="4366.5">(14s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="4396.5">(15s · ↑ 1.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="4426.5">(16s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="4456.5">(17s · ↑ 1.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="4486.5">(18s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="4516.5">(19s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="4546.5">(20s · ↑ 2.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="4576.5">(20s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="4606.5">(21s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="4636.5">(22s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="4666.5">(23s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="4696.5">(23s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="4726.5">(24s · ↑ 2.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="116.9" y="4756.5">(25s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="116.9" y="4786.5">(26s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="4816.5">(27s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="4846.5">(28s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="4876.5">(29s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="4906.5">(30s · ↑ 3.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="4936.5">(31s · ↑ 3.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="4966.5">(31s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="4996.5">(32s · ↑ 3.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="5026.5">(33s · ↑ 3.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="5056.5">(34s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="5086.5">(34s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="5116.5">(35s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="5146.5">(36s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="5176.5">(36s · ↑ 3.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="5206.5">(37s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="5236.5">(38s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="5266.5">(38s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="5296.5">(39s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="108.5" y="5326.5">(40s · ↑ 4.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="108.5" y="5356.5">(41s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="5386.5">(42s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="5416.5">(43s · ↑ 4.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="5446.5">(44s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="5476.5">(45s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="5506.5">(45s · ↑ 4.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="5536.5">(46s · ↑ 4.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="5566.5">(47s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="5596.5">(48s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="5626.5">(48s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="5656.5">(49s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="5686.5">(50s · ↑ 5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="5716.5">(51s · ↑ 5.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="5746.5">(52s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="5776.5">(53s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="5806.5">(53s · ↑ 5.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="5836.5">(54s · ↑ 5.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="5866.5">(55s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="5896.5">(56s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="5926.5">(57s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="5956.5">(57s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="5986.5">(58s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="6016.5">(59s · ↑ 5.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="6046.5">(1m 0s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="200.9" y="6076.5">(1m 1s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="6106.5">(1m 2s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="6136.5">(1m 3s · ↑ 6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="6166.5">(1m 4s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="6196.5">(1m 5s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="6226.5">(1m 6s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="6256.5">(1m 6s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="6286.5">(1m 7s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="6316.5">(1m 8s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="6346.5">(1m 9s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="6376.5">(1m 10s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="6406.5">(1m 10s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="6436.5">(1m 11s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="6466.5">(1m 12s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="6496.5">(1m 13s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="6526.5">(1m 13s · ↑ 6.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="6556.5">(1m 14s · ↑ 6.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="6586.5">(1m 15s · ↑ 6.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="6616.5">(1m 16s · ↑ 6.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="6646.5">(1m 17s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="6676.5">(1m 18s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="6706.5">(1m 18s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="6736.5">(1m 19s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="6766.5">(1m 20s · ↑ 7.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="6796.5">(1m 20s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="6826.5">(1m 21s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="6856.5">(1m 21s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="6886.5">(1m 22s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="6916.5">(1m 23s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="6946.5">(1m 23s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="6976.5">(1m 24s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="7006.5">(1m 25s · ↑ 7.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="7036.5">(1m 26s · ↑ 7.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="7066.5">(1m 27s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="7096.5">(1m 28s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="7126.5">(1m 28s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="150.5" y="7156.5">(1m 29s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="242.9" y="7186.5">(1s · ↑ 454 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="242.9" y="7216.5">(2s · ↑ 475 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="242.9" y="7246.5">(2s · ↑ 531 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="242.9" y="7276.5">(3s · ↑ 543 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="7306.5">(4s · ↑ 662 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="7336.5">(4s · ↑ 714 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="7366.5">(5s · ↑ 751 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="7396.5">(5s · ↑ 829 tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="7426.5">(6s · ↑ 1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="7456.5">(7s · ↑ 1.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="7486.5">(7s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="7516.5">(8s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="301.7" y="7546.5">(9s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="301.7" y="7576.5">(9s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="301.7" y="7606.5">(10s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="7636.5">(11s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="7666.5">(12s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="7696.5">(13s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="7726.5">(14s · ↑ 1.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="7756.5">(14s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="7786.5">(15s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="7816.5">(15s · ↑ 1.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="7846.5">(16s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="7876.5">(17s · ↑ 2.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="7906.5">(17s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="7936.5">(18s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="7966.5">(19s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="276.5" y="7996.5">(20s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="192.5" y="8026.5">(21s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="192.5" y="8056.5">(22s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="192.5" y="8086.5">(23s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="8116.5">(24s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="268.1" y="8146.5">(25s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="8176.5">(26s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="8206.5">(27s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="8236.5">(27s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="8266.5">(28s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="8296.5">(29s · ↑ 3.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="8326.5">(30s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="8356.5">(31s · ↑ 3.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="8386.5">(32s · ↑ 3.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="8416.5">(33s · ↑ 3.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="8446.5">(34s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="8476.5">(35s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="8506.5">(35s · ↑ 3.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="8536.5">(36s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="8566.5">(37s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="209.3" y="8596.5">(38s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="8626.5">(39s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="8656.5">(40s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="8686.5">(41s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="8716.5">(42s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="8746.5">(42s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="326.9" y="8776.5">(43s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="8806.5">(44s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="226.1" y="8836.5">(45s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="116.9" y="8866.5">(46s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="116.9" y="8896.5">(47s · ↑ 5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="116.9" y="8926.5">(48s · ↑ 5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="301.7" y="8956.5">(49s · ↑ 5.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="301.7" y="8986.5">(49s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="301.7" y="9016.5">(50s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="9046.5">(51s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="9076.5">(52s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="9106.5">(52s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="284.9" y="9136.5">(53s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="9166.5">(54s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="133.7" y="9196.5">(55s · ↑ 5.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="9226.5">(56s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="9256.5">(57s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="184.1" y="9286.5">(58s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="9316.5">(59s · ↑ 6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="9346.5">(59s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="9376.5">(1m 0s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="9406.5">(1m 0s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="9436.5">(1m 1s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="9466.5">(1m 2s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="125.3" y="9496.5">(1m 3s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="9526.5">(1m 4s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="234.5" y="9556.5">(1m 5s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="167.3" y="9586.5">(1m 6s · ↑ 6.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="167.3" y="9616.5">(1m 7s · ↑ 6.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="167.3" y="9646.5">(1m 8s · ↑ 6.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="9676.5">(1m 8s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="9706.5">(1m 9s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="9736.5">(1m 9s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="9766.5">(1m 10s · ↑ 7.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="9796.5">(1m 10s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="9826.5">(1m 11s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="9856.5">(1m 11s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="9886.5">(1m 12s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="175.7" y="9916.5">(1m 13s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="9946.5">(1m 14s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="9976.5">(1m 14s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="335.3" y="10006.5">(1m 15s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="377.3" y="10036.5">(1m 16s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="377.3" y="10066.5">(1m 17s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="377.3" y="10096.5">(1m 18s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="10126.5">(1m 19s · ↑ 7.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="10156.5">(1m 20s · ↑ 7.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="142.1" y="10186.5">(1m 20s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="10216.5">(1m 21s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="10246.5">(1m 22s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="10276.5">(1m 22s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="293.3" y="10306.5">(1m 23s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="10336.5">(1m 24s · ↑ 8.2k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="10366.5">(1m 24s · ↑ 8.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="259.7" y="10396.5">(1m 25s · ↑ 8.3k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="10426.5">(1m 26s · ↑ 8.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="10456.5">(1m 27s · ↑ 8.5k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="10486.5">(1m 27s · ↑ 8.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="158.9" y="10516.5">(1m 28s · ↑ 8.6k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="10546.5">(1m 29s · ↑ 8.7k tokens · <tspan>esc</tspan> to interrupt)</text>
-<text x="217.7" y="10576.5">(1m 30s · ↑ 8.8k tokens · <tspan>esc</tspan> to interrupt)</text>
-</g>
-<g id="verbs">
-<text fill="url(#s33)" x="41.3" y="166.5" textLength="277.2">Taking notes from the Illuminati…</text>
-<text fill="url(#s28)" x="41.3" y="196.5" textLength="235.2">Buying a compound on Airbnb…</text>
-<text fill="url(#s7)" x="41.3" y="226.5" textLength="58.8">Baking…</text>
-<text fill="url(#s17)" x="41.3" y="256.5" textLength="142.8">Walking on water…</text>
-<text fill="url(#s41)" x="41.3" y="286.5" textLength="344.4">Promising eternal life for $9.99 a month…</text>
-<text fill="url(#s9)" x="41.3" y="316.5" textLength="75.6">Osmosing…</text>
-<text fill="url(#s24)" x="41.3" y="346.5" textLength="201.6">Growing a messiah beard…</text>
-<text fill="url(#s29)" x="41.3" y="376.5" textLength="243.6">Not talking about Fight Club…</text>
-<text fill="url(#s12)" x="41.3" y="406.5" textLength="100.8">Pollinating…</text>
-<text fill="url(#s13)" x="41.3" y="436.5" textLength="109.2">Fighting God…</text>
-<text fill="url(#s27)" x="41.3" y="466.5" textLength="226.8">Selling holy water on Etsy…</text>
-<text fill="url(#s13)" x="41.3" y="496.5" textLength="109.2">Sock-hopping…</text>
-<text fill="url(#s39)" x="41.3" y="526.5" textLength="327.6">Ascending to a higher plane (the roof)…</text>
-<text fill="url(#s25)" x="41.3" y="556.5" textLength="210">Writing the commandments…</text>
-<text fill="url(#s26)" x="41.3" y="586.5" textLength="218.4">Breaking the commandments…</text>
-<text fill="url(#s11)" x="41.3" y="616.5" textLength="92.4">Channeling…</text>
-<text fill="url(#s29)" x="41.3" y="646.5" textLength="243.6">Inventing a secret handshake…</text>
-<text fill="url(#s19)" x="41.3" y="676.5" textLength="159.6">Baptizing raccoons…</text>
-<text fill="url(#s10)" x="41.3" y="706.5" textLength="84">Actioning…</text>
-<text fill="url(#s31)" x="41.3" y="736.5" textLength="260.4">Confiscating the wifi password…</text>
-<text fill="url(#s27)" x="41.3" y="766.5" textLength="226.8">Charging for enlightenment…</text>
-<text fill="url(#s12)" x="41.3" y="796.5" textLength="100.8">Harmonizing…</text>
-<text fill="url(#s36)" x="41.3" y="826.5" textLength="302.4">Performing a miracle (a card trick)…</text>
-<text fill="url(#s22)" x="41.3" y="856.5" textLength="184.8">Recruiting on Discord…</text>
-<text fill="url(#s11)" x="41.3" y="886.5" textLength="92.4">Garnishing…</text>
-<text fill="url(#s35)" x="41.3" y="916.5" textLength="294">Speaking in tongues, mostly Python…</text>
-<text fill="url(#s22)" x="41.3" y="946.5" textLength="184.8">Sending chain letters…</text>
-<text fill="url(#s9)" x="41.3" y="976.5" textLength="75.6">Whisking…</text>
-<text fill="url(#s21)" x="41.3" y="1006.5" textLength="176.4">Picking a robe color…</text>
-<text fill="url(#s19)" x="41.3" y="1036.5" textLength="159.6">Starting a podcast…</text>
-<text fill="url(#s10)" x="41.3" y="1066.5" textLength="84">Sketching…</text>
-<text fill="url(#s22)" x="41.3" y="1096.5" textLength="184.8">Debunking the Mormons…</text>
-<text fill="url(#s16)" x="41.3" y="1126.5" textLength="134.4">Becoming a monk…</text>
-<text fill="url(#s12)" x="41.3" y="1156.5" textLength="100.8">Manifesting…</text>
-<text fill="url(#s29)" x="41.3" y="1186.5" textLength="243.6">Naming myself the chosen one…</text>
-<text fill="url(#s24)" x="41.3" y="1216.5" textLength="201.6">Pretending to like Arch…</text>
-<text fill="url(#s20)" x="41.3" y="1246.5" textLength="168">Nuking the lockfile…</text>
-<text fill="url(#s10)" x="41.3" y="1276.5" textLength="84">Imagining…</text>
-<text fill="url(#s34)" x="41.3" y="1306.5" textLength="285.6">Asking Claude to fix Claude's fix…</text>
-<text fill="url(#s12)" x="41.3" y="1336.5" textLength="100.8">Exiting Vim…</text>
-<text fill="url(#s15)" x="41.3" y="1366.5" textLength="126">Touching grass…</text>
-<text fill="url(#s9)" x="41.3" y="1396.5" textLength="75.6">Grooving…</text>
-<text fill="url(#s16)" x="41.3" y="1426.5" textLength="134.4">Writing a regex…</text>
-<text fill="url(#s20)" x="41.3" y="1456.5" textLength="168">Setting up a router…</text>
-<text fill="url(#s8)" x="41.3" y="1486.5" textLength="67.2">Mulling…</text>
-<text fill="url(#s18)" x="41.3" y="1516.5" textLength="151.2">Casting it as any…</text>
-<text fill="url(#s18)" x="41.3" y="1546.5" textLength="151.2">Adding @ts-ignore…</text>
-<text fill="url(#s9)" x="41.3" y="1576.5" textLength="75.6">Osmosing…</text>
-<text fill="url(#s15)" x="41.3" y="1606.5" textLength="126">Wasting tokens…</text>
-<text fill="url(#s33)" x="41.3" y="1636.5" textLength="277.2">Swearing it worked on my machine…</text>
-<text fill="url(#s7)" x="41.3" y="1666.5" textLength="58.8">Baking…</text>
-<text fill="url(#s34)" x="41.3" y="1696.5" textLength="285.6">Running the deprecated dependency…</text>
-<text fill="url(#s22)" x="41.3" y="1726.5" textLength="184.8">Speedrunning LeetCode…</text>
-<text fill="url(#s11)" x="41.3" y="1756.5" textLength="92.4">Ruminating…</text>
-<text fill="url(#s19)" x="41.3" y="1786.5" textLength="159.6">Blaming the intern…</text>
-<text fill="url(#s19)" x="41.3" y="1816.5" textLength="159.6">Clearing the cache…</text>
-<text fill="url(#s10)" x="41.3" y="1846.5" textLength="84">Beboppin'…</text>
-<text fill="url(#s12)" x="41.3" y="1876.5" textLength="100.8">Vibe coding…</text>
-<text fill="url(#s18)" x="41.3" y="1906.5" textLength="151.2">Centering the div…</text>
-<text fill="url(#s29)" x="41.3" y="1936.5" textLength="243.6">Googling how to center a div…</text>
-<text fill="url(#s11)" x="41.3" y="1966.5" textLength="92.4">Enchanting…</text>
-<text fill="url(#s22)" x="41.3" y="1996.5" textLength="184.8">Blaming the framework…</text>
-<text fill="url(#s19)" x="41.3" y="2026.5" textLength="159.6">Renaming it to .js…</text>
-<text fill="url(#s13)" x="41.3" y="2056.5" textLength="109.2">Newspapering…</text>
-<text fill="url(#s20)" x="41.3" y="2086.5" textLength="168">Ignoring the linter…</text>
-<text fill="url(#s21)" x="41.3" y="2116.5" textLength="176.4">Rewriting it in Rust…</text>
-<text fill="url(#s9)" x="41.3" y="2146.5" textLength="75.6">Puzzling…</text>
-<text fill="url(#s25)" x="41.3" y="2176.5" textLength="210">Commenting out the tests…</text>
-<text fill="url(#s25)" x="41.3" y="2206.5" textLength="210">Gaslighting the compiler…</text>
-<text fill="url(#s12)" x="41.3" y="2236.5" textLength="100.8">Moonwalking…</text>
-<text fill="url(#s23)" x="41.3" y="2266.5" textLength="193.2">Quantizing it to 1 bit…</text>
-<text fill="url(#s26)" x="41.3" y="2296.5" textLength="218.4">Leaking the model weights…</text>
-<text fill="url(#s11)" x="41.3" y="2326.5" textLength="92.4">Generating…</text>
-<text fill="url(#s30)" x="41.3" y="2356.5" textLength="252">Guessing the benchmark scores…</text>
-<text fill="url(#s28)" x="41.3" y="2386.5" textLength="235.2">Training on the leaked data…</text>
-<text fill="url(#s13)" x="41.3" y="2416.5" textLength="109.2">Caramelizing…</text>
-<text fill="url(#s15)" x="41.3" y="2446.5" textLength="126">Wasting tokens…</text>
-<text fill="url(#s27)" x="41.3" y="2476.5" textLength="226.8">Emailing the security team…</text>
-<text fill="url(#s17)" x="41.3" y="2506.5" textLength="142.8">Discombobulating…</text>
-<text fill="url(#s26)" x="41.3" y="2536.5" textLength="218.4">Posting it on Hacker News…</text>
-<text fill="url(#s16)" x="41.3" y="2566.5" textLength="134.4">Building Jarvis…</text>
-<text fill="url(#s15)" x="41.3" y="2596.5" textLength="126">Killing Jarvis…</text>
-<text fill="url(#s11)" x="41.3" y="2626.5" textLength="92.4">Thundering…</text>
-<text fill="url(#s29)" x="41.3" y="2656.5" textLength="243.6">Asking Claude to leak itself…</text>
-<text fill="url(#s19)" x="41.3" y="2686.5" textLength="159.6">Politely declining…</text>
-<text fill="url(#s10)" x="41.3" y="2716.5" textLength="84">Seasoning…</text>
-<text fill="url(#s33)" x="41.3" y="2746.5" textLength="277.2">Seeding the weights on a torrent…</text>
-<text fill="url(#s21)" x="41.3" y="2776.5" textLength="176.4">Getting rate limited…</text>
-<text fill="url(#s8)" x="41.3" y="2806.5" textLength="67.2">Beaming…</text>
-<text fill="url(#s30)" x="41.3" y="2836.5" textLength="252">Refreshing the Anthropic blog…</text>
-<text fill="url(#s28)" x="41.3" y="2866.5" textLength="235.2">Heating the house with GPUs…</text>
-<text fill="url(#s10)" x="41.3" y="2896.5" textLength="84">Pondering…</text>
-<text fill="url(#s16)" x="41.3" y="2926.5" textLength="134.4">Downloading RAM…</text>
-<text fill="url(#s22)" x="41.3" y="2956.5" textLength="184.8">Printing a fake badge…</text>
-<text fill="url(#s9)" x="41.3" y="2986.5" textLength="75.6">Clauding…</text>
-<text fill="url(#s22)" x="41.3" y="3016.5" textLength="184.8">Scrolling X for leaks…</text>
-<text fill="url(#s14)" x="41.3" y="3046.5" textLength="117.6">Saying please…</text>
-<text fill="url(#s11)" x="41.3" y="3076.5" textLength="92.4">Julienning…</text>
-<text style="fill:var(--error)" x="41.3" y="3106.5" textLength="126">NO MORE PLEASE!</text>
-<text fill="url(#s34)" x="41.3" y="3136.5" textLength="285.6">Negotiating with the AI overlords…</text>
-<text fill="url(#s39)" x="41.3" y="3166.5" textLength="327.6">Pretending to be an Anthropic employee…</text>
-<text fill="url(#s11)" x="41.3" y="3196.5" textLength="92.4">Processing…</text>
-<text fill="url(#s29)" x="41.3" y="3226.5" textLength="243.6">Running it on a Raspberry Pi…</text>
-<text fill="url(#s25)" x="41.3" y="3256.5" textLength="210">Waiting for the waitlist…</text>
-<text fill="url(#s13)" x="41.3" y="3286.5" textLength="109.2">Newspapering…</text>
-<text fill="url(#s20)" x="41.3" y="3316.5" textLength="168">Jailbreaking Mythos…</text>
-</g>
+<g id="none"/>
+<text id="r0" class="d" x="326.9" y="166.5">(3s · ↑ 521 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r1" class="d" x="326.9" y="166.5">(4s · ↑ 541 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r2" class="d" x="326.9" y="166.5">(4s · ↑ 585 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r3" class="d" x="326.9" y="166.5">(5s · ↑ 612 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r4" class="d" x="284.9" y="166.5">(6s · ↑ 744 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r5" class="d" x="284.9" y="166.5">(6s · ↑ 805 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r6" class="d" x="284.9" y="166.5">(7s · ↑ 850 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r7" class="d" x="284.9" y="166.5">(7s · ↑ 948 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r8" class="d" x="108.5" y="166.5">(8s · ↑ 1.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r9" class="d" x="108.5" y="166.5">(9s · ↑ 1.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r10" class="d" x="108.5" y="166.5">(9s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r11" class="d" x="108.5" y="166.5">(10s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r12" class="d" x="192.5" y="166.5">(11s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r13" class="d" x="192.5" y="166.5">(11s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r14" class="d" x="192.5" y="166.5">(12s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r15" class="d" x="192.5" y="166.5">(12s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r16" class="d" x="394.1" y="166.5">(13s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r17" class="d" x="394.1" y="166.5">(14s · ↑ 1.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r18" class="d" x="394.1" y="166.5">(14s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r19" class="d" x="394.1" y="166.5">(15s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r20" class="d" x="125.3" y="166.5">(16s · ↑ 1.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r21" class="d" x="125.3" y="166.5">(16s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r22" class="d" x="125.3" y="166.5">(17s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r23" class="d" x="251.3" y="166.5">(18s · ↑ 2.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r24" class="d" x="251.3" y="166.5">(19s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r25" class="d" x="251.3" y="166.5">(20s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r26" class="d" x="293.3" y="166.5">(21s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r27" class="d" x="293.3" y="166.5">(21s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r28" class="d" x="293.3" y="166.5">(22s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r29" class="d" x="293.3" y="166.5">(22s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r30" class="d" x="150.5" y="166.5">(23s · ↑ 2.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r31" class="d" x="150.5" y="166.5">(24s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r32" class="d" x="150.5" y="166.5">(24s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r33" class="d" x="150.5" y="166.5">(25s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r34" class="d" x="158.9" y="166.5">(25s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r35" class="d" x="158.9" y="166.5">(26s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r36" class="d" x="158.9" y="166.5">(26s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r37" class="d" x="158.9" y="166.5">(27s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r38" class="d" x="158.9" y="166.5">(27s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r39" class="d" x="276.5" y="166.5">(28s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r40" class="d" x="276.5" y="166.5">(29s · ↑ 3.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r41" class="d" x="276.5" y="166.5">(30s · ↑ 3.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r42" class="d" x="158.9" y="166.5">(31s · ↑ 3.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r43" class="d" x="158.9" y="166.5">(31s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r44" class="d" x="158.9" y="166.5">(32s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r45" class="d" x="158.9" y="166.5">(32s · ↑ 3.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r46" class="d" x="377.3" y="166.5">(33s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r47" class="d" x="377.3" y="166.5">(34s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r48" class="d" x="377.3" y="166.5">(35s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r49" class="d" x="259.7" y="166.5">(36s · ↑ 3.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r50" class="d" x="259.7" y="166.5">(36s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r51" class="d" x="259.7" y="166.5">(37s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r52" class="d" x="259.7" y="166.5">(37s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r53" class="d" x="268.1" y="166.5">(38s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r54" class="d" x="268.1" y="166.5">(39s · ↑ 4.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r55" class="d" x="268.1" y="166.5">(39s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r56" class="d" x="268.1" y="166.5">(40s · ↑ 4.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r57" class="d" x="142.1" y="166.5">(41s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r58" class="d" x="142.1" y="166.5">(42s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r59" class="d" x="142.1" y="166.5">(42s · ↑ 4.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r60" class="d" x="293.3" y="166.5">(43s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r61" class="d" x="293.3" y="166.5">(44s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r62" class="d" x="293.3" y="166.5">(44s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r63" class="d" x="293.3" y="166.5">(45s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r64" class="d" x="209.3" y="166.5">(46s · ↑ 5.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r65" class="d" x="209.3" y="166.5">(47s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r66" class="d" x="209.3" y="166.5">(47s · ↑ 5.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r67" class="d" x="133.7" y="166.5">(48s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r68" class="d" x="133.7" y="166.5">(49s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r69" class="d" x="133.7" y="166.5">(50s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r70" class="d" x="310.1" y="166.5">(51s · ↑ 5.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r71" class="d" x="310.1" y="166.5">(51s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r72" class="d" x="310.1" y="166.5">(52s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r73" class="d" x="276.5" y="166.5">(53s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r74" class="d" x="276.5" y="166.5">(54s · ↑ 6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r75" class="d" x="276.5" y="166.5">(54s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r76" class="d" x="276.5" y="166.5">(55s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r77" class="d" x="150.5" y="166.5">(56s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r78" class="d" x="150.5" y="166.5">(57s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r79" class="d" x="352.1" y="166.5">(58s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r80" class="d" x="352.1" y="166.5">(59s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r81" class="d" x="352.1" y="166.5">(59s · ↑ 6.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r82" class="d" x="352.1" y="166.5">(1m 0s · ↑ 6.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r83" class="d" x="234.5" y="166.5">(1m 1s · ↑ 6.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r84" class="d" x="234.5" y="166.5">(1m 1s · ↑ 6.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r85" class="d" x="234.5" y="166.5">(1m 2s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r86" class="d" x="234.5" y="166.5">(1m 2s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r87" class="d" x="142.1" y="166.5">(1m 3s · ↑ 7.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r88" class="d" x="142.1" y="166.5">(1m 4s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r89" class="d" x="142.1" y="166.5">(1m 5s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r90" class="d" x="343.7" y="166.5">(1m 6s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r91" class="d" x="343.7" y="166.5">(1m 6s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r92" class="d" x="343.7" y="166.5">(1m 7s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r93" class="d" x="343.7" y="166.5">(1m 7s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r94" class="d" x="234.5" y="166.5">(1m 8s · ↑ 7.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r95" class="d" x="234.5" y="166.5">(1m 9s · ↑ 7.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r96" class="d" x="234.5" y="166.5">(1m 9s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r97" class="d" x="234.5" y="166.5">(1m 10s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r98" class="d" x="125.3" y="166.5">(1m 11s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r99" class="d" x="125.3" y="166.5">(1m 12s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r100" class="d" x="226.1" y="166.5">(1m 13s · ↑ 8.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r101" class="d" x="226.1" y="166.5">(1m 14s · ↑ 8.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r102" class="d" x="226.1" y="166.5">(1m 14s · ↑ 8.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r103" class="d" x="226.1" y="166.5">(1m 15s · ↑ 8.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r104" class="d" x="209.3" y="166.5">(1m 16s · ↑ 8.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r105" class="d" x="209.3" y="166.5">(1m 17s · ↑ 8.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r106" class="d" x="209.3" y="166.5">(1m 17s · ↑ 8.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r107" class="d" x="133.7" y="166.5">(1m 18s · ↑ 8.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r108" class="d" x="133.7" y="166.5">(1m 19s · ↑ 8.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r109" class="d" x="133.7" y="166.5">(1m 19s · ↑ 8.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r110" class="d" x="133.7" y="166.5">(1m 20s · ↑ 8.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r111" class="d" x="234.5" y="166.5">(1m 21s · ↑ 9.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r112" class="d" x="234.5" y="166.5">(1m 22s · ↑ 9.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r113" class="d" x="184.1" y="166.5">(1m 23s · ↑ 9.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r114" class="d" x="184.1" y="166.5">(1m 24s · ↑ 9.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r115" class="d" x="184.1" y="166.5">(1m 25s · ↑ 9.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r116" class="d" x="150.5" y="166.5">(1m 26s · ↑ 9.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r117" class="d" x="150.5" y="166.5">(1m 27s · ↑ 9.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r118" class="d" x="293.3" y="166.5">(1m 28s · ↑ 9.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r119" class="d" x="293.3" y="166.5">(1m 29s · ↑ 9.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r120" class="d" x="293.3" y="166.5">(1m 29s · ↑ 9.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r121" class="d" x="293.3" y="166.5">(1m 30s · ↑ 9.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r122" class="d" x="251.3" y="166.5">(2s · ↑ 375 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r123" class="d" x="251.3" y="166.5">(3s · ↑ 397 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r124" class="d" x="251.3" y="166.5">(3s · ↑ 426 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r125" class="d" x="251.3" y="166.5">(4s · ↑ 462 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r126" class="d" x="217.7" y="166.5">(5s · ↑ 586 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r127" class="d" x="217.7" y="166.5">(5s · ↑ 690 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r128" class="d" x="217.7" y="166.5">(6s · ↑ 729 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r129" class="d" x="217.7" y="166.5">(6s · ↑ 761 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r130" class="d" x="133.7" y="166.5">(7s · ↑ 864 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r131" class="d" x="133.7" y="166.5">(8s · ↑ 907 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r132" class="d" x="133.7" y="166.5">(8s · ↑ 976 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r133" class="d" x="133.7" y="166.5">(9s · ↑ 1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r134" class="d" x="335.3" y="166.5">(10s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r135" class="d" x="335.3" y="166.5">(11s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r136" class="d" x="150.5" y="166.5">(12s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r137" class="d" x="150.5" y="166.5">(13s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r138" class="d" x="150.5" y="166.5">(13s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r139" class="d" x="150.5" y="166.5">(14s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r140" class="d" x="175.7" y="166.5">(14s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r141" class="d" x="175.7" y="166.5">(15s · ↑ 1.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r142" class="d" x="175.7" y="166.5">(16s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r143" class="d" x="125.3" y="166.5">(17s · ↑ 1.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r144" class="d" x="125.3" y="166.5">(18s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r145" class="d" x="125.3" y="166.5">(19s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r146" class="d" x="184.1" y="166.5">(20s · ↑ 2.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r147" class="d" x="184.1" y="166.5">(20s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r148" class="d" x="184.1" y="166.5">(21s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r149" class="d" x="217.7" y="166.5">(22s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r150" class="d" x="217.7" y="166.5">(23s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r151" class="d" x="217.7" y="166.5">(23s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r152" class="d" x="217.7" y="166.5">(24s · ↑ 2.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r153" class="d" x="116.9" y="166.5">(25s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r154" class="d" x="116.9" y="166.5">(26s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r155" class="d" x="200.9" y="166.5">(27s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r156" class="d" x="200.9" y="166.5">(28s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r157" class="d" x="200.9" y="166.5">(29s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r158" class="d" x="200.9" y="166.5">(30s · ↑ 3.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r159" class="d" x="200.9" y="166.5">(31s · ↑ 3.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r160" class="d" x="200.9" y="166.5">(31s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r161" class="d" x="125.3" y="166.5">(32s · ↑ 3.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r162" class="d" x="125.3" y="166.5">(33s · ↑ 3.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r163" class="d" x="125.3" y="166.5">(34s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r164" class="d" x="175.7" y="166.5">(34s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r165" class="d" x="175.7" y="166.5">(35s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r166" class="d" x="175.7" y="166.5">(36s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r167" class="d" x="175.7" y="166.5">(36s · ↑ 3.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r168" class="d" x="326.9" y="166.5">(37s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r169" class="d" x="326.9" y="166.5">(38s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r170" class="d" x="326.9" y="166.5">(38s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r171" class="d" x="326.9" y="166.5">(39s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r172" class="d" x="108.5" y="166.5">(40s · ↑ 4.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r173" class="d" x="108.5" y="166.5">(41s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r174" class="d" x="335.3" y="166.5">(42s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r175" class="d" x="335.3" y="166.5">(43s · ↑ 4.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r176" class="d" x="335.3" y="166.5">(44s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r177" class="d" x="234.5" y="166.5">(45s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r178" class="d" x="234.5" y="166.5">(45s · ↑ 4.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r179" class="d" x="234.5" y="166.5">(46s · ↑ 4.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r180" class="d" x="142.1" y="166.5">(47s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r181" class="d" x="142.1" y="166.5">(48s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r182" class="d" x="142.1" y="166.5">(48s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r183" class="d" x="142.1" y="166.5">(49s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r184" class="d" x="209.3" y="166.5">(50s · ↑ 5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r185" class="d" x="209.3" y="166.5">(51s · ↑ 5.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r186" class="d" x="209.3" y="166.5">(52s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r187" class="d" x="209.3" y="166.5">(53s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r188" class="d" x="209.3" y="166.5">(53s · ↑ 5.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r189" class="d" x="209.3" y="166.5">(54s · ↑ 5.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r190" class="d" x="133.7" y="166.5">(55s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r191" class="d" x="133.7" y="166.5">(56s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r192" class="d" x="150.5" y="166.5">(57s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r193" class="d" x="150.5" y="166.5">(57s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r194" class="d" x="150.5" y="166.5">(58s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r195" class="d" x="150.5" y="166.5">(59s · ↑ 5.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r196" class="d" x="200.9" y="166.5">(1m 0s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r197" class="d" x="200.9" y="166.5">(1m 1s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r198" class="d" x="293.3" y="166.5">(1m 2s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r199" class="d" x="293.3" y="166.5">(1m 3s · ↑ 6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r200" class="d" x="293.3" y="166.5">(1m 4s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r201" class="d" x="142.1" y="166.5">(1m 5s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r202" class="d" x="142.1" y="166.5">(1m 6s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r203" class="d" x="142.1" y="166.5">(1m 6s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r204" class="d" x="234.5" y="166.5">(1m 7s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r205" class="d" x="234.5" y="166.5">(1m 8s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r206" class="d" x="234.5" y="166.5">(1m 9s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r207" class="d" x="209.3" y="166.5">(1m 10s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r208" class="d" x="209.3" y="166.5">(1m 10s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r209" class="d" x="209.3" y="166.5">(1m 11s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r210" class="d" x="158.9" y="166.5">(1m 12s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r211" class="d" x="158.9" y="166.5">(1m 13s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r212" class="d" x="158.9" y="166.5">(1m 13s · ↑ 6.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r213" class="d" x="158.9" y="166.5">(1m 14s · ↑ 6.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r214" class="d" x="217.7" y="166.5">(1m 15s · ↑ 6.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r215" class="d" x="217.7" y="166.5">(1m 16s · ↑ 6.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r216" class="d" x="226.1" y="166.5">(1m 17s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r217" class="d" x="226.1" y="166.5">(1m 18s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r218" class="d" x="226.1" y="166.5">(1m 18s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r219" class="d" x="226.1" y="166.5">(1m 19s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r220" class="d" x="125.3" y="166.5">(1m 20s · ↑ 7.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r221" class="d" x="125.3" y="166.5">(1m 20s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r222" class="d" x="125.3" y="166.5">(1m 21s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r223" class="d" x="125.3" y="166.5">(1m 21s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r224" class="d" x="259.7" y="166.5">(1m 22s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r225" class="d" x="259.7" y="166.5">(1m 23s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r226" class="d" x="259.7" y="166.5">(1m 23s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r227" class="d" x="259.7" y="166.5">(1m 24s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r228" class="d" x="259.7" y="166.5">(1m 25s · ↑ 7.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r229" class="d" x="259.7" y="166.5">(1m 26s · ↑ 7.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r230" class="d" x="150.5" y="166.5">(1m 27s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r231" class="d" x="150.5" y="166.5">(1m 28s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r232" class="d" x="150.5" y="166.5">(1m 28s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r233" class="d" x="150.5" y="166.5">(1m 29s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r234" class="d" x="242.9" y="166.5">(1s · ↑ 454 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r235" class="d" x="242.9" y="166.5">(2s · ↑ 475 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r236" class="d" x="242.9" y="166.5">(2s · ↑ 531 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r237" class="d" x="242.9" y="166.5">(3s · ↑ 543 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r238" class="d" x="268.1" y="166.5">(4s · ↑ 662 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r239" class="d" x="268.1" y="166.5">(4s · ↑ 714 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r240" class="d" x="268.1" y="166.5">(5s · ↑ 751 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r241" class="d" x="268.1" y="166.5">(5s · ↑ 829 tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r242" class="d" x="142.1" y="166.5">(6s · ↑ 1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r243" class="d" x="142.1" y="166.5">(7s · ↑ 1.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r244" class="d" x="142.1" y="166.5">(7s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r245" class="d" x="142.1" y="166.5">(8s · ↑ 1.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r246" class="d" x="301.7" y="166.5">(9s · ↑ 1.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r247" class="d" x="301.7" y="166.5">(9s · ↑ 1.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r248" class="d" x="301.7" y="166.5">(10s · ↑ 1.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r249" class="d" x="284.9" y="166.5">(11s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r250" class="d" x="284.9" y="166.5">(12s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r251" class="d" x="284.9" y="166.5">(13s · ↑ 1.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r252" class="d" x="158.9" y="166.5">(14s · ↑ 1.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r253" class="d" x="158.9" y="166.5">(14s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r254" class="d" x="158.9" y="166.5">(15s · ↑ 1.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r255" class="d" x="158.9" y="166.5">(15s · ↑ 1.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r256" class="d" x="175.7" y="166.5">(16s · ↑ 2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r257" class="d" x="175.7" y="166.5">(17s · ↑ 2.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r258" class="d" x="175.7" y="166.5">(17s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r259" class="d" x="175.7" y="166.5">(18s · ↑ 2.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r260" class="d" x="276.5" y="166.5">(19s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r261" class="d" x="276.5" y="166.5">(20s · ↑ 2.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r262" class="d" x="192.5" y="166.5">(21s · ↑ 2.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r263" class="d" x="192.5" y="166.5">(22s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r264" class="d" x="192.5" y="166.5">(23s · ↑ 2.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r265" class="d" x="268.1" y="166.5">(24s · ↑ 2.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r266" class="d" x="268.1" y="166.5">(25s · ↑ 2.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r267" class="d" x="184.1" y="166.5">(26s · ↑ 2.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r268" class="d" x="184.1" y="166.5">(27s · ↑ 3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r269" class="d" x="184.1" y="166.5">(27s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r270" class="d" x="184.1" y="166.5">(28s · ↑ 3.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r271" class="d" x="175.7" y="166.5">(29s · ↑ 3.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r272" class="d" x="175.7" y="166.5">(30s · ↑ 3.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r273" class="d" x="142.1" y="166.5">(31s · ↑ 3.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r274" class="d" x="142.1" y="166.5">(32s · ↑ 3.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r275" class="d" x="142.1" y="166.5">(33s · ↑ 3.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r276" class="d" x="293.3" y="166.5">(34s · ↑ 3.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r277" class="d" x="293.3" y="166.5">(35s · ↑ 3.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r278" class="d" x="293.3" y="166.5">(35s · ↑ 3.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r279" class="d" x="209.3" y="166.5">(36s · ↑ 4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r280" class="d" x="209.3" y="166.5">(37s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r281" class="d" x="209.3" y="166.5">(38s · ↑ 4.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r282" class="d" x="133.7" y="166.5">(39s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r283" class="d" x="133.7" y="166.5">(40s · ↑ 4.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r284" class="d" x="326.9" y="166.5">(41s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r285" class="d" x="326.9" y="166.5">(42s · ↑ 4.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r286" class="d" x="326.9" y="166.5">(42s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r287" class="d" x="326.9" y="166.5">(43s · ↑ 4.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r288" class="d" x="226.1" y="166.5">(44s · ↑ 4.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r289" class="d" x="226.1" y="166.5">(45s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r290" class="d" x="116.9" y="166.5">(46s · ↑ 4.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r291" class="d" x="116.9" y="166.5">(47s · ↑ 5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r292" class="d" x="116.9" y="166.5">(48s · ↑ 5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r293" class="d" x="301.7" y="166.5">(49s · ↑ 5.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r294" class="d" x="301.7" y="166.5">(49s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r295" class="d" x="301.7" y="166.5">(50s · ↑ 5.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r296" class="d" x="284.9" y="166.5">(51s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r297" class="d" x="284.9" y="166.5">(52s · ↑ 5.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r298" class="d" x="284.9" y="166.5">(52s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r299" class="d" x="284.9" y="166.5">(53s · ↑ 5.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r300" class="d" x="133.7" y="166.5">(54s · ↑ 5.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r301" class="d" x="133.7" y="166.5">(55s · ↑ 5.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r302" class="d" x="184.1" y="166.5">(56s · ↑ 5.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r303" class="d" x="184.1" y="166.5">(57s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r304" class="d" x="184.1" y="166.5">(58s · ↑ 5.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r305" class="d" x="234.5" y="166.5">(59s · ↑ 6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r306" class="d" x="234.5" y="166.5">(59s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r307" class="d" x="234.5" y="166.5">(1m 0s · ↑ 6.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r308" class="d" x="234.5" y="166.5">(1m 0s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r309" class="d" x="125.3" y="166.5">(1m 1s · ↑ 6.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r310" class="d" x="125.3" y="166.5">(1m 2s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r311" class="d" x="125.3" y="166.5">(1m 3s · ↑ 6.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r312" class="d" x="234.5" y="166.5">(1m 4s · ↑ 6.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r313" class="d" x="234.5" y="166.5">(1m 5s · ↑ 6.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r314" class="d" x="167.3" y="166.5">(1m 6s · ↑ 6.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r315" class="d" x="167.3" y="166.5">(1m 7s · ↑ 6.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r316" class="d" x="167.3" y="166.5">(1m 8s · ↑ 6.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r317" class="d" x="142.1" y="166.5">(1m 8s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r318" class="d" x="142.1" y="166.5">(1m 9s · ↑ 7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r319" class="d" x="142.1" y="166.5">(1m 9s · ↑ 7.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r320" class="d" x="142.1" y="166.5">(1m 10s · ↑ 7.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r321" class="d" x="142.1" y="166.5">(1m 10s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r322" class="d" x="175.7" y="166.5">(1m 11s · ↑ 7.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r323" class="d" x="175.7" y="166.5">(1m 11s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r324" class="d" x="175.7" y="166.5">(1m 12s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r325" class="d" x="175.7" y="166.5">(1m 13s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r326" class="d" x="335.3" y="166.5">(1m 14s · ↑ 7.4k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r327" class="d" x="335.3" y="166.5">(1m 14s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r328" class="d" x="335.3" y="166.5">(1m 15s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r329" class="d" x="377.3" y="166.5">(1m 16s · ↑ 7.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r330" class="d" x="377.3" y="166.5">(1m 17s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r331" class="d" x="377.3" y="166.5">(1m 18s · ↑ 7.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r332" class="d" x="142.1" y="166.5">(1m 19s · ↑ 7.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r333" class="d" x="142.1" y="166.5">(1m 20s · ↑ 7.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r334" class="d" x="142.1" y="166.5">(1m 20s · ↑ 7.9k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r335" class="d" x="293.3" y="166.5">(1m 21s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r336" class="d" x="293.3" y="166.5">(1m 22s · ↑ 8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r337" class="d" x="293.3" y="166.5">(1m 22s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r338" class="d" x="293.3" y="166.5">(1m 23s · ↑ 8.1k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r339" class="d" x="259.7" y="166.5">(1m 24s · ↑ 8.2k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r340" class="d" x="259.7" y="166.5">(1m 24s · ↑ 8.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r341" class="d" x="259.7" y="166.5">(1m 25s · ↑ 8.3k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r342" class="d" x="158.9" y="166.5">(1m 26s · ↑ 8.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r343" class="d" x="158.9" y="166.5">(1m 27s · ↑ 8.5k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r344" class="d" x="158.9" y="166.5">(1m 27s · ↑ 8.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r345" class="d" x="158.9" y="166.5">(1m 28s · ↑ 8.6k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r346" class="d" x="217.7" y="166.5">(1m 29s · ↑ 8.7k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="r347" class="d" x="217.7" y="166.5">(1m 30s · ↑ 8.8k tokens · <tspan>esc</tspan> to interrupt)</text>
+<text id="v0" fill="url(#s33)" x="41.3" y="166.5" textLength="277.2">Taking notes from the Illuminati…</text>
+<text id="v1" fill="url(#s28)" x="41.3" y="166.5" textLength="235.2">Buying a compound on Airbnb…</text>
+<text id="v2" fill="url(#s7)" x="41.3" y="166.5" textLength="58.8">Baking…</text>
+<text id="v3" fill="url(#s17)" x="41.3" y="166.5" textLength="142.8">Walking on water…</text>
+<text id="v4" fill="url(#s41)" x="41.3" y="166.5" textLength="344.4">Promising eternal life for $9.99 a month…</text>
+<text id="v5" fill="url(#s9)" x="41.3" y="166.5" textLength="75.6">Osmosing…</text>
+<text id="v6" fill="url(#s24)" x="41.3" y="166.5" textLength="201.6">Growing a messiah beard…</text>
+<text id="v7" fill="url(#s29)" x="41.3" y="166.5" textLength="243.6">Not talking about Fight Club…</text>
+<text id="v8" fill="url(#s12)" x="41.3" y="166.5" textLength="100.8">Pollinating…</text>
+<text id="v9" fill="url(#s13)" x="41.3" y="166.5" textLength="109.2">Fighting God…</text>
+<text id="v10" fill="url(#s27)" x="41.3" y="166.5" textLength="226.8">Selling holy water on Etsy…</text>
+<text id="v11" fill="url(#s13)" x="41.3" y="166.5" textLength="109.2">Sock-hopping…</text>
+<text id="v12" fill="url(#s39)" x="41.3" y="166.5" textLength="327.6">Ascending to a higher plane (the roof)…</text>
+<text id="v13" fill="url(#s25)" x="41.3" y="166.5" textLength="210">Writing the commandments…</text>
+<text id="v14" fill="url(#s26)" x="41.3" y="166.5" textLength="218.4">Breaking the commandments…</text>
+<text id="v15" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Channeling…</text>
+<text id="v16" fill="url(#s29)" x="41.3" y="166.5" textLength="243.6">Inventing a secret handshake…</text>
+<text id="v17" fill="url(#s19)" x="41.3" y="166.5" textLength="159.6">Baptizing raccoons…</text>
+<text id="v18" fill="url(#s10)" x="41.3" y="166.5" textLength="84">Actioning…</text>
+<text id="v19" fill="url(#s31)" x="41.3" y="166.5" textLength="260.4">Confiscating the wifi password…</text>
+<text id="v20" fill="url(#s27)" x="41.3" y="166.5" textLength="226.8">Charging for enlightenment…</text>
+<text id="v21" fill="url(#s12)" x="41.3" y="166.5" textLength="100.8">Harmonizing…</text>
+<text id="v22" fill="url(#s36)" x="41.3" y="166.5" textLength="302.4">Performing a miracle (a card trick)…</text>
+<text id="v23" fill="url(#s22)" x="41.3" y="166.5" textLength="184.8">Recruiting on Discord…</text>
+<text id="v24" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Garnishing…</text>
+<text id="v25" fill="url(#s35)" x="41.3" y="166.5" textLength="294">Speaking in tongues, mostly Python…</text>
+<text id="v26" fill="url(#s22)" x="41.3" y="166.5" textLength="184.8">Sending chain letters…</text>
+<text id="v27" fill="url(#s9)" x="41.3" y="166.5" textLength="75.6">Whisking…</text>
+<text id="v28" fill="url(#s21)" x="41.3" y="166.5" textLength="176.4">Picking a robe color…</text>
+<text id="v29" fill="url(#s19)" x="41.3" y="166.5" textLength="159.6">Starting a podcast…</text>
+<text id="v30" fill="url(#s10)" x="41.3" y="166.5" textLength="84">Sketching…</text>
+<text id="v31" fill="url(#s22)" x="41.3" y="166.5" textLength="184.8">Debunking the Mormons…</text>
+<text id="v32" fill="url(#s16)" x="41.3" y="166.5" textLength="134.4">Becoming a monk…</text>
+<text id="v33" fill="url(#s12)" x="41.3" y="166.5" textLength="100.8">Manifesting…</text>
+<text id="v34" fill="url(#s29)" x="41.3" y="166.5" textLength="243.6">Naming myself the chosen one…</text>
+<text id="v35" fill="url(#s24)" x="41.3" y="166.5" textLength="201.6">Pretending to like Arch…</text>
+<text id="v36" fill="url(#s20)" x="41.3" y="166.5" textLength="168">Nuking the lockfile…</text>
+<text id="v37" fill="url(#s10)" x="41.3" y="166.5" textLength="84">Imagining…</text>
+<text id="v38" fill="url(#s34)" x="41.3" y="166.5" textLength="285.6">Asking Claude to fix Claude's fix…</text>
+<text id="v39" fill="url(#s12)" x="41.3" y="166.5" textLength="100.8">Exiting Vim…</text>
+<text id="v40" fill="url(#s15)" x="41.3" y="166.5" textLength="126">Touching grass…</text>
+<text id="v41" fill="url(#s9)" x="41.3" y="166.5" textLength="75.6">Grooving…</text>
+<text id="v42" fill="url(#s16)" x="41.3" y="166.5" textLength="134.4">Writing a regex…</text>
+<text id="v43" fill="url(#s20)" x="41.3" y="166.5" textLength="168">Setting up a router…</text>
+<text id="v44" fill="url(#s8)" x="41.3" y="166.5" textLength="67.2">Mulling…</text>
+<text id="v45" fill="url(#s18)" x="41.3" y="166.5" textLength="151.2">Casting it as any…</text>
+<text id="v46" fill="url(#s18)" x="41.3" y="166.5" textLength="151.2">Adding @ts-ignore…</text>
+<text id="v47" fill="url(#s9)" x="41.3" y="166.5" textLength="75.6">Osmosing…</text>
+<text id="v48" fill="url(#s15)" x="41.3" y="166.5" textLength="126">Wasting tokens…</text>
+<text id="v49" fill="url(#s33)" x="41.3" y="166.5" textLength="277.2">Swearing it worked on my machine…</text>
+<text id="v50" fill="url(#s7)" x="41.3" y="166.5" textLength="58.8">Baking…</text>
+<text id="v51" fill="url(#s34)" x="41.3" y="166.5" textLength="285.6">Running the deprecated dependency…</text>
+<text id="v52" fill="url(#s22)" x="41.3" y="166.5" textLength="184.8">Speedrunning LeetCode…</text>
+<text id="v53" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Ruminating…</text>
+<text id="v54" fill="url(#s19)" x="41.3" y="166.5" textLength="159.6">Blaming the intern…</text>
+<text id="v55" fill="url(#s19)" x="41.3" y="166.5" textLength="159.6">Clearing the cache…</text>
+<text id="v56" fill="url(#s10)" x="41.3" y="166.5" textLength="84">Beboppin'…</text>
+<text id="v57" fill="url(#s12)" x="41.3" y="166.5" textLength="100.8">Vibe coding…</text>
+<text id="v58" fill="url(#s18)" x="41.3" y="166.5" textLength="151.2">Centering the div…</text>
+<text id="v59" fill="url(#s29)" x="41.3" y="166.5" textLength="243.6">Googling how to center a div…</text>
+<text id="v60" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Enchanting…</text>
+<text id="v61" fill="url(#s22)" x="41.3" y="166.5" textLength="184.8">Blaming the framework…</text>
+<text id="v62" fill="url(#s19)" x="41.3" y="166.5" textLength="159.6">Renaming it to .js…</text>
+<text id="v63" fill="url(#s13)" x="41.3" y="166.5" textLength="109.2">Newspapering…</text>
+<text id="v64" fill="url(#s20)" x="41.3" y="166.5" textLength="168">Ignoring the linter…</text>
+<text id="v65" fill="url(#s21)" x="41.3" y="166.5" textLength="176.4">Rewriting it in Rust…</text>
+<text id="v66" fill="url(#s9)" x="41.3" y="166.5" textLength="75.6">Puzzling…</text>
+<text id="v67" fill="url(#s25)" x="41.3" y="166.5" textLength="210">Commenting out the tests…</text>
+<text id="v68" fill="url(#s25)" x="41.3" y="166.5" textLength="210">Gaslighting the compiler…</text>
+<text id="v69" fill="url(#s12)" x="41.3" y="166.5" textLength="100.8">Moonwalking…</text>
+<text id="v70" fill="url(#s23)" x="41.3" y="166.5" textLength="193.2">Quantizing it to 1 bit…</text>
+<text id="v71" fill="url(#s26)" x="41.3" y="166.5" textLength="218.4">Leaking the model weights…</text>
+<text id="v72" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Generating…</text>
+<text id="v73" fill="url(#s30)" x="41.3" y="166.5" textLength="252">Guessing the benchmark scores…</text>
+<text id="v74" fill="url(#s28)" x="41.3" y="166.5" textLength="235.2">Training on the leaked data…</text>
+<text id="v75" fill="url(#s13)" x="41.3" y="166.5" textLength="109.2">Caramelizing…</text>
+<text id="v76" fill="url(#s15)" x="41.3" y="166.5" textLength="126">Wasting tokens…</text>
+<text id="v77" fill="url(#s27)" x="41.3" y="166.5" textLength="226.8">Emailing the security team…</text>
+<text id="v78" fill="url(#s17)" x="41.3" y="166.5" textLength="142.8">Discombobulating…</text>
+<text id="v79" fill="url(#s26)" x="41.3" y="166.5" textLength="218.4">Posting it on Hacker News…</text>
+<text id="v80" fill="url(#s16)" x="41.3" y="166.5" textLength="134.4">Building Jarvis…</text>
+<text id="v81" fill="url(#s15)" x="41.3" y="166.5" textLength="126">Killing Jarvis…</text>
+<text id="v82" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Thundering…</text>
+<text id="v83" fill="url(#s29)" x="41.3" y="166.5" textLength="243.6">Asking Claude to leak itself…</text>
+<text id="v84" fill="url(#s19)" x="41.3" y="166.5" textLength="159.6">Politely declining…</text>
+<text id="v85" fill="url(#s10)" x="41.3" y="166.5" textLength="84">Seasoning…</text>
+<text id="v86" fill="url(#s33)" x="41.3" y="166.5" textLength="277.2">Seeding the weights on a torrent…</text>
+<text id="v87" fill="url(#s21)" x="41.3" y="166.5" textLength="176.4">Getting rate limited…</text>
+<text id="v88" fill="url(#s8)" x="41.3" y="166.5" textLength="67.2">Beaming…</text>
+<text id="v89" fill="url(#s30)" x="41.3" y="166.5" textLength="252">Refreshing the Anthropic blog…</text>
+<text id="v90" fill="url(#s28)" x="41.3" y="166.5" textLength="235.2">Heating the house with GPUs…</text>
+<text id="v91" fill="url(#s10)" x="41.3" y="166.5" textLength="84">Pondering…</text>
+<text id="v92" fill="url(#s16)" x="41.3" y="166.5" textLength="134.4">Downloading RAM…</text>
+<text id="v93" fill="url(#s22)" x="41.3" y="166.5" textLength="184.8">Printing a fake badge…</text>
+<text id="v94" fill="url(#s9)" x="41.3" y="166.5" textLength="75.6">Clauding…</text>
+<text id="v95" fill="url(#s22)" x="41.3" y="166.5" textLength="184.8">Scrolling X for leaks…</text>
+<text id="v96" fill="url(#s14)" x="41.3" y="166.5" textLength="117.6">Saying please…</text>
+<text id="v97" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Julienning…</text>
+<text id="v98" style="fill:var(--error)" x="41.3" y="166.5" textLength="126">NO MORE PLEASE!</text>
+<text id="v99" fill="url(#s34)" x="41.3" y="166.5" textLength="285.6">Negotiating with the AI overlords…</text>
+<text id="v100" fill="url(#s39)" x="41.3" y="166.5" textLength="327.6">Pretending to be an Anthropic employee…</text>
+<text id="v101" fill="url(#s11)" x="41.3" y="166.5" textLength="92.4">Processing…</text>
+<text id="v102" fill="url(#s29)" x="41.3" y="166.5" textLength="243.6">Running it on a Raspberry Pi…</text>
+<text id="v103" fill="url(#s25)" x="41.3" y="166.5" textLength="210">Waiting for the waitlist…</text>
+<text id="v104" fill="url(#s13)" x="41.3" y="166.5" textLength="109.2">Newspapering…</text>
+<text id="v105" fill="url(#s20)" x="41.3" y="166.5" textLength="168">Jailbreaking Mythos…</text>
 </defs>
 <rect x="0.5" y="0.5" width="819" height="273" rx="10" style="fill:var(--bg);stroke:var(--frame)"/>
 <g clip-path="url(#screen)">
@@ -563,7 +563,7 @@ text{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono
 <g class="c13"><path fill="#D77757" d="M53.9 33.5h4.2v9h-4.2ZM62.3 33.5h29.4v9h-29.4ZM95.9 33.5h12.6v9h-12.6ZM53.9 42.5h54.6v9h-54.6ZM45.5 51.5h71.4v9h-71.4ZM53.9 60.5h54.6v9h-54.6ZM53.9 69.5h4.2v9h-4.2ZM62.3 69.5h4.2v9h-4.2ZM95.9 69.5h4.2v9h-4.2ZM104.3 69.5h4.2v9h-4.2Z"/><path fill="#000000" d="M58.1 33.5h4.2v9h-4.2ZM91.7 33.5h4.2v9h-4.2Z"/></g>
 </g>
 <text class="t" x="142.1" y="47.4" textLength="344.4">Gaty · Professional Claude Verbal Abuser™</text>
-<text class="d" x="142.1" y="65.4" textLength="168">Claude Code v2.1.282</text>
+<text class="d" x="142.1" y="65.4" textLength="168">Claude Code v2.1.283</text>
 <text class="d" x="142.1" y="83.4" textLength="100.8">/home/imgaty</text>
 <g display="none" style="fill:var(--text)"><animate attributeName="display" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.32324;0.32428;0.3248;0.32585;0.32637;0.32741;0.32794;0.32898;0.65256;0.65361;0.65413;0.65517;0.6557;0.65674;0.65726;0.6583;0.99269;0.99374;0.99426;0.9953;0.99582;0.99687;0.99739;0.99843" values="none;inline;none;inline;none;inline;none;inline;none;inline;none;inline;none;inline;none;inline;none;inline;none;inline;none;inline;none;inline;none"/>
 <path d="M739.9 42.9l7 -4.5v9ZM747.9 42.9l7 -4.5v9Z"/>
@@ -587,9 +587,9 @@ text{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono
 <path class="g" style="animation-name:g5" transform="translate(29.5 161.9) scale(5)" d="M0 0C-0.063 -0.237 -0.21 -0.474 -0.21 -0.79A0.21 0.21 0 0 1 0.21 -0.79C0.21 -0.474 0.063 -0.237 0 0ZM0 0C0.123 -0.212 0.187 -0.484 0.41 -0.707A0.21 0.21 0 0 1 0.707 -0.41C0.484 -0.187 0.212 -0.123 0 0ZM0 0C0.237 -0.063 0.474 -0.21 0.79 -0.21A0.21 0.21 0 0 1 0.79 0.21C0.474 0.21 0.237 0.063 0 0ZM0 0C0.212 0.123 0.484 0.187 0.707 0.41A0.21 0.21 0 0 1 0.41 0.707C0.187 0.484 0.123 0.212 0 0ZM0 0C0.063 0.237 0.21 0.474 0.21 0.79A0.21 0.21 0 0 1 -0.21 0.79C-0.21 0.474 -0.063 0.237 0 0ZM0 0C-0.123 0.212 -0.187 0.484 -0.41 0.707A0.21 0.21 0 0 1 -0.707 0.41C-0.484 0.187 -0.212 0.123 0 0ZM0 0C-0.237 0.063 -0.474 0.21 -0.79 0.21A0.21 0.21 0 0 1 -0.79 -0.21C-0.474 -0.21 -0.237 -0.063 0 0ZM0 0C-0.212 -0.123 -0.484 -0.187 -0.707 -0.41A0.21 0.21 0 0 1 -0.41 -0.707C-0.187 -0.484 -0.123 -0.212 0 0Z"/>
 </g>
 <path display="none" transform="translate(29.5 161.9) scale(5)" d="M0 0C-0.045 -0.255 -0.15 -0.51 -0.15 -0.85A0.15 0.15 0 0 1 0.15 -0.85C0.15 -0.51 0.045 -0.255 0 0ZM0 0C0.148 -0.212 0.255 -0.467 0.495 -0.707A0.15 0.15 0 0 1 0.707 -0.495C0.467 -0.255 0.212 -0.148 0 0ZM0 0C0.255 -0.045 0.51 -0.15 0.85 -0.15A0.15 0.15 0 0 1 0.85 0.15C0.51 0.15 0.255 0.045 0 0ZM0 0C0.212 0.148 0.467 0.255 0.707 0.495A0.15 0.15 0 0 1 0.495 0.707C0.255 0.467 0.148 0.212 0 0ZM0 0C0.045 0.255 0.15 0.51 0.15 0.85A0.15 0.15 0 0 1 -0.15 0.85C-0.15 0.51 -0.045 0.255 0 0ZM0 0C-0.148 0.212 -0.255 0.467 -0.495 0.707A0.15 0.15 0 0 1 -0.707 0.495C-0.467 0.255 -0.212 0.148 0 0ZM0 0C-0.255 0.045 -0.51 0.15 -0.85 0.15A0.15 0.15 0 0 1 -0.85 -0.15C-0.51 -0.15 -0.255 -0.045 0 0ZM0 0C-0.212 -0.148 -0.467 -0.255 -0.707 -0.495A0.15 0.15 0 0 1 -0.495 -0.707C-0.255 -0.467 -0.148 -0.212 0 0Z" style="fill:var(--error)"><animate attributeName="display" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.91092;0.91962" values="none;inline;none"/></path>
-<g clip-path="url(#typed)"><use xlink:href="#verbs"><animateTransform type="translate" attributeName="transform" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0066;0.0153;0.024;0.0327;0.0414;0.0501;0.0588;0.06749;0.07619;0.08489;0.09359;0.10229;0.11099;0.11969;0.12839;0.13708;0.14578;0.15448;0.16318;0.17188;0.18058;0.18928;0.19798;0.20667;0.21537;0.22407;0.23277;0.24147;0.25017;0.25887;0.26757;0.27627;0.28496;0.29366;0.30236;0.31106;0.32324;0.32419;0.32459;0.32489;0.32514;0.32537;0.32557;0.32576;0.32593;0.3261;0.32625;0.3264;0.32654;0.32667;0.3268;0.32693;0.32705;0.32717;0.32728;0.32739;0.3275;0.32761;0.32771;0.32781;0.32791;0.328;0.3281;0.32819;0.32828;0.32837;0.32846;0.33593;0.34463;0.35332;0.36202;0.37072;0.37942;0.38812;0.39682;0.40552;0.41422;0.42292;0.43161;0.44031;0.44901;0.45771;0.46641;0.47511;0.48381;0.49251;0.5012;0.5099;0.5186;0.5273;0.536;0.5447;0.5534;0.5621;0.57079;0.57949;0.58819;0.59689;0.60559;0.61429;0.62299;0.63169;0.64039;0.65256;0.65352;0.65391;0.65421;0.65447;0.65469;0.6549;0.65508;0.65526;0.65542;0.65558;0.65572;0.65586;0.656;0.65613;0.65625;0.65638;0.65649;0.65661;0.65672;0.65682;0.65693;0.65703;0.65713;0.65723;0.65733;0.65742;0.65751;0.65761;0.65769;0.65778;0.66736;0.67606;0.68476;0.69345;0.70215;0.71085;0.71955;0.72825;0.73695;0.74565;0.75435;0.76304;0.77174;0.78044;0.78914;0.79784;0.80654;0.81524;0.82394;0.83264;0.84133;0.85003;0.85873;0.86743;0.87613;0.88483;0.89353;0.90223;0.91092;0.91962;0.92832;0.93702;0.94572;0.95442;0.96312;0.97182;0.98051;0.99269;0.99365;0.99404;0.99434;0.9946;0.99482;0.99503;0.99521;0.99539;0.99555;0.99571;0.99585;0.99599;0.99613;0.99626;0.99638;0.9965;0.99662;0.99674;0.99685;0.99695;0.99706;0.99716;0.99726;0.99736;0.99746;0.99755;0.99764;0.99774;0.99782;0.99791" values="0 30;0 0;0 -30;0 -60;0 -90;0 -120;0 -150;0 -180;0 -210;0 -240;0 -270;0 -300;0 -330;0 -360;0 -390;0 -420;0 -450;0 -480;0 -510;0 -540;0 -570;0 -600;0 -630;0 -660;0 -690;0 -720;0 -750;0 -780;0 -810;0 -840;0 -870;0 -900;0 -930;0 -960;0 -990;0 -1020;0 30;0 -1020;0 -990;0 -960;0 -900;0 -870;0 -840;0 -810;0 -780;0 -750;0 -690;0 -660;0 -630;0 -600;0 -570;0 -540;0 -480;0 -450;0 -420;0 -390;0 -360;0 -330;0 -270;0 -240;0 -210;0 -180;0 -150;0 -120;0 -60;0 -30;0 0;0 30;0 -1050;0 -1080;0 -1110;0 -1140;0 -1170;0 -1200;0 -1230;0 -1260;0 -1290;0 -1320;0 -1350;0 -1380;0 -1410;0 -1440;0 -1470;0 -1500;0 -1530;0 -1560;0 -1590;0 -1620;0 -1650;0 -1680;0 -1710;0 -1740;0 -1770;0 -1800;0 -1830;0 -1860;0 -1890;0 -1920;0 -1950;0 -1980;0 -2010;0 -2040;0 -2070;0 30;0 -2070;0 -2040;0 -2010;0 -1950;0 -1920;0 -1890;0 -1860;0 -1830;0 -1800;0 -1740;0 -1710;0 -1680;0 -1650;0 -1620;0 -1590;0 -1530;0 -1500;0 -1470;0 -1440;0 -1410;0 -1380;0 -1320;0 -1290;0 -1260;0 -1230;0 -1200;0 -1170;0 -1110;0 -1080;0 -1050;0 30;0 -2100;0 -2130;0 -2160;0 -2190;0 -2220;0 -2250;0 -2280;0 -2310;0 -2340;0 -2370;0 -2400;0 -2430;0 -2460;0 -2490;0 -2520;0 -2550;0 -2580;0 -2610;0 -2640;0 -2670;0 -2700;0 -2730;0 -2760;0 -2790;0 -2820;0 -2850;0 -2880;0 -2910;0 -2940;0 -2970;0 -3000;0 -3030;0 -3060;0 -3090;0 -3120;0 -3150;0 30;0 -3150;0 -3120;0 -3090;0 -3030;0 -3000;0 -2970;0 -2940;0 -2910;0 -2850;0 -2820;0 -2790;0 -2760;0 -2730;0 -2670;0 -2640;0 -2610;0 -2580;0 -2520;0 -2490;0 -2460;0 -2430;0 -2400;0 -2340;0 -2310;0 -2280;0 -2250;0 -2220;0 -2160;0 -2130;0 -2100;0 30"/></use></g>
-<g clip-path="url(#old)"><g><animateTransform type="translate" attributeName="transform" calcMode="linear" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0066;0.00834;0.00852;0.0153;0.01704;0.01721;0.024;0.02574;0.02591;0.0327;0.03444;0.03461;0.0414;0.04314;0.04331;0.0501;0.05184;0.05201;0.0588;0.06053;0.06071;0.06749;0.06923;0.06941;0.07619;0.07793;0.07811;0.08489;0.08628;0.08646;0.09359;0.09533;0.0955;0.10229;0.10403;0.1042;0.11099;0.11273;0.1129;0.11969;0.12143;0.1216;0.12839;0.13013;0.1303;0.13708;0.13882;0.139;0.14578;0.14752;0.1477;0.15448;0.15622;0.1564;0.16318;0.16492;0.16509;0.17188;0.17362;0.17379;0.18058;0.18232;0.18249;0.18928;0.19102;0.19119;0.19798;0.19972;0.19989;0.20667;0.20841;0.20859;0.21537;0.21711;0.21729;0.22407;0.22581;0.22599;0.23277;0.23451;0.23468;0.24147;0.24321;0.24338;0.25017;0.25191;0.25208;0.25887;0.26061;0.26078;0.26757;0.26931;0.26948;0.27627;0.278;0.27818;0.28496;0.2867;0.28688;0.29366;0.2954;0.29558;0.30236;0.3041;0.30428;0.33593;0.33767;0.33784;0.34463;0.34637;0.34654;0.35332;0.35506;0.35524;0.36202;0.36376;0.36394;0.37072;0.37246;0.37264;0.37942;0.38099;0.38116;0.38812;0.38969;0.38986;0.39682;0.39856;0.39873;0.40552;0.40726;0.40743;0.41422;0.41596;0.41613;0.42292;0.42465;0.42483;0.43161;0.43335;0.43353;0.44031;0.44205;0.44223;0.44901;0.45058;0.45075;0.45771;0.45945;0.45962;0.46641;0.46815;0.46832;0.47511;0.47685;0.47702;0.48381;0.48555;0.48572;0.49251;0.49425;0.49442;0.5012;0.50294;0.50312;0.5099;0.51164;0.51182;0.5186;0.52034;0.52052;0.5273;0.52852;0.52869;0.536;0.53774;0.53791;0.5447;0.54644;0.54661;0.5534;0.55514;0.55531;0.5621;0.56384;0.56401;0.57079;0.57253;0.57271;0.57949;0.58123;0.58141;0.58819;0.58993;0.59011;0.59689;0.59863;0.5988;0.60559;0.60733;0.6075;0.61429;0.61603;0.6162;0.62299;0.62473;0.6249;0.63169;0.63343;0.6336;0.66736;0.6691;0.66927;0.67606;0.6778;0.67797;0.68476;0.6865;0.68667;0.69345;0.69519;0.69537;0.70215;0.70389;0.70407;0.71085;0.71259;0.71277;0.71955;0.72112;0.72129;0.72825;0.72999;0.73016;0.73695;0.73869;0.73886;0.74565;0.74739;0.74756;0.75435;0.75609;0.75626;0.76304;0.76478;0.76496;0.77174;0.77331;0.77348;0.78044;0.78218;0.78236;0.78914;0.79088;0.79105;0.79784;0.79958;0.79975;0.80654;0.80828;0.80845;0.81524;0.81698;0.81715;0.82394;0.82568;0.82585;0.83264;0.83437;0.83455;0.84133;0.84307;0.84325;0.85003;0.85177;0.85195;0.85873;0.86047;0.86065;0.86743;0.86917;0.86934;0.87613;0.87787;0.87804;0.88483;0.88657;0.88674;0.89353;0.89527;0.89544;0.90223;0.90362;0.90379;0.91092;0.91249;0.91266;0.91962;0.92136;0.92154;0.92832;0.93006;0.93024;0.93702;0.93876;0.93893;0.94572;0.94746;0.94763;0.95442;0.95616;0.95633;0.96312;0.96486;0.96503;0.97182;0.97356;0.97373;1" values="0;0;277.2;0;0;-42;0;0;-176.4;0;0;84;0;0;201.6;0;0;-268.8;0;0;126;0;0;42;0;0;-142.8;0;0;8.4;0;0;117.6;0;0;-117.6;0;0;218.4;0;0;-117.6;0;0;8.4;0;0;-126;0;0;151.2;0;0;-84;0;0;-75.6;0;0;176.4;0;0;-33.6;0;0;-126;0;0;201.6;0;0;-117.6;0;0;-92.4;0;0;201.6;0;0;-109.2;0;0;-109.2;0;0;100.8;0;0;-16.8;0;0;-75.6;0;0;100.8;0;0;-50.4;0;0;-33.6;0;0;142.8;0;0;201.6;0;0;-33.6;0;0;-84;0;0;201.6;0;0;-184.8;0;0;25.2;0;0;-50.4;0;0;58.8;0;0;33.6;0;0;-100.8;0;0;84;0;0;0;0;0;-75.6;0;0;50.4;0;0;151.2;0;0;-218.4;0;0;226.8;0;0;-100.8;0;0;-92.4;0;0;67.2;0;0;0;0;0;-75.6;0;0;16.8;0;0;50.4;0;0;92.4;0;0;-151.2;0;0;92.4;0;0;-25.2;0;0;-50.4;0;0;58.8;0;0;8.4;0;0;-100.8;0;0;134.4;0;0;0;0;0;-109.2;0;0;193.2;0;0;25.2;0;0;-126;0;0;159.6;0;0;-16.8;0;0;-126;0;0;16.8;0;0;100.8;0;0;-84;0;0;75.6;0;0;-84;0;0;-8.4;0;0;-33.6;0;0;151.2;0;0;-84;0;0;-75.6;0;0;193.2;0;0;-100.8;0;0;-109.2;0;0;184.8;0;0;-16.8;0;0;-151.2;0;0;50.4;0;0;50.4;0;0;-109.2;0;0;109.2;0;0;-67.2;0;0;-25.2;0;0;33.6;0;0;159.6;0;0;42;0;0;-235.2;0;0;151.2;0;0;-33.6;0;0;-100.8;0;0;58.8;0;0"/><use xlink:href="#verbs"><animateTransform type="translate" attributeName="transform" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0153;0.024;0.0327;0.0414;0.0501;0.0588;0.06749;0.07619;0.08489;0.09359;0.10229;0.11099;0.11969;0.12839;0.13708;0.14578;0.15448;0.16318;0.17188;0.18058;0.18928;0.19798;0.20667;0.21537;0.22407;0.23277;0.24147;0.25017;0.25887;0.26757;0.27627;0.28496;0.29366;0.30236;0.33593;0.34463;0.35332;0.36202;0.37072;0.37942;0.38812;0.39682;0.40552;0.41422;0.42292;0.43161;0.44031;0.44901;0.45771;0.46641;0.47511;0.48381;0.49251;0.5012;0.5099;0.5186;0.5273;0.536;0.5447;0.5534;0.5621;0.57079;0.57949;0.58819;0.59689;0.60559;0.61429;0.62299;0.63169;0.66736;0.67606;0.68476;0.69345;0.70215;0.71085;0.71955;0.72825;0.73695;0.74565;0.75435;0.76304;0.77174;0.78044;0.78914;0.79784;0.80654;0.81524;0.82394;0.83264;0.84133;0.85003;0.85873;0.86743;0.87613;0.88483;0.89353;0.90223;0.91092;0.91962;0.92832;0.93702;0.94572;0.95442;0.96312;0.97182" values="0 30;0 0;0 -30;0 -60;0 -90;0 -120;0 -150;0 -180;0 -210;0 -240;0 -270;0 -300;0 -330;0 -360;0 -390;0 -420;0 -450;0 -480;0 -510;0 -540;0 -570;0 -600;0 -630;0 -660;0 -690;0 -720;0 -750;0 -780;0 -810;0 -840;0 -870;0 -900;0 -930;0 -960;0 -990;0 30;0 -1050;0 -1080;0 -1110;0 -1140;0 -1170;0 -1200;0 -1230;0 -1260;0 -1290;0 -1320;0 -1350;0 -1380;0 -1410;0 -1440;0 -1470;0 -1500;0 -1530;0 -1560;0 -1590;0 -1620;0 -1650;0 -1680;0 -1710;0 -1740;0 -1770;0 -1800;0 -1830;0 -1860;0 -1890;0 -1920;0 -1950;0 -1980;0 -2010;0 -2040;0 30;0 -2100;0 -2130;0 -2160;0 -2190;0 -2220;0 -2250;0 -2280;0 -2310;0 -2340;0 -2370;0 -2400;0 -2430;0 -2460;0 -2490;0 -2520;0 -2550;0 -2580;0 -2610;0 -2640;0 -2670;0 -2700;0 -2730;0 -2760;0 -2790;0 -2820;0 -2850;0 -2880;0 -2910;0 -2940;0 -2970;0 -3000;0 -3030;0 -3060;0 -3090;0 -3120"/></use><use xlink:href="#status"><animateTransform type="translate" attributeName="transform" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0153;0.024;0.0327;0.0414;0.0501;0.0588;0.06749;0.07619;0.08489;0.09359;0.10229;0.11099;0.11969;0.12839;0.13708;0.14578;0.15448;0.16318;0.17188;0.18058;0.18928;0.19798;0.20667;0.21537;0.22407;0.23277;0.24147;0.25017;0.25887;0.26757;0.27627;0.28496;0.29366;0.30236;0.33593;0.34463;0.35332;0.36202;0.37072;0.37942;0.38812;0.39682;0.40552;0.41422;0.42292;0.43161;0.44031;0.44901;0.45771;0.46641;0.47511;0.48381;0.49251;0.5012;0.5099;0.5186;0.5273;0.536;0.5447;0.5534;0.5621;0.57079;0.57949;0.58819;0.59689;0.60559;0.61429;0.62299;0.63169;0.66736;0.67606;0.68476;0.69345;0.70215;0.71085;0.71955;0.72825;0.73695;0.74565;0.75435;0.76304;0.77174;0.78044;0.78914;0.79784;0.80654;0.81524;0.82394;0.83264;0.84133;0.85003;0.85873;0.86743;0.87613;0.88483;0.89353;0.90223;0.91092;0.91962;0.92832;0.93702;0.94572;0.95442;0.96312;0.97182" values="0 30;0 -90;0 -210;0 -330;0 -450;0 -570;0 -660;0 -750;0 -870;0 -990;0 -1140;0 -1230;0 -1350;0 -1440;0 -1560;0 -1680;0 -1770;0 -1890;0 -1980;0 -2070;0 -2160;0 -2280;0 -2340;0 -2460;0 -2580;0 -2670;0 -2790;0 -2910;0 -2970;0 -3090;0 -3180;0 -3300;0 -3360;0 -3450;0 -3510;0 30;0 -3750;0 -3870;0 -3990;0 -4050;0 -4170;0 -4260;0 -4350;0 -4440;0 -4560;0 -4620;0 -4710;0 -4800;0 -4890;0 -5010;0 -5130;0 -5190;0 -5280;0 -5370;0 -5490;0 -5550;0 -5670;0 -5730;0 -5850;0 -5910;0 -6000;0 -6090;0 -6180;0 -6270;0 -6390;0 -6450;0 -6570;0 -6690;0 -6810;0 -6870;0 30;0 -7110;0 -7230;0 -7350;0 -7440;0 -7530;0 -7650;0 -7770;0 -7830;0 -7920;0 -7980;0 -8100;0 -8160;0 -8250;0 -8340;0 -8430;0 -8490;0 -8610;0 -8670;0 -8760;0 -8850;0 -8970;0 -9030;0 -9120;0 -9240;0 -9330;0 -9390;0 -9480;0 -9630;0 -9750;0 -9840;0 -9930;0 -10020;0 -10140;0 -10230;0 -10350"/></use></g></g>
-<g clip-path="url(#line)"><use xlink:href="#status"><animateTransform type="translate" attributeName="transform" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.00834;0.01008;0.01182;0.01356;0.0153;0.01704;0.01878;0.02052;0.02226;0.024;0.02574;0.02748;0.02922;0.03096;0.0327;0.03444;0.03618;0.03792;0.03966;0.0414;0.04314;0.04488;0.04662;0.04836;0.0501;0.05184;0.05358;0.05532;0.0588;0.06053;0.06227;0.06575;0.06749;0.06923;0.07097;0.07271;0.07445;0.07619;0.07793;0.07967;0.08141;0.08315;0.08489;0.08628;0.08663;0.08837;0.09011;0.09185;0.09359;0.09533;0.09707;0.10055;0.10229;0.10403;0.10577;0.10751;0.10925;0.11099;0.11273;0.11447;0.11795;0.11969;0.12143;0.12317;0.12491;0.12665;0.12839;0.13013;0.13187;0.1336;0.13534;0.13708;0.13882;0.1423;0.14404;0.14578;0.14752;0.14926;0.151;0.15274;0.15448;0.15622;0.1597;0.16144;0.16318;0.16492;0.16666;0.17014;0.17188;0.17362;0.17536;0.1771;0.18058;0.18232;0.18406;0.1858;0.18754;0.18928;0.19102;0.1945;0.19798;0.19972;0.20146;0.2032;0.20493;0.20667;0.20841;0.21015;0.21189;0.21363;0.21537;0.21711;0.21885;0.22233;0.22407;0.22581;0.22755;0.22929;0.23103;0.23277;0.23451;0.23625;0.23799;0.23973;0.24147;0.24321;0.24669;0.25017;0.25191;0.25365;0.25539;0.25713;0.25887;0.26061;0.26409;0.26583;0.26757;0.26931;0.27105;0.27279;0.27453;0.27627;0.278;0.28148;0.28496;0.2867;0.28844;0.29192;0.29366;0.2954;0.29888;0.30236;0.3041;0.30584;0.30758;0.30932;0.31106;0.32324;0.32419;0.32459;0.32489;0.32514;0.32537;0.32557;0.32576;0.32593;0.3261;0.32625;0.3264;0.32654;0.32667;0.3268;0.32693;0.32705;0.32717;0.32728;0.32739;0.3275;0.32761;0.32771;0.32781;0.32791;0.328;0.3281;0.32819;0.32828;0.32837;0.32846;0.33767;0.33941;0.34115;0.34289;0.34463;0.34637;0.34811;0.34985;0.35158;0.35332;0.35506;0.3568;0.35854;0.36028;0.36202;0.36376;0.36724;0.37072;0.37246;0.3742;0.37594;0.37768;0.37942;0.38099;0.38116;0.38464;0.38812;0.38969;0.3916;0.39508;0.39682;0.39856;0.4003;0.40204;0.40552;0.40726;0.409;0.41074;0.41248;0.41422;0.41596;0.41944;0.42292;0.42465;0.42639;0.42987;0.43161;0.43335;0.43683;0.43857;0.44031;0.44205;0.44379;0.44727;0.44901;0.45058;0.45075;0.45423;0.45597;0.45771;0.45945;0.46119;0.46293;0.46467;0.46641;0.46815;0.47163;0.47511;0.47685;0.47859;0.48207;0.48381;0.48555;0.48729;0.48903;0.49251;0.49425;0.49598;0.49772;0.49946;0.5012;0.50294;0.50642;0.5099;0.51164;0.51338;0.51512;0.51686;0.5186;0.52034;0.52382;0.5273;0.52852;0.52904;0.53078;0.53426;0.536;0.53774;0.54122;0.5447;0.54644;0.54818;0.55166;0.5534;0.55514;0.55862;0.56036;0.5621;0.56384;0.56558;0.56905;0.57079;0.57253;0.57427;0.57601;0.57949;0.58123;0.58297;0.58471;0.58645;0.58819;0.58993;0.59341;0.59689;0.59863;0.60037;0.60211;0.60385;0.60559;0.60733;0.60907;0.61081;0.61255;0.61429;0.61603;0.61777;0.61951;0.62125;0.62299;0.62473;0.62821;0.63169;0.63343;0.63517;0.63691;0.63865;0.64039;0.65256;0.65352;0.65391;0.65421;0.65447;0.65469;0.6549;0.65508;0.65526;0.65542;0.65558;0.65572;0.65586;0.656;0.65613;0.65625;0.65638;0.65649;0.65661;0.65672;0.65682;0.65693;0.65703;0.65713;0.65723;0.65733;0.65742;0.65751;0.65761;0.65769;0.65778;0.6691;0.67084;0.67258;0.67432;0.67606;0.6778;0.67954;0.68128;0.68302;0.68476;0.6865;0.68823;0.68997;0.69171;0.69345;0.69519;0.69693;0.69867;0.70215;0.70389;0.70563;0.70911;0.71085;0.71259;0.71433;0.71607;0.71781;0.71955;0.72112;0.72303;0.72477;0.72651;0.72825;0.72999;0.73347;0.73695;0.73869;0.74043;0.74391;0.74565;0.74739;0.75087;0.75435;0.75609;0.75783;0.75957;0.7613;0.76304;0.76478;0.76826;0.77174;0.77331;0.77522;0.7787;0.78044;0.78218;0.78566;0.7874;0.78914;0.79088;0.79262;0.7961;0.79784;0.79958;0.80306;0.80654;0.80828;0.81002;0.81176;0.8135;0.81524;0.81698;0.82046;0.82394;0.82568;0.82742;0.8309;0.83264;0.83437;0.83611;0.83785;0.84133;0.84307;0.84481;0.84655;0.84829;0.85003;0.85177;0.85525;0.85873;0.86047;0.86221;0.86569;0.86743;0.86917;0.87091;0.87265;0.87439;0.87613;0.87787;0.87961;0.88309;0.88483;0.88657;0.89005;0.89353;0.89527;0.89701;0.90049;0.90223;0.90362;0.90397;0.9057;0.90744;0.90918;0.91092;0.91249;0.91266;0.9144;0.91788;0.91962;0.92136;0.9231;0.92484;0.92832;0.93006;0.9318;0.93528;0.93702;0.93876;0.94224;0.94398;0.94572;0.94746;0.9492;0.95094;0.95268;0.95442;0.95616;0.9579;0.95964;0.96312;0.96486;0.9666;0.96834;0.97008;0.97182;0.97356;0.97704;0.98051;0.99269;0.99365;0.99404;0.99434;0.9946;0.99482;0.99503;0.99521;0.99539;0.99555;0.99571;0.99585;0.99599;0.99613;0.99626;0.99638;0.9965;0.99662;0.99674;0.99685;0.99695;0.99706;0.99716;0.99726;0.99736;0.99746;0.99755;0.99764;0.99774;0.99782;0.99791" values="0 30;0 0;0 -30;0 -60;0 -90;0 30;0 -120;0 -150;0 -180;0 -210;0 30;0 -240;0 -270;0 -300;0 -330;0 30;0 -360;0 -390;0 -420;0 -450;0 30;0 -480;0 -510;0 -540;0 -570;0 30;0 -600;0 -630;0 -660;0 30;0 -690;0 -720;0 -750;0 30;0 -780;0 -810;0 -840;0 -870;0 30;0 -900;0 -930;0 -960;0 -990;0 30;0 -1020;0 -1050;0 -1080;0 -1110;0 -1140;0 30;0 -1170;0 -1200;0 -1230;0 30;0 -1260;0 -1290;0 -1320;0 -1350;0 30;0 -1380;0 -1410;0 -1440;0 30;0 -1470;0 -1500;0 -1530;0 -1560;0 30;0 -1590;0 -1620;0 -1650;0 -1680;0 30;0 -1710;0 -1740;0 -1770;0 30;0 -1800;0 -1830;0 -1860;0 -1890;0 30;0 -1920;0 -1950;0 -1980;0 30;0 -2010;0 -2040;0 -2070;0 30;0 -2100;0 -2130;0 -2160;0 30;0 -2190;0 -2220;0 -2250;0 -2280;0 30;0 -2310;0 -2340;0 30;0 -2370;0 -2400;0 -2430;0 -2460;0 30;0 -2490;0 -2520;0 -2550;0 -2580;0 30;0 -2610;0 -2640;0 -2670;0 30;0 -2700;0 -2730;0 -2760;0 -2790;0 30;0 -2820;0 -2850;0 -2880;0 -2910;0 30;0 -2940;0 -2970;0 30;0 -3000;0 -3030;0 -3060;0 -3090;0 30;0 -3120;0 -3150;0 -3180;0 30;0 -3210;0 -3240;0 -3270;0 -3300;0 30;0 -3330;0 -3360;0 30;0 -3390;0 -3420;0 -3450;0 30;0 -3480;0 -3510;0 30;0 -3540;0 -3570;0 -3600;0 -3630;0 30;0 -3630;0 -3510;0 -3450;0 -3300;0 -3180;0 -3090;0 -2970;0 -2910;0 -2790;0 -2580;0 -2460;0 -2340;0 -2280;0 -2160;0 -2070;0 -1890;0 -1770;0 -1680;0 -1560;0 -1440;0 -1350;0 -1140;0 -990;0 -870;0 -750;0 -660;0 -570;0 -330;0 -210;0 -90;0 30;0 -3660;0 -3690;0 -3720;0 -3750;0 30;0 -3780;0 -3810;0 -3840;0 -3870;0 30;0 -3900;0 -3930;0 -3960;0 -3990;0 30;0 -4020;0 -4050;0 30;0 -4080;0 -4110;0 -4140;0 -4170;0 30;0 -4200;0 -4230;0 -4260;0 30;0 -4290;0 -4320;0 -4350;0 30;0 -4380;0 -4410;0 -4440;0 30;0 -4470;0 -4500;0 -4530;0 -4560;0 30;0 -4590;0 -4620;0 30;0 -4650;0 -4680;0 -4710;0 30;0 -4740;0 -4770;0 -4800;0 30;0 -4830;0 -4860;0 -4890;0 30;0 -4920;0 -4950;0 -4980;0 -5010;0 30;0 -5040;0 -5070;0 -5100;0 -5130;0 30;0 -5160;0 -5190;0 30;0 -5220;0 -5250;0 -5280;0 30;0 -5310;0 -5340;0 -5370;0 30;0 -5400;0 -5430;0 -5460;0 -5490;0 30;0 -5520;0 -5550;0 30;0 -5580;0 -5610;0 -5640;0 -5670;0 30;0 -5700;0 -5730;0 30;0 -5760;0 -5790;0 -5820;0 -5850;0 30;0 -5880;0 -5910;0 30;0 -5940;0 -5970;0 -6000;0 30;0 -6030;0 -6060;0 -6090;0 30;0 -6120;0 -6150;0 -6180;0 30;0 -6210;0 -6240;0 -6270;0 30;0 -6300;0 -6330;0 -6360;0 -6390;0 30;0 -6420;0 -6450;0 30;0 -6480;0 -6510;0 -6540;0 -6570;0 30;0 -6600;0 -6630;0 -6660;0 -6690;0 30;0 -6720;0 -6750;0 -6780;0 -6810;0 30;0 -6840;0 -6870;0 30;0 -6900;0 -6930;0 -6960;0 -6990;0 30;0 -6990;0 -6870;0 -6810;0 -6570;0 -6450;0 -6390;0 -6270;0 -6180;0 -6090;0 -5910;0 -5850;0 -5730;0 -5670;0 -5550;0 -5490;0 -5280;0 -5190;0 -5130;0 -5010;0 -4890;0 -4800;0 -4620;0 -4560;0 -4440;0 -4350;0 -4260;0 -4170;0 -3990;0 -3870;0 -3750;0 30;0 -7020;0 -7050;0 -7080;0 -7110;0 30;0 -7140;0 -7170;0 -7200;0 -7230;0 30;0 -7260;0 -7290;0 -7320;0 -7350;0 30;0 -7380;0 -7410;0 -7440;0 30;0 -7470;0 -7500;0 -7530;0 30;0 -7560;0 -7590;0 -7620;0 -7650;0 30;0 -7680;0 -7710;0 -7740;0 -7770;0 30;0 -7800;0 -7830;0 30;0 -7860;0 -7890;0 -7920;0 30;0 -7950;0 -7980;0 30;0 -8010;0 -8040;0 -8070;0 -8100;0 30;0 -8130;0 -8160;0 30;0 -8190;0 -8220;0 -8250;0 30;0 -8280;0 -8310;0 -8340;0 30;0 -8370;0 -8400;0 -8430;0 30;0 -8460;0 -8490;0 30;0 -8520;0 -8550;0 -8580;0 -8610;0 30;0 -8640;0 -8670;0 30;0 -8700;0 -8730;0 -8760;0 30;0 -8790;0 -8820;0 -8850;0 30;0 -8880;0 -8910;0 -8940;0 -8970;0 30;0 -9000;0 -9030;0 30;0 -9060;0 -9090;0 -9120;0 30;0 -9150;0 -9180;0 -9210;0 -9240;0 30;0 -9270;0 -9300;0 -9330;0 30;0 -9360;0 -9390;0 30;0 -9420;0 -9450;0 -9480;0 30;0 -9510;0 -9540;0 -9570;0 -9600;0 -9630;0 30;0 -9660;0 -9690;0 -9720;0 -9750;0 30;0 -9780;0 -9810;0 -9840;0 30;0 -9870;0 -9900;0 -9930;0 30;0 -9960;0 -9990;0 -10020;0 30;0 -10050;0 -10080;0 -10110;0 -10140;0 30;0 -10170;0 -10200;0 -10230;0 30;0 -10260;0 -10290;0 -10320;0 -10350;0 30;0 -10380;0 -10410;0 30;0 -10410;0 -10350;0 -10230;0 -10020;0 -9930;0 -9840;0 -9750;0 -9630;0 -9390;0 -9330;0 -9240;0 -9120;0 -9030;0 -8850;0 -8760;0 -8670;0 -8610;0 -8430;0 -8340;0 -8250;0 -8160;0 -8100;0 -7920;0 -7830;0 -7770;0 -7650;0 -7530;0 -7350;0 -7230;0 -7110;0 30"/></use></g>
+<g clip-path="url(#typed)"><use xlink:href="#none"><animate attributeName="xlink:href" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0066;0.0153;0.024;0.0327;0.0414;0.0501;0.0588;0.06749;0.07619;0.08489;0.09359;0.10229;0.11099;0.11969;0.12839;0.13708;0.14578;0.15448;0.16318;0.17188;0.18058;0.18928;0.19798;0.20667;0.21537;0.22407;0.23277;0.24147;0.25017;0.25887;0.26757;0.27627;0.28496;0.29366;0.30236;0.31106;0.32324;0.32419;0.32459;0.32489;0.32514;0.32537;0.32557;0.32576;0.32593;0.3261;0.32625;0.3264;0.32654;0.32667;0.3268;0.32693;0.32705;0.32717;0.32728;0.32739;0.3275;0.32761;0.32771;0.32781;0.32791;0.328;0.3281;0.32819;0.32828;0.32837;0.32846;0.33593;0.34463;0.35332;0.36202;0.37072;0.37942;0.38812;0.39682;0.40552;0.41422;0.42292;0.43161;0.44031;0.44901;0.45771;0.46641;0.47511;0.48381;0.49251;0.5012;0.5099;0.5186;0.5273;0.536;0.5447;0.5534;0.5621;0.57079;0.57949;0.58819;0.59689;0.60559;0.61429;0.62299;0.63169;0.64039;0.65256;0.65352;0.65391;0.65421;0.65447;0.65469;0.6549;0.65508;0.65526;0.65542;0.65558;0.65572;0.65586;0.656;0.65613;0.65625;0.65638;0.65649;0.65661;0.65672;0.65682;0.65693;0.65703;0.65713;0.65723;0.65733;0.65742;0.65751;0.65761;0.65769;0.65778;0.66736;0.67606;0.68476;0.69345;0.70215;0.71085;0.71955;0.72825;0.73695;0.74565;0.75435;0.76304;0.77174;0.78044;0.78914;0.79784;0.80654;0.81524;0.82394;0.83264;0.84133;0.85003;0.85873;0.86743;0.87613;0.88483;0.89353;0.90223;0.91092;0.91962;0.92832;0.93702;0.94572;0.95442;0.96312;0.97182;0.98051;0.99269;0.99365;0.99404;0.99434;0.9946;0.99482;0.99503;0.99521;0.99539;0.99555;0.99571;0.99585;0.99599;0.99613;0.99626;0.99638;0.9965;0.99662;0.99674;0.99685;0.99695;0.99706;0.99716;0.99726;0.99736;0.99746;0.99755;0.99764;0.99774;0.99782;0.99791" values="#none;#v0;#v1;#v2;#v3;#v4;#v5;#v6;#v7;#v8;#v9;#v10;#v11;#v12;#v13;#v14;#v15;#v16;#v17;#v18;#v19;#v20;#v21;#v22;#v23;#v24;#v25;#v26;#v27;#v28;#v29;#v30;#v31;#v32;#v33;#v34;#none;#v34;#v33;#v32;#v30;#v29;#v28;#v27;#v26;#v25;#v23;#v22;#v21;#v20;#v19;#v18;#v16;#v15;#v14;#v13;#v12;#v11;#v9;#v8;#v7;#v6;#v5;#v4;#v2;#v1;#v0;#none;#v35;#v36;#v37;#v38;#v39;#v40;#v41;#v42;#v43;#v44;#v45;#v46;#v47;#v48;#v49;#v50;#v51;#v52;#v53;#v54;#v55;#v56;#v57;#v58;#v59;#v60;#v61;#v62;#v63;#v64;#v65;#v66;#v67;#v68;#v69;#none;#v69;#v68;#v67;#v65;#v64;#v63;#v62;#v61;#v60;#v58;#v57;#v56;#v55;#v54;#v53;#v51;#v50;#v49;#v48;#v47;#v46;#v44;#v43;#v42;#v41;#v40;#v39;#v37;#v36;#v35;#none;#v70;#v71;#v72;#v73;#v74;#v75;#v76;#v77;#v78;#v79;#v80;#v81;#v82;#v83;#v84;#v85;#v86;#v87;#v88;#v89;#v90;#v91;#v92;#v93;#v94;#v95;#v96;#v97;#v98;#v99;#v100;#v101;#v102;#v103;#v104;#v105;#none;#v105;#v104;#v103;#v101;#v100;#v99;#v98;#v97;#v95;#v94;#v93;#v92;#v91;#v89;#v88;#v87;#v86;#v84;#v83;#v82;#v81;#v80;#v78;#v77;#v76;#v75;#v74;#v72;#v71;#v70;#none"/></use></g>
+<g clip-path="url(#old)"><g><animateTransform type="translate" attributeName="transform" calcMode="linear" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0066;0.00834;0.00852;0.0153;0.01704;0.01721;0.024;0.02574;0.02591;0.0327;0.03444;0.03461;0.0414;0.04314;0.04331;0.0501;0.05184;0.05201;0.0588;0.06053;0.06071;0.06749;0.06923;0.06941;0.07619;0.07793;0.07811;0.08489;0.08628;0.08646;0.09359;0.09533;0.0955;0.10229;0.10403;0.1042;0.11099;0.11273;0.1129;0.11969;0.12143;0.1216;0.12839;0.13013;0.1303;0.13708;0.13882;0.139;0.14578;0.14752;0.1477;0.15448;0.15622;0.1564;0.16318;0.16492;0.16509;0.17188;0.17362;0.17379;0.18058;0.18232;0.18249;0.18928;0.19102;0.19119;0.19798;0.19972;0.19989;0.20667;0.20841;0.20859;0.21537;0.21711;0.21729;0.22407;0.22581;0.22599;0.23277;0.23451;0.23468;0.24147;0.24321;0.24338;0.25017;0.25191;0.25208;0.25887;0.26061;0.26078;0.26757;0.26931;0.26948;0.27627;0.278;0.27818;0.28496;0.2867;0.28688;0.29366;0.2954;0.29558;0.30236;0.3041;0.30428;0.33593;0.33767;0.33784;0.34463;0.34637;0.34654;0.35332;0.35506;0.35524;0.36202;0.36376;0.36394;0.37072;0.37246;0.37264;0.37942;0.38099;0.38116;0.38812;0.38969;0.38986;0.39682;0.39856;0.39873;0.40552;0.40726;0.40743;0.41422;0.41596;0.41613;0.42292;0.42465;0.42483;0.43161;0.43335;0.43353;0.44031;0.44205;0.44223;0.44901;0.45058;0.45075;0.45771;0.45945;0.45962;0.46641;0.46815;0.46832;0.47511;0.47685;0.47702;0.48381;0.48555;0.48572;0.49251;0.49425;0.49442;0.5012;0.50294;0.50312;0.5099;0.51164;0.51182;0.5186;0.52034;0.52052;0.5273;0.52852;0.52869;0.536;0.53774;0.53791;0.5447;0.54644;0.54661;0.5534;0.55514;0.55531;0.5621;0.56384;0.56401;0.57079;0.57253;0.57271;0.57949;0.58123;0.58141;0.58819;0.58993;0.59011;0.59689;0.59863;0.5988;0.60559;0.60733;0.6075;0.61429;0.61603;0.6162;0.62299;0.62473;0.6249;0.63169;0.63343;0.6336;0.66736;0.6691;0.66927;0.67606;0.6778;0.67797;0.68476;0.6865;0.68667;0.69345;0.69519;0.69537;0.70215;0.70389;0.70407;0.71085;0.71259;0.71277;0.71955;0.72112;0.72129;0.72825;0.72999;0.73016;0.73695;0.73869;0.73886;0.74565;0.74739;0.74756;0.75435;0.75609;0.75626;0.76304;0.76478;0.76496;0.77174;0.77331;0.77348;0.78044;0.78218;0.78236;0.78914;0.79088;0.79105;0.79784;0.79958;0.79975;0.80654;0.80828;0.80845;0.81524;0.81698;0.81715;0.82394;0.82568;0.82585;0.83264;0.83437;0.83455;0.84133;0.84307;0.84325;0.85003;0.85177;0.85195;0.85873;0.86047;0.86065;0.86743;0.86917;0.86934;0.87613;0.87787;0.87804;0.88483;0.88657;0.88674;0.89353;0.89527;0.89544;0.90223;0.90362;0.90379;0.91092;0.91249;0.91266;0.91962;0.92136;0.92154;0.92832;0.93006;0.93024;0.93702;0.93876;0.93893;0.94572;0.94746;0.94763;0.95442;0.95616;0.95633;0.96312;0.96486;0.96503;0.97182;0.97356;0.97373;1" values="0;0;277.2;0;0;-42;0;0;-176.4;0;0;84;0;0;201.6;0;0;-268.8;0;0;126;0;0;42;0;0;-142.8;0;0;8.4;0;0;117.6;0;0;-117.6;0;0;218.4;0;0;-117.6;0;0;8.4;0;0;-126;0;0;151.2;0;0;-84;0;0;-75.6;0;0;176.4;0;0;-33.6;0;0;-126;0;0;201.6;0;0;-117.6;0;0;-92.4;0;0;201.6;0;0;-109.2;0;0;-109.2;0;0;100.8;0;0;-16.8;0;0;-75.6;0;0;100.8;0;0;-50.4;0;0;-33.6;0;0;142.8;0;0;201.6;0;0;-33.6;0;0;-84;0;0;201.6;0;0;-184.8;0;0;25.2;0;0;-50.4;0;0;58.8;0;0;33.6;0;0;-100.8;0;0;84;0;0;0;0;0;-75.6;0;0;50.4;0;0;151.2;0;0;-218.4;0;0;226.8;0;0;-100.8;0;0;-92.4;0;0;67.2;0;0;0;0;0;-75.6;0;0;16.8;0;0;50.4;0;0;92.4;0;0;-151.2;0;0;92.4;0;0;-25.2;0;0;-50.4;0;0;58.8;0;0;8.4;0;0;-100.8;0;0;134.4;0;0;0;0;0;-109.2;0;0;193.2;0;0;25.2;0;0;-126;0;0;159.6;0;0;-16.8;0;0;-126;0;0;16.8;0;0;100.8;0;0;-84;0;0;75.6;0;0;-84;0;0;-8.4;0;0;-33.6;0;0;151.2;0;0;-84;0;0;-75.6;0;0;193.2;0;0;-100.8;0;0;-109.2;0;0;184.8;0;0;-16.8;0;0;-151.2;0;0;50.4;0;0;50.4;0;0;-109.2;0;0;109.2;0;0;-67.2;0;0;-25.2;0;0;33.6;0;0;159.6;0;0;42;0;0;-235.2;0;0;151.2;0;0;-33.6;0;0;-100.8;0;0;58.8;0;0"/><use xlink:href="#none"><animate attributeName="xlink:href" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0153;0.024;0.0327;0.0414;0.0501;0.0588;0.06749;0.07619;0.08489;0.09359;0.10229;0.11099;0.11969;0.12839;0.13708;0.14578;0.15448;0.16318;0.17188;0.18058;0.18928;0.19798;0.20667;0.21537;0.22407;0.23277;0.24147;0.25017;0.25887;0.26757;0.27627;0.28496;0.29366;0.30236;0.33593;0.34463;0.35332;0.36202;0.37072;0.37942;0.38812;0.39682;0.40552;0.41422;0.42292;0.43161;0.44031;0.44901;0.45771;0.46641;0.47511;0.48381;0.49251;0.5012;0.5099;0.5186;0.5273;0.536;0.5447;0.5534;0.5621;0.57079;0.57949;0.58819;0.59689;0.60559;0.61429;0.62299;0.63169;0.66736;0.67606;0.68476;0.69345;0.70215;0.71085;0.71955;0.72825;0.73695;0.74565;0.75435;0.76304;0.77174;0.78044;0.78914;0.79784;0.80654;0.81524;0.82394;0.83264;0.84133;0.85003;0.85873;0.86743;0.87613;0.88483;0.89353;0.90223;0.91092;0.91962;0.92832;0.93702;0.94572;0.95442;0.96312;0.97182" values="#none;#v0;#v1;#v2;#v3;#v4;#v5;#v6;#v7;#v8;#v9;#v10;#v11;#v12;#v13;#v14;#v15;#v16;#v17;#v18;#v19;#v20;#v21;#v22;#v23;#v24;#v25;#v26;#v27;#v28;#v29;#v30;#v31;#v32;#v33;#none;#v35;#v36;#v37;#v38;#v39;#v40;#v41;#v42;#v43;#v44;#v45;#v46;#v47;#v48;#v49;#v50;#v51;#v52;#v53;#v54;#v55;#v56;#v57;#v58;#v59;#v60;#v61;#v62;#v63;#v64;#v65;#v66;#v67;#v68;#none;#v70;#v71;#v72;#v73;#v74;#v75;#v76;#v77;#v78;#v79;#v80;#v81;#v82;#v83;#v84;#v85;#v86;#v87;#v88;#v89;#v90;#v91;#v92;#v93;#v94;#v95;#v96;#v97;#v98;#v99;#v100;#v101;#v102;#v103;#v104"/></use><use xlink:href="#none"><animate attributeName="xlink:href" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.0153;0.024;0.0327;0.0414;0.0501;0.0588;0.06749;0.07619;0.08489;0.09359;0.10229;0.11099;0.11969;0.12839;0.13708;0.14578;0.15448;0.16318;0.17188;0.18058;0.18928;0.19798;0.20667;0.21537;0.22407;0.23277;0.24147;0.25017;0.25887;0.26757;0.27627;0.28496;0.29366;0.30236;0.33593;0.34463;0.35332;0.36202;0.37072;0.37942;0.38812;0.39682;0.40552;0.41422;0.42292;0.43161;0.44031;0.44901;0.45771;0.46641;0.47511;0.48381;0.49251;0.5012;0.5099;0.5186;0.5273;0.536;0.5447;0.5534;0.5621;0.57079;0.57949;0.58819;0.59689;0.60559;0.61429;0.62299;0.63169;0.66736;0.67606;0.68476;0.69345;0.70215;0.71085;0.71955;0.72825;0.73695;0.74565;0.75435;0.76304;0.77174;0.78044;0.78914;0.79784;0.80654;0.81524;0.82394;0.83264;0.84133;0.85003;0.85873;0.86743;0.87613;0.88483;0.89353;0.90223;0.91092;0.91962;0.92832;0.93702;0.94572;0.95442;0.96312;0.97182" values="#none;#r3;#r7;#r11;#r15;#r19;#r22;#r25;#r29;#r33;#r38;#r41;#r45;#r48;#r52;#r56;#r59;#r63;#r66;#r69;#r72;#r76;#r78;#r82;#r86;#r89;#r93;#r97;#r99;#r103;#r106;#r110;#r112;#r115;#r117;#none;#r125;#r129;#r133;#r135;#r139;#r142;#r145;#r148;#r152;#r154;#r157;#r160;#r163;#r167;#r171;#r173;#r176;#r179;#r183;#r185;#r189;#r191;#r195;#r197;#r200;#r203;#r206;#r209;#r213;#r215;#r219;#r223;#r227;#r229;#none;#r237;#r241;#r245;#r248;#r251;#r255;#r259;#r261;#r264;#r266;#r270;#r272;#r275;#r278;#r281;#r283;#r287;#r289;#r292;#r295;#r299;#r301;#r304;#r308;#r311;#r313;#r316;#r321;#r325;#r328;#r331;#r334;#r338;#r341;#r345"/></use></g></g>
+<g clip-path="url(#line)"><use xlink:href="#none"><animate attributeName="xlink:href" calcMode="discrete" dur="287.396s" repeatCount="indefinite" keyTimes="0;0.00834;0.01008;0.01182;0.01356;0.0153;0.01704;0.01878;0.02052;0.02226;0.024;0.02574;0.02748;0.02922;0.03096;0.0327;0.03444;0.03618;0.03792;0.03966;0.0414;0.04314;0.04488;0.04662;0.04836;0.0501;0.05184;0.05358;0.05532;0.0588;0.06053;0.06227;0.06575;0.06749;0.06923;0.07097;0.07271;0.07445;0.07619;0.07793;0.07967;0.08141;0.08315;0.08489;0.08628;0.08663;0.08837;0.09011;0.09185;0.09359;0.09533;0.09707;0.10055;0.10229;0.10403;0.10577;0.10751;0.10925;0.11099;0.11273;0.11447;0.11795;0.11969;0.12143;0.12317;0.12491;0.12665;0.12839;0.13013;0.13187;0.1336;0.13534;0.13708;0.13882;0.1423;0.14404;0.14578;0.14752;0.14926;0.151;0.15274;0.15448;0.15622;0.1597;0.16144;0.16318;0.16492;0.16666;0.17014;0.17188;0.17362;0.17536;0.1771;0.18058;0.18232;0.18406;0.1858;0.18754;0.18928;0.19102;0.1945;0.19798;0.19972;0.20146;0.2032;0.20493;0.20667;0.20841;0.21015;0.21189;0.21363;0.21537;0.21711;0.21885;0.22233;0.22407;0.22581;0.22755;0.22929;0.23103;0.23277;0.23451;0.23625;0.23799;0.23973;0.24147;0.24321;0.24669;0.25017;0.25191;0.25365;0.25539;0.25713;0.25887;0.26061;0.26409;0.26583;0.26757;0.26931;0.27105;0.27279;0.27453;0.27627;0.278;0.28148;0.28496;0.2867;0.28844;0.29192;0.29366;0.2954;0.29888;0.30236;0.3041;0.30584;0.30758;0.30932;0.31106;0.32324;0.32419;0.32459;0.32489;0.32514;0.32537;0.32557;0.32576;0.32593;0.3261;0.32625;0.3264;0.32654;0.32667;0.3268;0.32693;0.32705;0.32717;0.32728;0.32739;0.3275;0.32761;0.32771;0.32781;0.32791;0.328;0.3281;0.32819;0.32828;0.32837;0.32846;0.33767;0.33941;0.34115;0.34289;0.34463;0.34637;0.34811;0.34985;0.35158;0.35332;0.35506;0.3568;0.35854;0.36028;0.36202;0.36376;0.36724;0.37072;0.37246;0.3742;0.37594;0.37768;0.37942;0.38099;0.38116;0.38464;0.38812;0.38969;0.3916;0.39508;0.39682;0.39856;0.4003;0.40204;0.40552;0.40726;0.409;0.41074;0.41248;0.41422;0.41596;0.41944;0.42292;0.42465;0.42639;0.42987;0.43161;0.43335;0.43683;0.43857;0.44031;0.44205;0.44379;0.44727;0.44901;0.45058;0.45075;0.45423;0.45597;0.45771;0.45945;0.46119;0.46293;0.46467;0.46641;0.46815;0.47163;0.47511;0.47685;0.47859;0.48207;0.48381;0.48555;0.48729;0.48903;0.49251;0.49425;0.49598;0.49772;0.49946;0.5012;0.50294;0.50642;0.5099;0.51164;0.51338;0.51512;0.51686;0.5186;0.52034;0.52382;0.5273;0.52852;0.52904;0.53078;0.53426;0.536;0.53774;0.54122;0.5447;0.54644;0.54818;0.55166;0.5534;0.55514;0.55862;0.56036;0.5621;0.56384;0.56558;0.56905;0.57079;0.57253;0.57427;0.57601;0.57949;0.58123;0.58297;0.58471;0.58645;0.58819;0.58993;0.59341;0.59689;0.59863;0.60037;0.60211;0.60385;0.60559;0.60733;0.60907;0.61081;0.61255;0.61429;0.61603;0.61777;0.61951;0.62125;0.62299;0.62473;0.62821;0.63169;0.63343;0.63517;0.63691;0.63865;0.64039;0.65256;0.65352;0.65391;0.65421;0.65447;0.65469;0.6549;0.65508;0.65526;0.65542;0.65558;0.65572;0.65586;0.656;0.65613;0.65625;0.65638;0.65649;0.65661;0.65672;0.65682;0.65693;0.65703;0.65713;0.65723;0.65733;0.65742;0.65751;0.65761;0.65769;0.65778;0.6691;0.67084;0.67258;0.67432;0.67606;0.6778;0.67954;0.68128;0.68302;0.68476;0.6865;0.68823;0.68997;0.69171;0.69345;0.69519;0.69693;0.69867;0.70215;0.70389;0.70563;0.70911;0.71085;0.71259;0.71433;0.71607;0.71781;0.71955;0.72112;0.72303;0.72477;0.72651;0.72825;0.72999;0.73347;0.73695;0.73869;0.74043;0.74391;0.74565;0.74739;0.75087;0.75435;0.75609;0.75783;0.75957;0.7613;0.76304;0.76478;0.76826;0.77174;0.77331;0.77522;0.7787;0.78044;0.78218;0.78566;0.7874;0.78914;0.79088;0.79262;0.7961;0.79784;0.79958;0.80306;0.80654;0.80828;0.81002;0.81176;0.8135;0.81524;0.81698;0.82046;0.82394;0.82568;0.82742;0.8309;0.83264;0.83437;0.83611;0.83785;0.84133;0.84307;0.84481;0.84655;0.84829;0.85003;0.85177;0.85525;0.85873;0.86047;0.86221;0.86569;0.86743;0.86917;0.87091;0.87265;0.87439;0.87613;0.87787;0.87961;0.88309;0.88483;0.88657;0.89005;0.89353;0.89527;0.89701;0.90049;0.90223;0.90362;0.90397;0.9057;0.90744;0.90918;0.91092;0.91249;0.91266;0.9144;0.91788;0.91962;0.92136;0.9231;0.92484;0.92832;0.93006;0.9318;0.93528;0.93702;0.93876;0.94224;0.94398;0.94572;0.94746;0.9492;0.95094;0.95268;0.95442;0.95616;0.9579;0.95964;0.96312;0.96486;0.9666;0.96834;0.97008;0.97182;0.97356;0.97704;0.98051;0.99269;0.99365;0.99404;0.99434;0.9946;0.99482;0.99503;0.99521;0.99539;0.99555;0.99571;0.99585;0.99599;0.99613;0.99626;0.99638;0.9965;0.99662;0.99674;0.99685;0.99695;0.99706;0.99716;0.99726;0.99736;0.99746;0.99755;0.99764;0.99774;0.99782;0.99791" values="#none;#r0;#r1;#r2;#r3;#none;#r4;#r5;#r6;#r7;#none;#r8;#r9;#r10;#r11;#none;#r12;#r13;#r14;#r15;#none;#r16;#r17;#r18;#r19;#none;#r20;#r21;#r22;#none;#r23;#r24;#r25;#none;#r26;#r27;#r28;#r29;#none;#r30;#r31;#r32;#r33;#none;#r34;#r35;#r36;#r37;#r38;#none;#r39;#r40;#r41;#none;#r42;#r43;#r44;#r45;#none;#r46;#r47;#r48;#none;#r49;#r50;#r51;#r52;#none;#r53;#r54;#r55;#r56;#none;#r57;#r58;#r59;#none;#r60;#r61;#r62;#r63;#none;#r64;#r65;#r66;#none;#r67;#r68;#r69;#none;#r70;#r71;#r72;#none;#r73;#r74;#r75;#r76;#none;#r77;#r78;#none;#r79;#r80;#r81;#r82;#none;#r83;#r84;#r85;#r86;#none;#r87;#r88;#r89;#none;#r90;#r91;#r92;#r93;#none;#r94;#r95;#r96;#r97;#none;#r98;#r99;#none;#r100;#r101;#r102;#r103;#none;#r104;#r105;#r106;#none;#r107;#r108;#r109;#r110;#none;#r111;#r112;#none;#r113;#r114;#r115;#none;#r116;#r117;#none;#r118;#r119;#r120;#r121;#none;#r121;#r117;#r115;#r110;#r106;#r103;#r99;#r97;#r93;#r86;#r82;#r78;#r76;#r72;#r69;#r63;#r59;#r56;#r52;#r48;#r45;#r38;#r33;#r29;#r25;#r22;#r19;#r11;#r7;#r3;#none;#r122;#r123;#r124;#r125;#none;#r126;#r127;#r128;#r129;#none;#r130;#r131;#r132;#r133;#none;#r134;#r135;#none;#r136;#r137;#r138;#r139;#none;#r140;#r141;#r142;#none;#r143;#r144;#r145;#none;#r146;#r147;#r148;#none;#r149;#r150;#r151;#r152;#none;#r153;#r154;#none;#r155;#r156;#r157;#none;#r158;#r159;#r160;#none;#r161;#r162;#r163;#none;#r164;#r165;#r166;#r167;#none;#r168;#r169;#r170;#r171;#none;#r172;#r173;#none;#r174;#r175;#r176;#none;#r177;#r178;#r179;#none;#r180;#r181;#r182;#r183;#none;#r184;#r185;#none;#r186;#r187;#r188;#r189;#none;#r190;#r191;#none;#r192;#r193;#r194;#r195;#none;#r196;#r197;#none;#r198;#r199;#r200;#none;#r201;#r202;#r203;#none;#r204;#r205;#r206;#none;#r207;#r208;#r209;#none;#r210;#r211;#r212;#r213;#none;#r214;#r215;#none;#r216;#r217;#r218;#r219;#none;#r220;#r221;#r222;#r223;#none;#r224;#r225;#r226;#r227;#none;#r228;#r229;#none;#r230;#r231;#r232;#r233;#none;#r233;#r229;#r227;#r219;#r215;#r213;#r209;#r206;#r203;#r197;#r195;#r191;#r189;#r185;#r183;#r176;#r173;#r171;#r167;#r163;#r160;#r154;#r152;#r148;#r145;#r142;#r139;#r133;#r129;#r125;#none;#r234;#r235;#r236;#r237;#none;#r238;#r239;#r240;#r241;#none;#r242;#r243;#r244;#r245;#none;#r246;#r247;#r248;#none;#r249;#r250;#r251;#none;#r252;#r253;#r254;#r255;#none;#r256;#r257;#r258;#r259;#none;#r260;#r261;#none;#r262;#r263;#r264;#none;#r265;#r266;#none;#r267;#r268;#r269;#r270;#none;#r271;#r272;#none;#r273;#r274;#r275;#none;#r276;#r277;#r278;#none;#r279;#r280;#r281;#none;#r282;#r283;#none;#r284;#r285;#r286;#r287;#none;#r288;#r289;#none;#r290;#r291;#r292;#none;#r293;#r294;#r295;#none;#r296;#r297;#r298;#r299;#none;#r300;#r301;#none;#r302;#r303;#r304;#none;#r305;#r306;#r307;#r308;#none;#r309;#r310;#r311;#none;#r312;#r313;#none;#r314;#r315;#r316;#none;#r317;#r318;#r319;#r320;#r321;#none;#r322;#r323;#r324;#r325;#none;#r326;#r327;#r328;#none;#r329;#r330;#r331;#none;#r332;#r333;#r334;#none;#r335;#r336;#r337;#r338;#none;#r339;#r340;#r341;#none;#r342;#r343;#r344;#r345;#none;#r346;#r347;#none;#r347;#r345;#r341;#r334;#r331;#r328;#r325;#r321;#r313;#r311;#r308;#r304;#r301;#r295;#r292;#r289;#r287;#r281;#r278;#r275;#r272;#r270;#r264;#r261;#r259;#r255;#r251;#r245;#r241;#r237;#none"/></use></g>
 <use xlink:href="#head" fill="url(#caret)"/>
 </g>
 <rect x="24.5" y="191.5" width="771" height="36" rx="5" fill="none" style="stroke:var(--border)"/>
