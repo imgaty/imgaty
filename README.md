@@ -1,7 +1,3 @@
-<br/>
-
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=blur&height=300&color=0:1e3a8a,50:3b82f6,100:1e3a8a&text=@imgaty&textBg=false&animation=fadeIn&fontColor=ffffff&fontSize=52&fontAlignY=50&desc=Professional%20Claude%20Verbal%20Abuser&descAlignY=65&descSize=16&descColor=e0f2fe" />
+  <img alt="Gaty · Professional Claude Verbal Abuser™. A Claude Code terminal with Clawd, the Claude Code mascot, hopping in and looking around. Prompts like 'hack nasa', 'leak gta6 dev build' and 'do my taxes' are sent one after another, and for each one the spinner cycles through matching made-up verbs, like ✻ Brute-forcing the Hubble… (12s · ↑ 1.4k tokens · esc to interrupt), until Claude hits its session limit. Then it all rewinds like a VHS tape and the next prompt is typed." src="spinner.svg?v=f5ad5be6" width="820">
 </div>
-
-<br/>
