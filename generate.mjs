@@ -184,12 +184,6 @@ const CURSOR_BLINK = 1.06;
 const WAVE = { step: 0.05, patterns: 8, scale: 16, frequency: 0.035, fringe: 3, red: 'rgba(255,26,64,.6)', cyan: 'rgba(0,230,255,.6)' };
 const HEADER = { title: 'Gaty · Professional Claude Verbal Abuser™', lines: ['Claude Code v{version}', '/home/imgaty'] };
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
-const TITLE_BAR = { height: 32, x: 20, y: 16.5, r: 7, gap: 22 };
-const LIGHTS = [
-    { base: '#D65248', glow: '#E8857D', top: '#F6C8BF', bottom: '#FF9D95' },
-    { base: '#EAB400', glow: '#F6D24E', top: '#FAF285', bottom: '#FFF46A' },
-    { base: '#62B800', glow: '#93D851', top: '#C4F08E', bottom: '#AAF270' },
-];
 
 const CLAWD = {
     poses: {
@@ -224,21 +218,20 @@ const MIN_COLS = Math.min(...Object.values(LAYOUTS).map((l) => l.cols));
 
 function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, clawdGap, splitTitle }) {
     const left = pad + 0.5;
-    const top = TITLE_BAR.height + pad / 2 + 0.5;
     const textX = round(left + 2 * cell);
     const welcome = [...(splitTitle ? HEADER.title.split(' · ') : [HEADER.title]).map((text) => ['t', text]), ...HEADER.lines.map((text) => ['d', text])];
     const welcomeX = round(textX + (CLAWD.cols + clawdGap) * cell);
-    const welcomeBottom = top + (Math.max(3, welcome.length) + 1) * row;
+    const welcomeBottom = left + (Math.max(3, welcome.length) + 1) * row;
     const userBase = welcomeBottom + pad + capHeight;
     const spinnerBase = userBase + 2 * row;
     const boxTop = Math.round(spinnerBase + pad) + 0.5;
     const boxBottom = boxTop + 2 * row;
     const hintBase = boxBottom + hintGap + capHeight;
     return {
-        left, top, right: width - left, textX, welcome, welcomeX, welcomeBottom, boxTop, boxBottom, hintBase,
+        left, right: width - left, textX, welcome, welcomeX, welcomeBottom, boxTop, boxBottom, hintBase,
         welcomeRight: Math.round(welcomeX + (Math.max(...welcome.map(([, s]) => cellsIn(s))) + 2) * cell) + 0.5,
-        welcomeBase: (line) => round(top + line * row + fontSize * 0.35),
-        clawdY: top + row / 2,
+        welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
+        clawdY: left + row / 2,
         userBase: round(userBase),
         spinnerBase: round(spinnerBase),
         inputBase: round((boxTop + boxBottom) / 2 + fontSize * 0.35),
@@ -642,12 +635,6 @@ function renderSvg(episodes, version, claudeVersion, name) {
         const line = text.replace('{version}', claudeVersion);
         return `<text class="${cls}" x="${G.welcomeX}" y="${G.welcomeBase(1 + k)}" textLength="${len([...line].length)}">${xml(line)}</text>`;
     });
-    const lights = LIGHTS.map((_, k) => {
-        const [cx, cy, r] = [TITLE_BAR.x + k * TITLE_BAR.gap, TITLE_BAR.y, TITLE_BAR.r];
-        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${LIGHTS[k].base}"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#lf${k})"/><circle cx="${cx}" cy="${cy}" r="${r - 0.6}" fill="none" stroke="url(#lr${k})" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#000" stroke-opacity="0.18" stroke-width="0.5"/>`;
-    });
-    const lightDefs = LIGHTS.map(({ base, glow, top, bottom }, k) => `<radialGradient id="lf${k}" cx="0.5" cy="0.8" r="0.6"><stop offset="0" stop-color="${glow}"/><stop offset="0.5" stop-color="${glow}" stop-opacity="0.6"/><stop offset="1" stop-color="${glow}" stop-opacity="0"/></radialGradient>
-<linearGradient id="lr${k}" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="0.3" stop-color="${base}" stop-opacity="0"/><stop offset="0.65" stop-color="${base}" stop-opacity="0"/><stop offset="1" stop-color="${bottom}"/></linearGradient>`);
     const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(';');
     const tint = (color) => `${Object.keys(THEMES.dark).map((k) => `--${k}:${color}`).join(';')};--solo:none`;
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${V.width}" height="${G.height}" viewBox="0 0 ${V.width} ${G.height}" role="img">
@@ -676,7 +663,6 @@ ${shimmerDefs.join('\n')}
 <clipPath id="screen"><rect x="0.5" y="0.5" width="${V.width - 1}" height="${G.height - 1}" rx="10"/></clipPath>
 <pattern id="scan" width="8" height="3" patternUnits="userSpaceOnUse"><rect width="8" height="1" style="fill:${theme.text}" opacity="0.06"/></pattern>
 ${clawd.defs}
-${lightDefs.join('\n')}
 <clipPath id="input"><rect x="${round(inputX)}" y="${inputY}" height="${V.caret}" width="0">${animate('width', typedCells.map(([t, c]) => [t, len(c)]))}</rect></clipPath>
 <g id="none"/>
 <rect width="0" height="0"><set id="loop" attributeName="visibility" to="hidden" begin="0s;loop.end" dur="${round(T, 3)}s"/></rect>
@@ -686,9 +672,8 @@ ${verbRows.join('\n')}
 </defs>
 <rect x="0.5" y="0.5" width="${V.width - 1}" height="${G.height - 1}" rx="10" style="fill:${theme.bg};stroke:${theme.frame}"/>
 <g clip-path="url(#screen)">
-${lights.join('\n')}
 <g>${animate('transform', shake)}<g>${animate('transform', [[0, 0], ...rewinds.flatMap(([a, b]) => [...whoosh(a, 1), ...whoosh(b, -1)])], { type: 'skewX' })}
-${line(G.top, G.welcomeBottom, 'Lbox', `<rect x="${G.left}" y="${G.top}" width="${G.welcomeRight - G.left}" height="${G.welcomeBottom - G.top}" rx="5" fill="none" style="stroke:${theme.claude}"/>`)}
+${line(G.left, G.welcomeBottom, 'Lbox', `<rect x="${G.left}" y="${G.left}" width="${G.welcomeRight - G.left}" height="${G.welcomeBottom - G.left}" rx="5" fill="none" style="stroke:${theme.claude}"/>`)}
 ${waved(G.clawdY, G.clawdY + 3 * V.row, clawd.svg)}
 ${welcome.map((w, k) => line(...textBand(G.welcomeBase(1 + k)), `Lw${k}`, w)).join('\n')}
 ${line(badgeY - 13, badgeY + 5, 'Lrew', `<g display="none" style="fill:${theme.text}">${during(...blink)}
