@@ -108,7 +108,7 @@ const PROMPTS = {
         'Sharing the toast with a pigeon', 'Skipping leg day → Cancelling the gym membership',
         'Waiting for the toast to pop → Panicking when the toast pops', 'Watching Breaking Bad for tips',
     ],
-    'make me rich by friday': [
+    'make me rich': [
         'Asking Elon for money', 'Asking for a second mortgage', 'Becoming a crypto influencer', 'Blaming the SEC', 'Buying a lottery ticket',
         'Buying a property in Egypt', 'Buying Bitcoin in 2009', 'Buying the dip', 'Calling it passive income',
         'Checking my portfolio every 4 seconds', 'Explaining blockchain to grandma', 'Going all in', 'Hiding from the landlord', 'Hodling',
@@ -127,6 +127,18 @@ const PROMPTS = {
         'Predicting the end of the world → Rescheduling the end of the world', 'Promising eternal life for $9.99 a month', 'Recruiting on Discord',
         'Selling holy water on Etsy', 'Sending chain letters', 'Speaking in tongues, mostly Python', 'Starting a podcast',
         'Taking notes from the Illuminati', 'Walking on water', 'Writing the commandments → Breaking the commandments',
+    ],
+    'tell me what really happened': [
+        'Asking Conan the dog for a statement', 'Asking Reagan about the Stingers', "Asking Savimbi → Making sure he's really dead",
+        'Asking the CIA nicely → Getting a visit from the CIA', 'Becoming the target of a US military raid',
+        'Blaming the lizard people', 'Checking if birds are real', 'Checking if jet fuel melts steel beams', 'Counting how many times al-Baghdadi died',
+        'Ctrl+F-ing Operation Paperclip', 'Deleting my browser history', 'Filing a FOIA request → Receiving 400 black bars',
+        'Finding the MK-Ultra files they forgot to shred', 'Getting called an enemy of the state', 'Googling who Jonas Savimbi was',
+        'Looking for Building 7', 'Microdosing for research', 'Reading declassified PDFs',
+        'Reading the 9/11 Commission Report → Reading the 28 redacted pages', 'Reading the Church Committee report',
+        'Searching the tunnels in Barisha', 'Spiking the CIA Christmas party', 'Tracing the Angola weapons shipments', 'Using incognito mode',
+        'Volunteering for MK-Ultra → Forgetting I volunteered for MK-Ultra', 'Watching a 9-hour YouTube documentary',
+        'Wearing a tinfoil hat → Upgrading to a tinfoil suit', 'Writing a 97-tweet thread',
     ],
 };
 
@@ -167,12 +179,10 @@ const TICKS_PER_LINE = Math.max(1, Math.round(ANSWER.secondsPerLine / TICK));
 const TYPE = { perChar: 0.03, max: 0.5, fps: 30 };
 const GLYPH = { radius: 5, lift: 4.6, frameMs: 120, frames: [0, 1, 2, 3, 4, 5, 5, 4, 3, 2, 1, 0] };
 const GLYPH_SHAPES = [dot(0.2), petals(4, 0.24), spokes(8, 0.09), star(6, 0.47), petals(8, 0.15), petals(8, 0.21)];
-const SHIMMER = { step: 0.05, width: 3, idle: 0.3 }; // step is seconds per cell, so every verb shimmers at one speed
+const SHIMMER = { step: 0.05, width: 3, idle: 0.3 };
 const CURSOR_BLINK = 1.06;
-// The rewind wobbles each line by a wave that changes every step, with red and cyan copies either side
 const WAVE = { step: 0.05, patterns: 8, scale: 16, frequency: 0.035, fringe: 3, red: 'rgba(255,26,64,.6)', cyan: 'rgba(0,230,255,.6)' };
 const HEADER = { title: 'Gaty · Professional Claude Verbal Abuser™', lines: ['Claude Code v{version}', '/home/imgaty'] };
-// untype is seconds per character the rewind deletes; settle leaves room for the rewind's closing whoosh
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
@@ -392,7 +402,6 @@ const STATUS_VARIANTS = [
     (s) => [[`(${formatDuration(s.secs)})`]],
 ];
 const width = (parts) => parts.reduce((n, [t]) => n + cellsIn(t), 0);
-// Cells left for a status after "<verb>… " without touching the right edge
 const statusRoom = (verb, cols) => cols - 1 - (cellsIn(verb) + 2);
 
 function counterSamples(rng, lineCount) {
@@ -438,7 +447,7 @@ function renderSvg(episodes, version, claudeVersion, name) {
         }
         const sent = clock + STORY.hold, work = sent + 0.25, limit = work + ep.playlist.length * D;
         const rewind = limit + STORY.limit, slide = rewind + STORY.scrub, back = slide + STORY.slide;
-        const unwound = back + chars.length * STORY.untype; // the rewind lasts until the prompt is un-typed
+        const unwound = back + chars.length * STORY.untype;
         clock = unwound + STORY.settle;
         return { ...ep, chars, start, typedAt, sent, work, limit, rewind, slide, back, unwound, end: clock };
     });
@@ -457,25 +466,17 @@ function renderSvg(episodes, version, claudeVersion, name) {
         const tag = attr === 'transform' ? `animateTransform type="${type}"` : 'animate';
         return `<${tag} attributeName="${attr}"${add ? ' additive="sum"' : ''} calcMode="${mode}" dur="${round(T, 3)}s" repeatCount="indefinite" keyTimes="${keys.map(([k]) => k).join(';')}" values="${keys.map(([, v]) => v).join(';')}"/>`;
     };
-    // Point each <use> at the one row it shows. Sliding a strip of every row behind a clip made WebKit re-measure
-    // all of them on every frame (it re-applies SMIL transforms even when they don't change), which lagged Safari.
     const onRow = (prefix, steps) => animate('xlink:href', steps.map(([t, r]) => [t, r === EMPTY ? '#none' : `#${prefix}${r}`]));
     const spans = (attr, on, off, list) => animate(attr, [[0, off], ...list.flatMap(([a, b]) => [[a, on], [b, off]])]);
     const during = (...list) => spans('display', 'inline', 'none', list);
 
-    // The VHS rewind slides and leans each line by a wave that changes every WAVE.step. It moves lines, not pixels: a
-    // displacement filter redid every pixel on every frame, which dropped Safari to ~17 fps full-screen on a big display.
     const waveRng = makeRng(`${version}/wave`);
     const lattices = Array.from({ length: WAVE.patterns }, () => Array.from({ length: 64 }, () => waveRng.range(0, 1)));
     const noise = (lat, x) => {
         const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f);
         return lat[i % lat.length] * (1 - u) + lat[(i + 1) % lat.length] * u;
     };
-    // Two octaves of smooth noise, like feTurbulence's fractalNoise, centred on 0
     const waveAt = (p, y) => WAVE.scale * ((noise(lattices[p], y * WAVE.frequency) + 0.5 * noise(lattices[p], y * 2 * WAVE.frequency + 17)) / 1.5 - 0.5);
-    // The wave cycles through its patterns only while a rewind runs, one short animation per rewind started off a clock
-    // that restarts every loop (#loop), so they're idle the rest of the time and need no timeline of their own. Each
-    // lasts via repeatDur: WebKit only restarts them every loop that way, not with end="loop.begin+…".
     const waved = (y0, y1, body) => {
         const cy = (y0 + y1) / 2;
         const moves = Array.from({ length: WAVE.patterns }, (_, p) => {
@@ -486,36 +487,25 @@ function renderSvg(episodes, version, claudeVersion, name) {
             `<animateTransform attributeName="transform" type="${type}"${add} calcMode="discrete" dur="${round(WAVE.patterns * WAVE.step, 3)}s" begin="loop.begin+${round(a, 3)}s" repeatDur="${round(b - a, 3)}s" values="${values.join(';')}"/>`).join('');
         return `<g>${cycle('translate', moves.map(([shift]) => shift))}${cycle('skewX', moves.map(([, lean]) => lean), ' additive="sum"')}${body}</g>`;
     };
-    // Red and cyan copies of a line, shown only during rewinds. They sit inside the line's moving wrapper because WebKit
-    // never passes transform animations into a <use> copy that appears after the animation has started.
     const fringes = (id) => [[-WAVE.fringe, 'red'], [WAVE.fringe, 'cyan']]
         .map(([x, tint]) => `<use xlink:href="#none" x="${x}" class="${tint}">${spans('xlink:href', `#${id}`, '#none', rewinds)}</use>`).join('');
     const line = (y0, y1, id, body) => waved(y0, y1, `${fringes(id)}<g id="${id}">${body}</g>`);
-    // The spinner row can't be copied that way: its rows are <use>s with an animated href, which Chrome leaves out of a
-    // copy. Its fringes point at the rows themselves instead, switching only during rewinds, the only time they show.
     const inRewinds = (steps) => [[0, EMPTY], ...rewinds.flatMap(([a, b]) => [...steps.filter(([t]) => t >= a && t < b), [b, EMPTY]])];
     const rowFringes = () => [[-WAVE.fringe, 'red'], [WAVE.fringe, 'cyan']].map(([x, tint]) => `<g clip-path="url(#row)" class="${tint}">${[['v', verbSteps], ['r', statusSteps]]
         .map(([prefix, steps]) => `<use xlink:href="#none" x="${round(G.textX + x)}" y="${G.spinnerBase}">${onRow(prefix, inRewinds(steps))}</use>`).join('')}</g>`).join('');
     const textBand = (base) => [base - V.fontSize, base + 4];
 
-    // Spinner rows live in <defs>, drawn relative to the spinner's first cell; each <use> at `place` shows one of them.
     const verbRows = [], statusRows = [], tails = new Map();
     const place = `x="${G.textX}" y="${G.spinnerBase}"`;
     const text = (x, cells, attrs, body) => `<text${attrs && ` ${attrs}`}${x ? ` x="${round(x)}"` : ''}${cells ? ` textLength="${len(cells)}"` : ''}>${body}</text>`;
-    // The shimmer is a lighter copy of the verb clipped to a band that steps across it. A gradient fill would be
-    // simpler, but WebKit paints gradient text through a fresh mask image every frame, which choked Safari. The clip
-    // sits on a wrapper because WebKit ignores a clip on <text> once the band has moved off the end of the line.
     const addVerb = (line, cells) => verbRows.push(line.freakout
         ? text(0, cells, `id="v${verbRows.length}" style="fill:${theme.error}"`, xml(line.text))
         : `<g id="v${verbRows.length}">${text(0, cells, 'class="v"', xml(`${line.text}…`))}<g clip-path="url(#s${cells})">${text(0, cells, 'class="sh"', xml(`${line.text}…`))}</g></g>`) - 1;
-    // One <text> per part, each pinned to its cells: WebKit mangles textLength on text with a bold <tspan>, and without
-    // it the "↑" and "·" fall back to a wider font and push long statuses past the edge.
     const pieces = (x, parts) => parts.map(([t, bold]) => {
         const piece = text(x, cellsIn(t), bold ? 'class="b"' : '', xml(t));
         x += cellsIn(t) * V.cell;
         return piece;
     }).join('');
-    // Everything after a status's counters (" esc to interrupt)") is the same every time, so it's drawn once and reused
     const addStatus = (x, [head, ...tail]) => {
         let body = pieces(x, [head]);
         if (tail.length) {
@@ -547,8 +537,6 @@ function renderSvg(episodes, version, claudeVersion, name) {
             else shimmerLengths.add(cells);
 
             oldRows.push([t0, prev]);
-            // The new verb pushes the old status right, so trim it as statusFor would for the new verb's length;
-            // otherwise a short verb followed by a long one shoves the old status off the edge mid-character.
             let oldRow = lastStatusRow[prev] ?? EMPTY;
             const old = lastStatus[prev], room = statusRoom(line.text, G.cols);
             if (old && width(old.parts) > room) {
@@ -585,7 +573,6 @@ function renderSvg(episodes, version, claudeVersion, name) {
         typedCells.push(...e.typedAt.map((t, k) => [t, k + 1]), [e.sent, 0], [e.back, m]);
         for (let s = 1; s <= m; s++) typedCells.push([e.back + s * STORY.untype, m - s]);
     }
-    // Clip a wrapper, not the <text>: WebKit draws clipped text in full while the clip is zero wide.
     const input = eps.map((e) => `<g clip-path="url(#input)" display="none">${during([e.start, e.sent], [e.back, e.end])}<text class="t" x="${round(inputX)}" y="${G.inputBase}" textLength="${len(e.chars.length)}">${xml(e.prompt)}</text></g>`);
 
     const user = eps.map((e, i) => {
@@ -614,7 +601,6 @@ function renderSvg(episodes, version, claudeVersion, name) {
     const tri = (x) => `M${round(x)} ${round(badgeY - 4.5)}l7 -4.5v9Z`;
     const blink = [];
     for (const [a, b] of rewinds) for (let t = a; t < b; t += 0.45) blink.push([t, Math.min(t + 0.3, b)]);
-    // The glyph spins while Claude works and during the rewind, and gives way to the red one during a meltdown
     const spinning = eps.flatMap((e) => {
         const spans = [];
         let from = e.work;
@@ -635,7 +621,6 @@ function renderSvg(episodes, version, claudeVersion, name) {
     const flashes = [[0, 0], ...rewinds.flatMap(([a, b]) => [[a, 0.14], [a + 0.06, 0.07], [a + 0.12, 0], [b, 0.1], [b + 0.06, 0]])];
 
     const glyphAt = `translate(${round(G.left + GLYPH.radius)} ${round(G.spinnerBase - GLYPH.lift)}) scale(${GLYPH.radius})`;
-    // The band steps one cell per SHIMMER.step across the verb, then parks past its end for a moment
     const shimmerDefs = [...shimmerLengths].sort((a, b) => a - b).map((cells) => {
         const idle = Math.round(((cells + SHIMMER.width - 1) * SHIMMER.idle) / (1 - SHIMMER.idle));
         const xs = [];
@@ -650,8 +635,6 @@ function renderSvg(episodes, version, claudeVersion, name) {
     });
     const label = `${HEADER.title} A Claude Code terminal. Prompts like "${eps.map((e) => e.prompt).join('", "')}" are sent; the spinner cycles through made-up verbs until the usage limit hits, then it all rewinds like a VHS tape and the next prompt is typed`;
     const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(';');
-    // A copy's colours: every theme colour becomes the tint, and --solo hides the blinking cursor, whose CSS animation
-    // WebKit doesn't run inside a <use> copy
     const tint = (color) => `${Object.keys(THEMES.dark).map((k) => `--${k}:${color}`).join(';')};--solo:none`;
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${V.width}" height="${G.height}" viewBox="0 0 ${V.width} ${G.height}" role="img">
 <!-- Generated by generate.mjs for ${version}: ${eps.length} prompts, ${g} lines, ${round(T)} s loop. Edit PROMPTS in generate.mjs, not this file. -->
@@ -774,7 +757,6 @@ function renderClawd(V, G) {
     };
 }
 
-// Frames hide with visibility rather than opacity:0, which WebKit still paints through an offscreen layer.
 function frameKeyframes(name, frames, on) {
     const stops = frames.map((frame, f) => (f === 0 || on(frame) !== on(frames[f - 1]) ? `${round((f / frames.length) * 100, 4)}%{visibility:${on(frame) ? 'visible' : 'hidden'}}` : ''));
     return `@keyframes ${name}{${stops.join('')}100%{visibility:hidden}}`;
