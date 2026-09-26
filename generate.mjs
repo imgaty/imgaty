@@ -167,10 +167,13 @@ const TICKS_PER_LINE = Math.max(1, Math.round(ANSWER.secondsPerLine / TICK));
 const TYPE = { perChar: 0.03, max: 0.5, fps: 30 };
 const GLYPH = { radius: 5, lift: 4.6, frameMs: 120, frames: [0, 1, 2, 3, 4, 5, 5, 4, 3, 2, 1, 0] };
 const GLYPH_SHAPES = [dot(0.2), petals(4, 0.24), spokes(8, 0.09), star(6, 0.47), petals(8, 0.15), petals(8, 0.21)];
-const SHIMMER = { period: 1.5, width: 3, idle: 0.3 };
+const SHIMMER = { step: 0.05, width: 3, idle: 0.3 }; // step is seconds per cell, so every verb shimmers at one speed
 const CURSOR_BLINK = 1.06;
+// The rewind wobbles each line by a wave that changes every step, with red and cyan copies either side
+const WAVE = { step: 0.05, patterns: 8, scale: 16, frequency: 0.035, fringe: 3, red: 'rgba(255,26,64,.6)', cyan: 'rgba(0,230,255,.6)' };
 const HEADER = { title: 'Gaty · Professional Claude Verbal Abuser™', lines: ['Claude Code v{version}', '/home/imgaty'] };
-const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.4 };
+// untype is seconds per character the rewind deletes; settle leaves room for the rewind's closing whoosh
+const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
     poses: {
@@ -199,6 +202,7 @@ const VIEWS = {
     mobile: { ...TEXT, file: 'spinner-mobile.svg', width: 470, pad: 16, clawdGap: 2, splitTitle: true, shortLimit: true, badgeBox: true },
 };
 const FONT = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+const cellsIn = (text) => [...text].length;
 const LAYOUTS = Object.fromEntries(Object.entries(VIEWS).map(([name, view]) => [name, makeLayout(view)]));
 const MIN_COLS = Math.min(...Object.values(LAYOUTS).map((l) => l.cols));
 
@@ -215,7 +219,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, clawd
     const hintBase = boxBottom + hintGap + capHeight;
     return {
         left, right: width - left, textX, welcome, welcomeX, welcomeBottom, boxTop, boxBottom, hintBase,
-        welcomeRight: Math.round(welcomeX + (Math.max(...welcome.map(([, s]) => [...s].length)) + 2) * cell) + 0.5,
+        welcomeRight: Math.round(welcomeX + (Math.max(...welcome.map(([, s]) => cellsIn(s))) + 2) * cell) + 0.5,
         welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
         clawdY: left + row / 2,
         userBase: round(userBase),
@@ -387,7 +391,9 @@ const STATUS_VARIANTS = [
     (s) => [[`(${formatDuration(s.secs)} · ↑ ${formatTokens(s.tokens)} tokens)`]],
     (s) => [[`(${formatDuration(s.secs)})`]],
 ];
-const width = (parts) => parts.reduce((n, [t]) => n + [...t].length, 0);
+const width = (parts) => parts.reduce((n, [t]) => n + cellsIn(t), 0);
+// Cells left for a status after "<verb>… " without touching the right edge
+const statusRoom = (verb, cols) => cols - 1 - (cellsIn(verb) + 2);
 
 function counterSamples(rng, lineCount) {
     let [secs, tokens] = [rng.range(1, 4), Math.round(rng.range(120, 480))];
@@ -403,14 +409,14 @@ function counterSamples(rng, lineCount) {
 }
 
 function statusFor(verb, samples, cols) {
-    const room = cols - 1 - ([...verb].length + 1 + 1);
+    const room = statusRoom(verb, cols);
     const variant = STATUS_VARIANTS.find((v) => samples.every((s) => width(v(s)) <= room));
     const out = [];
     if (variant) samples.forEach((s, k) => {
         const parts = variant(s);
         const key = parts.map((p) => p[0]).join('');
         if (out.at(-1)?.key === key) out.at(-1).ticks += 1;
-        else out.push({ key, parts, start: k, ticks: 1 });
+        else out.push({ key, parts, sample: s, start: k, ticks: 1 });
     });
     return out;
 }
@@ -432,15 +438,14 @@ function renderSvg(episodes, version, claudeVersion, name) {
         }
         const sent = clock + STORY.hold, work = sent + 0.25, limit = work + ep.playlist.length * D;
         const rewind = limit + STORY.limit, slide = rewind + STORY.scrub, back = slide + STORY.slide;
-        clock = back + STORY.untype;
-        return { ...ep, chars, start, typedAt, sent, work, limit, rewind, slide, back, end: clock };
+        const unwound = back + chars.length * STORY.untype; // the rewind lasts until the prompt is un-typed
+        clock = unwound + STORY.settle;
+        return { ...ep, chars, start, typedAt, sent, work, limit, rewind, slide, back, unwound, end: clock };
     });
     const T = clock;
-    const rewinds = eps.map((e) => [e.rewind, e.back]);
+    const rewinds = eps.map((e) => [e.rewind, e.unwound]);
 
     const EMPTY = -1, HEAD = 2 * V.width;
-    const row = (id, x, cells, attrs, body) =>
-        `<text id="${id}"${attrs && ` ${attrs}`} x="${round(x)}" y="${G.spinnerBase}"${cells ? ` textLength="${len(cells)}"` : ''}>${body}</text>`;
     const digits = Math.ceil(Math.log10(T / 0.01));
     const animate = (attr, steps, { type = 'translate', mode = 'discrete', add = false } = {}) => {
         const keys = [];
@@ -458,11 +463,73 @@ function renderSvg(episodes, version, claudeVersion, name) {
     const spans = (attr, on, off, list) => animate(attr, [[0, off], ...list.flatMap(([a, b]) => [[a, on], [b, off]])]);
     const during = (...list) => spans('display', 'inline', 'none', list);
 
+    // The VHS rewind slides and leans each line by a wave that changes every WAVE.step. It moves lines, not pixels: a
+    // displacement filter redid every pixel on every frame, which dropped Safari to ~17 fps full-screen on a big display.
+    const waveRng = makeRng(`${version}/wave`);
+    const lattices = Array.from({ length: WAVE.patterns }, () => Array.from({ length: 64 }, () => waveRng.range(0, 1)));
+    const noise = (lat, x) => {
+        const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f);
+        return lat[i % lat.length] * (1 - u) + lat[(i + 1) % lat.length] * u;
+    };
+    // Two octaves of smooth noise, like feTurbulence's fractalNoise, centred on 0
+    const waveAt = (p, y) => WAVE.scale * ((noise(lattices[p], y * WAVE.frequency) + 0.5 * noise(lattices[p], y * 2 * WAVE.frequency + 17)) / 1.5 - 0.5);
+    // The wave cycles through its patterns only while a rewind runs, one short animation per rewind started off a clock
+    // that restarts every loop (#loop), so they're idle the rest of the time and need no timeline of their own. Each
+    // lasts via repeatDur: WebKit only restarts them every loop that way, not with end="loop.begin+…".
+    const waved = (y0, y1, body) => {
+        const cy = (y0 + y1) / 2;
+        const moves = Array.from({ length: WAVE.patterns }, (_, p) => {
+            const slope = (waveAt(p, y1) - waveAt(p, y0)) / (y1 - y0);
+            return [round(waveAt(p, cy) - slope * cy, 1), round((Math.atan(slope) * 180) / Math.PI, 1)];
+        });
+        const cycle = (type, values, add = '') => rewinds.map(([a, b]) =>
+            `<animateTransform attributeName="transform" type="${type}"${add} calcMode="discrete" dur="${round(WAVE.patterns * WAVE.step, 3)}s" begin="loop.begin+${round(a, 3)}s" repeatDur="${round(b - a, 3)}s" values="${values.join(';')}"/>`).join('');
+        return `<g>${cycle('translate', moves.map(([shift]) => shift))}${cycle('skewX', moves.map(([, lean]) => lean), ' additive="sum"')}${body}</g>`;
+    };
+    // Red and cyan copies of a line, shown only during rewinds. They sit inside the line's moving wrapper because WebKit
+    // never passes transform animations into a <use> copy that appears after the animation has started.
+    const fringes = (id) => [[-WAVE.fringe, 'red'], [WAVE.fringe, 'cyan']]
+        .map(([x, tint]) => `<use xlink:href="#none" x="${x}" class="${tint}">${spans('xlink:href', `#${id}`, '#none', rewinds)}</use>`).join('');
+    const line = (y0, y1, id, body) => waved(y0, y1, `${fringes(id)}<g id="${id}">${body}</g>`);
+    // The spinner row can't be copied that way: its rows are <use>s with an animated href, which Chrome leaves out of a
+    // copy. Its fringes point at the rows themselves instead, switching only during rewinds, the only time they show.
+    const inRewinds = (steps) => [[0, EMPTY], ...rewinds.flatMap(([a, b]) => [...steps.filter(([t]) => t >= a && t < b), [b, EMPTY]])];
+    const rowFringes = () => [[-WAVE.fringe, 'red'], [WAVE.fringe, 'cyan']].map(([x, tint]) => `<g clip-path="url(#row)" class="${tint}">${[['v', verbSteps], ['r', statusSteps]]
+        .map(([prefix, steps]) => `<use xlink:href="#none" x="${round(G.textX + x)}" y="${G.spinnerBase}">${onRow(prefix, inRewinds(steps))}</use>`).join('')}</g>`).join('');
+    const textBand = (base) => [base - V.fontSize, base + 4];
+
+    // Spinner rows live in <defs>, drawn relative to the spinner's first cell; each <use> at `place` shows one of them.
+    const verbRows = [], statusRows = [], tails = new Map();
+    const place = `x="${G.textX}" y="${G.spinnerBase}"`;
+    const text = (x, cells, attrs, body) => `<text${attrs && ` ${attrs}`}${x ? ` x="${round(x)}"` : ''}${cells ? ` textLength="${len(cells)}"` : ''}>${body}</text>`;
+    // The shimmer is a lighter copy of the verb clipped to a band that steps across it. A gradient fill would be
+    // simpler, but WebKit paints gradient text through a fresh mask image every frame, which choked Safari. The clip
+    // sits on a wrapper because WebKit ignores a clip on <text> once the band has moved off the end of the line.
+    const addVerb = (line, cells) => verbRows.push(line.freakout
+        ? text(0, cells, `id="v${verbRows.length}" style="fill:${theme.error}"`, xml(line.text))
+        : `<g id="v${verbRows.length}">${text(0, cells, 'class="v"', xml(`${line.text}…`))}<g clip-path="url(#s${cells})">${text(0, cells, 'class="sh"', xml(`${line.text}…`))}</g></g>`) - 1;
+    // One <text> per part, each pinned to its cells: WebKit mangles textLength on text with a bold <tspan>, and without
+    // it the "↑" and "·" fall back to a wider font and push long statuses past the edge.
+    const pieces = (x, parts) => parts.map(([t, bold]) => {
+        const piece = text(x, cellsIn(t), bold ? 'class="b"' : '', xml(t));
+        x += cellsIn(t) * V.cell;
+        return piece;
+    }).join('');
+    // Everything after a status's counters (" esc to interrupt)") is the same every time, so it's drawn once and reused
+    const addStatus = (x, [head, ...tail]) => {
+        let body = pieces(x, [head]);
+        if (tail.length) {
+            const key = JSON.stringify(tail);
+            if (!tails.has(key)) tails.set(key, `<g id="t${tails.size}">${pieces(0, tail)}</g>`);
+            body += `<use xlink:href="#t${[...tails.keys()].indexOf(key)}" x="${round(x + width([head]) * V.cell)}"/>`;
+        }
+        return statusRows.push(`<g id="r${statusRows.length}" class="d">${body}</g>`) - 1;
+    };
+
     const head = [[0, V.width]], glide = [[0, 0]], oldShift = [[0, 0]];
     const verbSteps = [[0, EMPTY]], statusSteps = [[0, EMPTY]], oldRows = [[0, EMPTY]], oldStatus = [[0, EMPTY]];
-    const verbRows = [], statusRows = [], lastStatusRow = [], freakouts = [], shimmerLengths = new Set();
-    const statusText = (st) => st.parts.map(([t, bold]) => (bold ? `<tspan>${xml(t)}</tspan>` : xml(t))).join('');
-    const cellsOf = (line) => [...line.text].length + (line.freakout ? 0 : 1);
+    const lastStatusRow = [], lastStatus = [], freakouts = [], shimmerLengths = new Set();
+    const cellsOf = (line) => cellsIn(line.text) + (line.freakout ? 0 : 1);
     const scrub = (t, line) => {
         verbSteps.push([t, line]);
         statusSteps.push([t, lastStatusRow[line] ?? EMPTY]);
@@ -480,19 +547,26 @@ function renderSvg(episodes, version, claudeVersion, name) {
             else shimmerLengths.add(cells);
 
             oldRows.push([t0, prev]);
-            oldStatus.push([t0, lastStatusRow[prev] ?? EMPTY]);
+            // The new verb pushes the old status right, so trim it as statusFor would for the new verb's length;
+            // otherwise a short verb followed by a long one shoves the old status off the edge mid-character.
+            let oldRow = lastStatusRow[prev] ?? EMPTY;
+            const old = lastStatus[prev], room = statusRoom(line.text, G.cols);
+            if (old && width(old.parts) > room) {
+                const fit = STATUS_VARIANTS.find((v) => width(v(old.sample)) <= room);
+                oldRow = fit ? addStatus((was + 1) * V.cell, fit(old.sample)) : EMPTY;
+            }
+            oldStatus.push([t0, oldRow]);
             head.push([t0, G.textX], [t0 + typing, V.width]);
             glide.push([t0, 0], [t0 + typing, len(cells)], [t0 + typing + 0.05, 0]);
             oldShift.push([t0, 0], [t0 + typing, len(cells - was)], [t0 + typing + 0.05, 0]);
-            verbRows.push(row(`v${g}`, G.textX, cells, line.freakout ? `style="fill:${theme.error}"` : `fill="url(#s${cells})"`, xml(line.freakout ? line.text : `${line.text}…`)));
-            verbSteps.push([t0, g]);
+            verbSteps.push([t0, addVerb(line, cells)]);
             statusSteps.push([t0, EMPTY]);
             lastStatusRow[g] = EMPTY;
             for (const st of statusFor(line.text, line.samples, G.cols)) {
                 const start = Math.max(st.start * TICK, typing);
                 if ((st.start + st.ticks) * TICK <= start) continue;
-                statusSteps.push([t0 + start, (lastStatusRow[g] = statusRows.length)]);
-                statusRows.push(row(`r${statusRows.length}`, G.textX + (cells + 1) * V.cell, 0, 'class="d"', statusText(st)));
+                lastStatus[g] = st;
+                statusSteps.push([t0 + start, (lastStatusRow[g] = addStatus((cells + 1) * V.cell, st.parts))]);
             }
             g++;
         });
@@ -509,15 +583,16 @@ function renderSvg(episodes, version, claudeVersion, name) {
     for (const e of eps) {
         const m = e.chars.length;
         typedCells.push(...e.typedAt.map((t, k) => [t, k + 1]), [e.sent, 0], [e.back, m]);
-        for (let s = 1; s <= m; s++) typedCells.push([e.back + (s * STORY.untype) / (m + 1), m - s]);
+        for (let s = 1; s <= m; s++) typedCells.push([e.back + s * STORY.untype, m - s]);
     }
-    const input = eps.map((e) => `<text class="t" clip-path="url(#input)" x="${round(inputX)}" y="${G.inputBase}" textLength="${len(e.chars.length)}" display="none">${xml(e.prompt)}${during([e.start, e.sent], [e.back, e.end])}</text>`);
+    // Clip a wrapper, not the <text>: WebKit draws clipped text in full while the clip is zero wide.
+    const input = eps.map((e) => `<g clip-path="url(#input)" display="none">${during([e.start, e.sent], [e.back, e.end])}<text class="t" x="${round(inputX)}" y="${G.inputBase}" textLength="${len(e.chars.length)}">${xml(e.prompt)}</text></g>`);
 
-    const user = eps.map((e) => {
+    const user = eps.map((e, i) => {
         const fall = [[0, '0 0']];
         for (let t = e.slide; t < e.back; t += 1 / TYPE.fps) fall.push([t, `0 ${round((G.inputBase - G.userBase) * ((t - e.slide) / STORY.slide) ** 2)}`]);
         fall.push([e.back, '0 0']);
-        return `<g display="none">${during([e.sent, e.back])}${animate('transform', fall)}<text class="d" x="${G.textX}" y="${G.userBase}">&gt;</text><text class="t" x="${round(G.textX + 2 * V.cell)}" y="${G.userBase}" textLength="${len(e.chars.length)}">${xml(e.prompt)}</text></g>`;
+        return `<g display="none">${during([e.sent, e.back])}${animate('transform', fall)}${fringes(`u${i}`)}<g id="u${i}"><text class="d" x="${G.textX}" y="${G.userBase}">&gt;</text><text class="t" x="${round(G.textX + 2 * V.cell)}" y="${G.userBase}" textLength="${len(e.chars.length)}">${xml(e.prompt)}</text></g></g>`;
     });
     const resets = ` · resets ${Math.floor(rng.range(1, 13))}${rng.range(0, 1) < 0.5 ? 'am' : 'pm'} (UTC)`;
     const limitText = `You've hit your session limit${V.shortLimit ? '' : resets}`;
@@ -539,7 +614,17 @@ function renderSvg(episodes, version, claudeVersion, name) {
     const tri = (x) => `M${round(x)} ${round(badgeY - 4.5)}l7 -4.5v9Z`;
     const blink = [];
     for (const [a, b] of rewinds) for (let t = a; t < b; t += 0.45) blink.push([t, Math.min(t + 0.3, b)]);
-    const frozen = (e) => freakouts.filter((f) => f.start >= e.work && f.start < e.limit).flatMap((f) => (f.end < e.limit ? [[f.start, 0], [f.end, 1]] : [[f.start, 0]]));
+    // The glyph spins while Claude works and during the rewind, and gives way to the red one during a meltdown
+    const spinning = eps.flatMap((e) => {
+        const spans = [];
+        let from = e.work;
+        for (const f of freakouts.filter((f) => f.start >= e.work && f.start < e.limit)) {
+            spans.push([from, f.start]);
+            from = f.end;
+        }
+        if (from < e.limit) spans.push([from, e.limit]);
+        return [...spans, [e.rewind, e.slide]];
+    });
     const jolt = makeRng(`${version}/jolt`);
     const jitter = [[0, '0 0']];
     for (const f of freakouts) {
@@ -550,12 +635,13 @@ function renderSvg(episodes, version, claudeVersion, name) {
     const flashes = [[0, 0], ...rewinds.flatMap(([a, b]) => [[a, 0.14], [a + 0.06, 0.07], [a + 0.12, 0], [b, 0.1], [b + 0.06, 0]])];
 
     const glyphAt = `translate(${round(G.left + GLYPH.radius)} ${round(G.spinnerBase - GLYPH.lift)}) scale(${GLYPH.radius})`;
+    // The band steps one cell per SHIMMER.step across the verb, then parks past its end for a moment
     const shimmerDefs = [...shimmerLengths].sort((a, b) => a - b).map((cells) => {
         const idle = Math.round(((cells + SHIMMER.width - 1) * SHIMMER.idle) / (1 - SHIMMER.idle));
         const xs = [];
-        for (let k = 1 - SHIMMER.width; k < cells; k++) xs.push(round(G.textX + k * V.cell));
-        for (let k = 0; k < idle; k++) xs.push(round(G.textX + cells * V.cell));
-        return `<linearGradient id="s${cells}" xlink:href="#band"><animateTransform attributeName="gradientTransform" type="translate" calcMode="discrete" dur="${SHIMMER.period}s" repeatCount="indefinite" values="${xs.join(';')}"/></linearGradient>`;
+        for (let k = 1 - SHIMMER.width; k < cells; k++) xs.push(len(k));
+        for (let k = 0; k < idle; k++) xs.push(len(cells));
+        return `<clipPath id="s${cells}"><rect y="${round(headY - 6 - G.spinnerBase)}" width="${len(SHIMMER.width)}" height="${V.caret + 12}"><animate attributeName="x" calcMode="discrete" dur="${round(xs.length * SHIMMER.step, 3)}s" repeatCount="indefinite" values="${xs.join(';')}"/></rect></clipPath>`;
     });
     const clawd = renderClawd(V, G);
     const welcome = G.welcome.map(([cls, text], k) => {
@@ -564,6 +650,9 @@ function renderSvg(episodes, version, claudeVersion, name) {
     });
     const label = `${HEADER.title} A Claude Code terminal. Prompts like "${eps.map((e) => e.prompt).join('", "')}" are sent; the spinner cycles through made-up verbs until the usage limit hits, then it all rewinds like a VHS tape and the next prompt is typed`;
     const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(';');
+    // A copy's colours: every theme colour becomes the tint, and --solo hides the blinking cursor, whose CSS animation
+    // WebKit doesn't run inside a <use> copy
+    const tint = (color) => `${Object.keys(THEMES.dark).map((k) => `--${k}:${color}`).join(';')};--solo:none`;
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${V.width}" height="${G.height}" viewBox="0 0 ${V.width} ${G.height}" role="img">
 <!-- Generated by generate.mjs for ${version}: ${eps.length} prompts, ${g} lines, ${round(T)} s loop. Edit PROMPTS in generate.mjs, not this file. -->
 <title>${xml(label)}</title>
@@ -571,14 +660,14 @@ function renderSvg(episodes, version, claudeVersion, name) {
 :root{${vars(THEMES.light)}}
 @media (prefers-color-scheme:dark){:root{${vars(THEMES.dark)}}}
 text{font-family:${FONT};font-size:${V.fontSize}px;white-space:pre;font-variant-ligatures:none;font-kerning:none}
-.t{fill:${theme.text}}.d{fill:${theme.dim}}.b,tspan{font-weight:700}
-.g{fill:${theme.claude};opacity:0;animation:${round((GLYPH.frames.length * GLYPH.frameMs) / 1000)}s step-end infinite}
+.t{fill:${theme.text}}.d{fill:${theme.dim}}.b{font-weight:700}.v{fill:${theme.claude}}.sh{fill:${theme.shimmer}}
+.g{fill:${theme.claude};visibility:hidden;animation:${round((GLYPH.frames.length * GLYPH.frameMs) / 1000)}s step-end infinite}
 ${GLYPH_SHAPES.map((_, g) => frameKeyframes(`g${g}`, GLYPH.frames, (f) => f === g)).join('\n')}
 ${clawd.css}
-.cur{animation:blink ${CURSOR_BLINK}s step-end infinite}@keyframes blink{0%{opacity:1}50%,100%{opacity:0}}
+.cur{animation:blink ${CURSOR_BLINK}s step-end infinite}@keyframes blink{0%{visibility:visible}50%,100%{visibility:hidden}}
+.red{${tint(WAVE.red)}}.cyan{${tint(WAVE.cyan)}}
 </style>
 <defs>
-<linearGradient id="band" gradientUnits="userSpaceOnUse" x1="0" x2="${len(SHIMMER.width)}"><stop offset="0" style="stop-color:${theme.claude}"/><stop offset="0" style="stop-color:${theme.shimmer}"/><stop offset="1" style="stop-color:${theme.shimmer}"/><stop offset="1" style="stop-color:${theme.claude}"/></linearGradient>
 ${shimmerDefs.join('\n')}
 <rect id="head" x="${V.width}" y="${headY}" width="${HEAD}" height="${V.caret}">${animate('x', head)}${animate('x', [...glide, [T, 0]], { mode: 'linear', add: true })}</rect>
 <clipPath id="line"><rect x="0" y="${headY}" width="${V.width}" height="${V.caret}"/></clipPath>
@@ -588,64 +677,53 @@ ${shimmerDefs.join('\n')}
 <linearGradient id="caret"><stop offset="0" style="stop-color:${theme.claude}"/><stop offset="${caretStop}" style="stop-color:${theme.claude}"/><stop offset="${caretStop}" stop-opacity="0"/></linearGradient>
 <linearGradient id="tracking" x2="0" y2="1"><stop offset="0" style="stop-color:${theme.text}" stop-opacity="0"/><stop offset="0.5" style="stop-color:${theme.text}" stop-opacity="0.22"/><stop offset="1" style="stop-color:${theme.text}" stop-opacity="0"/></linearGradient>
 <clipPath id="screen"><rect x="0.5" y="0.5" width="${V.width - 1}" height="${G.height - 1}" rx="10"/></clipPath>
-<filter id="vhs" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
-<!-- The noise only varies down the page (x frequency 0), so render one narrow column and tile it: full-width
-     turbulence was slow in WebKit and blanked the whole screen during rewinds in Safari. -->
-<feTurbulence x="0" width="16" type="fractalNoise" baseFrequency="0 0.035" numOctaves="2" seed="1" result="column"><animate attributeName="seed" values="1;7;3;9;5;2;8;4" dur="0.4s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>
-<feTile in="column" result="noise"/>
-<feColorMatrix in="noise" type="matrix" values="1 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0 1" result="map"/>
-<feDisplacementMap in="SourceGraphic" in2="map" scale="16" xChannelSelector="R" yChannelSelector="G" result="warp"/>
-<feColorMatrix in="warp" type="matrix" values="0 0 0 0 1 0 0 0 0 0.1 0 0 0 0 0.25 0 0 0 0.6 0"/>
-<feOffset dx="-3" result="red"/>
-<feColorMatrix in="warp" type="matrix" values="0 0 0 0 0 0 0 0 0 0.9 0 0 0 0 1 0 0 0 0.6 0"/>
-<feOffset dx="3" result="cyan"/>
-<feMerge><feMergeNode in="red"/><feMergeNode in="cyan"/><feMergeNode in="warp"/></feMerge>
-</filter>
 <pattern id="scan" width="8" height="3" patternUnits="userSpaceOnUse"><rect width="8" height="1" style="fill:${theme.text}" opacity="0.06"/></pattern>
 ${clawd.defs}
 <clipPath id="input"><rect x="${round(inputX)}" y="${inputY}" height="${V.caret}" width="0">${animate('width', typedCells.map(([t, c]) => [t, len(c)]))}</rect></clipPath>
 <g id="none"/>
+<rect width="0" height="0"><set id="loop" attributeName="visibility" to="hidden" begin="0s;loop.end" dur="${round(T, 3)}s"/></rect>
+${[...tails.values()].join('\n')}
 ${statusRows.join('\n')}
 ${verbRows.join('\n')}
 </defs>
 <rect x="0.5" y="0.5" width="${V.width - 1}" height="${G.height - 1}" rx="10" style="fill:${theme.bg};stroke:${theme.frame}"/>
 <g clip-path="url(#screen)">
-<g filter="none">${spans('filter', 'url(#vhs)', 'none', rewinds)}<g>${animate('transform', shake)}<g>${animate('transform', [[0, 0], ...rewinds.flatMap(([a, b]) => [...whoosh(a, 1), ...whoosh(b, -1)])], { type: 'skewX' })}
-<rect x="${G.left}" y="${G.left}" width="${G.welcomeRight - G.left}" height="${G.welcomeBottom - G.left}" rx="5" fill="none" style="stroke:${theme.claude}"/>
-${clawd.svg}
-${welcome.join('\n')}
-<g display="none" style="fill:${theme.text}">${during(...blink)}
+<g>${animate('transform', shake)}<g>${animate('transform', [[0, 0], ...rewinds.flatMap(([a, b]) => [...whoosh(a, 1), ...whoosh(b, -1)])], { type: 'skewX' })}
+${line(G.left, G.welcomeBottom, 'Lbox', `<rect x="${G.left}" y="${G.left}" width="${G.welcomeRight - G.left}" height="${G.welcomeBottom - G.left}" rx="5" fill="none" style="stroke:${theme.claude}"/>`)}
+${waved(G.clawdY, G.clawdY + 3 * V.row, clawd.svg)}
+${welcome.map((w, k) => line(...textBand(G.welcomeBase(1 + k)), `Lw${k}`, w)).join('\n')}
+${line(badgeY - 13, badgeY + 5, 'Lrew', `<g display="none" style="fill:${theme.text}">${during(...blink)}
 ${V.badgeBox ? `<rect x="${round(badgeLeft - 6)}" y="${round(badgeY - 13)}" width="${round(badgeRight - badgeLeft + 12)}" height="18" rx="3" style="fill:${theme.bg}"/>` : ''}<path d="${tri(badgeLeft)}${tri(badgeLeft + 8)}"/>
 <text class="t b" x="${round(badgeRight - 3 * V.cell)}" y="${badgeY}" textLength="${len(3)}">REW</text>
-</g>
-${user.join('\n')}
+</g>`)}
+${waved(...textBand(G.userBase), user.join('\n'))}
 <g display="none">${during(...eps.map((e) => [e.limit, e.rewind]))}
 <path d="M${round(hookX)} ${round(errorBase - V.capHeight)}V${round(errorBase - 3)}H${round(hookX + V.cell)}" fill="none" style="stroke:${theme.dim}"/>
 <text style="fill:${theme.error}" x="${round(G.textX + 5 * V.cell)}" y="${errorBase}" textLength="${len([...limitText].length)}">${xml(limitText)}</text>
 <text class="d" x="${round(G.textX + 5 * V.cell)}" y="${G.spinnerBase}" textLength="${len(upgradeText.length)}">${xml(upgradeText)}</text>
 </g>
-<g clip-path="url(#row)">${animate('transform', jitter)}
-<g opacity="0">${animate('opacity', [[0, 0], ...eps.flatMap((e) => [[e.work, 1], ...frozen(e), [e.limit, 0], [e.rewind, 1], [e.slide, 0]])])}
+${waved(...textBand(G.spinnerBase), `${rowFringes()}<g clip-path="url(#row)">${animate('transform', jitter)}
+<g display="none">${during(...spinning)}
 ${GLYPH_SHAPES.map((d, g) => `<path class="g" style="animation-name:g${g}" transform="${glyphAt}" d="${d}"/>`).join('\n')}
 </g>
 <path display="none" transform="${glyphAt}" d="${GLYPH_SHAPES[4]}" style="fill:${theme.error}">${during(...freakouts.map((f) => [f.start, f.end]))}</path>
-<g clip-path="url(#typed)"><use xlink:href="#none">${onRow('v', verbSteps)}</use></g>
-<g clip-path="url(#old)"><g>${animate('transform', [...oldShift, [T, 0]], { mode: 'linear' })}<use xlink:href="#none">${onRow('v', oldRows)}</use><use xlink:href="#none">${onRow('r', oldStatus)}</use></g></g>
-<g clip-path="url(#line)"><use xlink:href="#none">${onRow('r', statusSteps)}</use></g>
+<g clip-path="url(#typed)"><use xlink:href="#none" ${place}>${onRow('v', verbSteps)}</use></g>
+<g clip-path="url(#old)"><g>${animate('transform', [...oldShift, [T, 0]], { mode: 'linear' })}<use xlink:href="#none" ${place}>${onRow('v', oldRows)}</use><use xlink:href="#none" ${place}>${onRow('r', oldStatus)}</use></g></g>
+<g clip-path="url(#line)"><use xlink:href="#none" ${place}>${onRow('r', statusSteps)}</use></g>
 <use xlink:href="#head" fill="url(#caret)"/>
-</g>
-<rect x="${G.left}" y="${G.boxTop}" width="${G.right - G.left}" height="${G.boxBottom - G.boxTop}" rx="5" fill="none" style="stroke:${theme.border}"/>
-<text x="${G.textX}" y="${G.inputBase}" class="d">&gt;</text>
+</g>`)}
+${line(G.boxTop, G.boxBottom, 'Lbox2', `<rect x="${G.left}" y="${G.boxTop}" width="${G.right - G.left}" height="${G.boxBottom - G.boxTop}" rx="5" fill="none" style="stroke:${theme.border}"/>`)}
+${line(inputY, inputY + V.caret, 'Lin', `<text x="${G.textX}" y="${G.inputBase}" class="d">&gt;</text>
 ${input.join('\n')}
-<rect class="cur" x="${round(inputX)}" y="${inputY}" width="${V.cell}" height="${V.caret}" style="fill:${theme.cursor}">${animate('x', typedCells.map(([t, c]) => [t, round(inputX + c * V.cell)]))}</rect>
-<text x="${G.textX}" y="${G.hintBase}" textLength="${len(15)}" class="d">? for shortcuts</text>
-</g></g></g>
+<rect class="cur" x="${round(inputX)}" y="${inputY}" width="${V.cell}" height="${V.caret}" style="fill:${theme.cursor};display:var(--solo,inline)">${animate('x', typedCells.map(([t, c]) => [t, round(inputX + c * V.cell)]))}</rect>`)}
+${line(...textBand(G.hintBase), 'Lhint', `<text x="${G.textX}" y="${G.hintBase}" textLength="${len(15)}" class="d">? for shortcuts</text>`)}
+</g></g>
 <g display="none">${during(...rewinds)}
 <rect width="${V.width}" height="${G.height}" fill="url(#scan)"/>
 <g><animateTransform attributeName="transform" type="translate" calcMode="discrete" dur="0.3s" repeatCount="indefinite" values="${roll}"/>
 ${[G.height, G.height - half].map((y) => `<rect y="${round(y)}" width="${V.width}" height="${bandH}" fill="url(#tracking)"/>`).join('')}
 </g></g>
-<rect width="${V.width}" height="${G.height}" style="fill:${theme.text}" opacity="0">${animate('opacity', flashes)}</rect>
+<rect width="${V.width}" height="${G.height}" style="fill:${theme.text}" opacity="0" display="none">${during(...rewinds.flatMap(([a, b]) => [[a, a + 0.12], [b, b + 0.06]]))}${animate('opacity', flashes)}</rect>
 </g>
 </svg>
 `;
@@ -687,7 +765,7 @@ function renderClawd(V, G) {
     const css = keys.map((key, k) => {
         const [entrance, loop] = [timeline(`e${k}`, CLAWD.entrance, key), timeline(`l${k}`, CLAWD.loop, key)];
         const uses = [entrance && `e${k} ${inFor}s step-end both`, loop && `l${k} ${loopFor}s step-end ${inFor}s infinite`].filter(Boolean);
-        return `.c${k}{opacity:0;animation:${uses.join(',')}}${entrance ?? ''}${loop ?? ''}`;
+        return `.c${k}{visibility:hidden;animation:${uses.join(',')}}${entrance ?? ''}${loop ?? ''}`;
     });
     return {
         css: css.join('\n'),
@@ -696,9 +774,10 @@ function renderClawd(V, G) {
     };
 }
 
+// Frames hide with visibility rather than opacity:0, which WebKit still paints through an offscreen layer.
 function frameKeyframes(name, frames, on) {
-    const stops = frames.map((frame, f) => (f === 0 || on(frame) !== on(frames[f - 1]) ? `${round((f / frames.length) * 100, 4)}%{opacity:${on(frame) ? 1 : 0}}` : ''));
-    return `@keyframes ${name}{${stops.join('')}100%{opacity:0}}`;
+    const stops = frames.map((frame, f) => (f === 0 || on(frame) !== on(frames[f - 1]) ? `${round((f / frames.length) * 100, 4)}%{visibility:${on(frame) ? 'visible' : 'hidden'}}` : ''));
+    return `@keyframes ${name}{${stops.join('')}100%{visibility:hidden}}`;
 }
 
 function dot(r) {
