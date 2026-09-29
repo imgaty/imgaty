@@ -203,87 +203,10 @@ const CLAWD = {
         'look-right': [' ▐█▟███▟', '▝▜██████▀', ' ▝▝   ▝▝ '],
         'arms-up': ['▗▟▛███▛█▄', ' ▜██████▘', ' ▝▝   ▝▝ '],
     },
-    sprites: {
-        blink: [
-            '....................',
-            '....................',
-            '...CCCCCCCCCCCCC....',
-            '...CCCCCCCCCCCCC....',
-            '.CCCCCCCCCCCCCCCCC..',
-            '...CCCCCCCCCCCCC....',
-            '...C.C.......C.C....',
-            '....................'],
-        'wave-out': [
-            '....................',
-            '....................',
-            '...CCCCCCCCCCCCC....',
-            '...CCECCCCCCCECCCC..',
-            '.CCCCCCCCCCCCCCCC...',
-            '...CCCCCCCCCCCCC....',
-            '...C.C.......C.C....',
-            '....................'],
-        'wave-up': [
-            '....................',
-            '....................',
-            '...CCCCCCCCCCCCC.C..',
-            '...CCECCCCCCCECC.C..',
-            '.CCCCCCCCCCCCCCCC...',
-            '...CCCCCCCCCCCCC....',
-            '...C.C.......C.C....',
-            '....................'],
-        flower: [
-            '..................P.',
-            '.................PYP',
-            '...CCCECCCCCCCEC..G.',
-            '...CCCCCCCCCCCCCCCG.',
-            '.CCCCCCCCCCCCCCCC...',
-            '...CCCCCCCCCCCCC....',
-            '...C.C.......C.C....',
-            '....................'],
-        'flower-sniff': [
-            '..................P.',
-            '.................PYP',
-            '...CCCCCCCCCCCCC..G.',
-            '...CCCCCCCCCCCCCCCG.',
-            '.CCCCCCCCCCCCCCCC...',
-            '...CCCCCCCCCCCCC....',
-            '...C.C.......C.C....',
-            '....................'],
-        'laptop-open': [
-            '....................',
-            '....................',
-            '...CCCCCCCCCCCCC....',
-            '...CCECCCCCCCECC....',
-            '.CCCCCCCCCCCCCCCCC..',
-            '...CCCCCCCCCCCCC....',
-            '..LLLLLLLWLLLLLLL...',
-            'KKKKKKKKKKKKKKKKKKK.'],
-        'type-right': [
-            '....................',
-            '....................',
-            '...CCCCCCCCCCCCC....',
-            '...CCCCCCCCCCCCC....',
-            '...CCECCCCCCCECCCC..',
-            '..LLLLLLLLLLLLLLL...',
-            '..LLLLLLLWLLLLLLL...',
-            'KKKKKKKKKKKKKKKKKKK.'],
-        'type-left': [
-            '....................',
-            '....................',
-            '...CCCCCCCCCCCCC....',
-            '...CCCCCCCCCCCCC....',
-            '.CCCCECCCCCCCECC....',
-            '..LLLLLLLLLLLLLLL...',
-            '..LLLLLLLWLLLLLLL...',
-            'KKKKKKKKKKKKKKKKKKK.'],
-    },
-    palette: { C: '#D77757', E: '#000000', L: '#9A9DA4', W: '#C9CDD4', K: '#5E6168', G: '#3FB950', P: '#F778BA', Y: '#F2CC60' },
     eyes: { line: 0, from: 2, to: 8 },
     puffs: { dot: '·', wave: '~' },
     frameMs: 60,
     cols: 9,
-    above: 2,
-    width: 20,
 };
 {
     const hold = (pose, frames, crouch = 0, x = 0) => Array(frames).fill([pose, crouch, '', x]);
@@ -291,13 +214,11 @@ const CLAWD = {
     const idle = [...hold('default', 12), ...hold('look-right', 5), ...hold('look-left', 5)];
     const spin = [...hold('look-left', 2), ...hold('look-right', 2), ...hold('look-left', 2), ...hold('arms-up', 3), ...hold('default', 1)];
     CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, [['default', 1, 'dot', 0], ['default', 1, 'wave', 0]])];
-    const jump = [...hold('default', 1, 1), ...[['default', 1, 'dot', 0], ['default', 1, 'wave', 0]], ...hold('arms-up', 3), ...hold('default', 1)];
-    const blinking = [...hold('default', 10), ...hold('blink', 2), ...hold('default', 10)];
-    const wave = [...hold('wave-out', 2), ...[3, 3, 3, 3, 3].flatMap((n, k) => hold(k % 2 ? 'wave-out' : 'wave-up', n)), ...hold('default', 4)];
-    const flower = [...hold('wave-out', 2), ...hold('flower', 14), ...hold('flower-sniff', 10), ...hold('flower', 8), ...hold('wave-out', 2), ...hold('default', 4)];
-    const typing = [4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].flatMap((n, k) => hold(k % 2 ? 'type-left' : 'type-right', n));
-    const laptop = [...hold('laptop-open', 3), ...typing, ...hold('type-right', 8), ...hold('laptop-open', 3), ...hold('default', 4)];
-    CLAWD.loop = [...idle, ...wave, ...idle, ...jump, ...jump, ...blinking, ...laptop, ...idle, ...spin, ...blinking, ...flower];
+    const poof = [['default', 1, 'dot', 0], ['default', 1, 'wave', 0]];
+    const jump = [...poof, ...hold('arms-up', 3), ...hold('default', 1), ...poof, ...hold('arms-up', 3), ...hold('default', 1)];
+    const look = [...hold('look-right', 5), ...hold('look-left', 5), ...hold('default', 1)];
+    const celebrate = [...jump, ...hold('default', 3, 1)];
+    CLAWD.loop = [...idle, ...jump, ...idle, ...look, ...idle, ...spin, ...idle, ...celebrate];
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
@@ -840,7 +761,7 @@ ${verbRows.join('\n')}
 <g clip-path="url(#screen)">
 <g>${animate('transform', shake)}<g>${animate('transform', [[0, 0], ...rewinds.flatMap(([a, b]) => [...whoosh(a, 1), ...whoosh(b, -1)])], { type: 'skewX' })}
 ${banner}
-${waved(G.clawdY - V.row, G.clawdY + 3 * V.row, clawd.svg)}
+${waved(G.clawdY, G.clawdY + 3 * V.row, clawd.svg)}
 ${line(badgeY - 13, badgeY + 5, 'Lrew', `<g display="none" style="fill:${theme.text}">${during(...blink)}
 ${V.badgeBox ? `<rect x="${round(badgeLeft - 6)}" y="${round(badgeY - 13)}" width="${round(badgeRight - badgeLeft + 12)}" height="18" rx="3" style="fill:${theme.bg}"/>` : ''}<path d="${tri(badgeLeft)}${tri(badgeLeft + 8)}"/>
 <text class="t b" x="${round(badgeRight - 3 * V.cell)}" y="${badgeY}" textLength="${len(3)}">REW</text>
@@ -934,24 +855,12 @@ function renderClawd(V, G) {
     const { cell, row, fontSize } = V;
     const QUADS = { '▘': 8, '▝': 4, '▖': 2, '▗': 1, '▀': 12, '▄': 3, '▌': 10, '▐': 5, '▛': 14, '▜': 13, '▙': 11, '▟': 7, '█': 15 };
     const [px, py] = [cell / 2, row / 2];
-    const sprite = (pose) => {
-        if (CLAWD.sprites[pose]) return CLAWD.sprites[pose];
-        const grid = Array.from({ length: CLAWD.above + 6 }, () => Array(CLAWD.width).fill('.'));
-        CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => {
-            for (let b = 0; b < 4; b++) {
-                const [y, x, on] = [2 * l + (b >> 1), 2 * c + (b & 1), ((QUADS[ch] ?? 0) >> (3 - b)) & 1];
-                const eye = !on && l === CLAWD.eyes.line && c >= CLAWD.eyes.from && c < CLAWD.eyes.to;
-                if (on || eye) grid[CLAWD.above + y][x] = on ? 'C' : 'E';
-            }
-        }));
-        return grid.map((r) => r.join(''));
-    };
-    const rects = (grid, letter, dx, dy) =>
-        grid.map((line, y) => {
+    const rects = (grid, dx, dy) =>
+        grid.map((cols, y) => {
             let d = '';
-            for (let x = 0, end; x < line.length; x = end + 1) {
-                for (end = x; line[end] === letter && line[end + 1] === letter; end++);
-                if (line[x] === letter) d += `M${round(G.clawdX + dx + x * px)} ${round(G.clawdY + dy + (y - CLAWD.above) * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
+            for (let x = 0, end; x < cols.length; x = end + 1) {
+                for (end = x; cols[end] && cols[end + 1]; end++);
+                if (cols[x]) d += `M${round(G.clawdX + dx + x * px)} ${round(G.clawdY + dy + y * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
             }
             return d;
         }).join('');
@@ -960,14 +869,17 @@ function renderClawd(V, G) {
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
         if (+shift <= -CLAWD.cols) return `<g class="c${k}"/>`;
-        const grid = sprite(pose);
+        const [body, eyes] = [[], []];
+        CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => {
+            for (let b = 0; b < 4; b++) {
+                const [y, x, on] = [2 * l + (b >> 1), 2 * c + (b & 1), ((QUADS[ch] ?? 0) >> (3 - b)) & 1];
+                (body[y] ??= [])[x] = !!on;
+                (eyes[y] ??= [])[x] = !on && l === CLAWD.eyes.line && c >= CLAWD.eyes.from && c < CLAWD.eyes.to;
+            }
+        }));
         const [dx, dy] = [+shift * cell, +crouch * row];
-        const layers = Object.entries(CLAWD.palette).map(([letter, color]) => {
-            const d = rects(grid, letter, dx, dy);
-            return d && `<path fill="${color}" d="${d}"/>`;
-        }).join('');
         const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.clawdX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
-        return `<g class="c${k}">${layers}${puffs}</g>`;
+        return `<g class="c${k}"><path fill="#D77757" d="${rects(body, dx, dy)}"/><path fill="#000000" d="${rects(eyes, dx, dy)}"/>${puffs}</g>`;
     });
     const seconds = (frames) => round((frames.length * CLAWD.frameMs) / 1000);
     const [inFor, loopFor] = [seconds(CLAWD.entrance), seconds(CLAWD.loop)];
@@ -979,7 +891,7 @@ function renderClawd(V, G) {
     });
     return {
         css: css.join('\n'),
-        defs: `<clipPath id="clawd"><rect x="${G.clawdX}" y="${round(G.clawdY - CLAWD.above * py)}" width="${round(CLAWD.width * px)}" height="${round(3 * row + CLAWD.above * py)}"/></clipPath>`,
+        defs: `<clipPath id="clawd"><rect x="${G.clawdX}" y="${G.clawdY}" width="${round(CLAWD.cols * cell)}" height="${3 * row}"/></clipPath>`,
         svg: `<g clip-path="url(#clawd)">\n${groups.join('\n')}\n</g>`,
     };
 }
