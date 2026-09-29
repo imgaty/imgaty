@@ -292,7 +292,7 @@ function clawdLoop(date) {
     return order.flatMap((name) => [...Array.from({ length: CLAWD.combosPerScene }, idle).flat(), ...CLAWD.still, ...CLAWD.actions[name]]);
 }
 
-const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
+const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18 };
 const VIEWS = {
     desktop: { ...TEXT, file: 'spinner.svg', width: 820, pad: 24, stacked: false, shortLimit: false, badgeBox: false },
     mobile: { ...TEXT, file: 'spinner-mobile.svg', width: 470, pad: 16, stacked: true, shortLimit: true, badgeBox: true },
@@ -302,41 +302,56 @@ const cellsIn = (text) => [...text].length;
 const LAYOUTS = Object.fromEntries(Object.entries(VIEWS).map(([name, view]) => [name, makeLayout(view)]));
 const MIN_COLS = Math.min(...Object.values(LAYOUTS).map((l) => l.cols));
 
-function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stacked }) {
-    const left = pad + 0.5;
-    const right = width - left;
-    const textX = round(left + 2 * cell);
+// Everything sits on one character grid, like a real terminal: text starts on whole columns and every baseline sits on a
+// whole row; box borders and rules take a row (or column) of their own, like box-drawing characters would.
+function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
+    const gridCols = Math.floor((width - 2 * pad) / cell);
+    const left = Math.round((width - gridCols * cell) / 2) + 0.5;
+    const top = pad + 0.5;
+    const col = (c) => round(left + c * cell);
+    const right = col(gridCols);
+    const textX = col(2);
     const leftCells = Math.max(...[BANNER.welcome, `Fable 99.9 · ${BANNER.plan}`, BANNER.cwd].map(cellsIn), CLAWD.cols) + 4;
-    const divider = stacked ? null : round(left + leftCells * cell);
-    const leftMid = stacked ? (left + right) / 2 : (left + divider) / 2;
-    const rightX = stacked ? textX : round(divider + 2 * cell);
-    const rightCols = Math.floor((right - 2 * cell - rightX) / cell);
-    const heatPitch = (right - 2 * cell - rightX) / HEAT.weeks;
+    const divider = stacked ? null : col(leftCells);
+    const [midFrom, midTo] = stacked ? [0, gridCols] : [0, leftCells];
+    const rightCol = stacked ? 2 : leftCells + 2;
+    const rightCols = gridCols - 2 - rightCol;
+    const heatPitch = (rightCols * cell) / HEAT.weeks;
     const heatRows = Math.ceil((7 * heatPitch) / row);
     const rightRows = 6 + heatRows;
     // stacked: the left block, a rule, then the right block; side by side: the left block centred against the right
-    const leftRow = stacked ? 1.5 : 1 + (Math.max(BANNER.leftRows, rightRows) - BANNER.leftRows) / 2;
+    const leftRow = stacked ? 1 : 1 + Math.floor((Math.max(BANNER.leftRows, rightRows) - BANNER.leftRows) / 2);
     const splitRow = stacked ? leftRow + BANNER.leftRows : null;
     const rightRow = stacked ? splitRow + 1 : 1;
-    const rows = rightRow + rightRows - 1;
-    const bannerBottom = left + (rows + 1) * row;
-    const userBase = bannerBottom + pad + capHeight;
-    const spinnerBase = userBase + 2 * row;
-    const boxTop = Math.round(spinnerBase + pad) + 0.5;
-    const boxBottom = boxTop + 2 * row;
-    const hintBase = boxBottom + hintGap + capHeight;
+    const rows = Math.max(rightRow + rightRows - 1, leftRow + BANNER.leftRows - 1);
+    // below the banner, one blank row between each piece: the sent prompt, the spinner, the input box, then its hint
+    const bannerRow = rows + 1;
+    const userRow = bannerRow + 2;
+    const spinnerRow = userRow + 2;
+    const boxRow = spinnerRow + 2;
+    const hintRow = boxRow + 3;
+    const rowY = (line) => round(top + line * row);
+    const baseAt = (line) => round(top + line * row + fontSize * 0.35);
     return {
-        left, right, textX, divider, leftMid, rightX, leftRow, bannerBottom, boxTop, boxBottom, hintBase,
-        rightRow, splitRow, rightCols, heatPitch,
-        rowY: (line) => round(left + line * row),
-        welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
-        clawdX: round(leftMid - (CLAWD.cols / 2) * cell),
-        clawdY: left + (leftRow + 3.5) * row,
-        userBase: round(userBase),
-        spinnerBase: round(spinnerBase),
-        inputBase: round((boxTop + boxBottom) / 2 + fontSize * 0.35),
-        height: hintBase + pad + 0.5,
-        cols: Math.floor((width - left - textX) / cell),
+        left, right, top, textX, divider, leftRow, rightRow, splitRow, rightCols, heatPitch,
+        rightX: col(rightCol),
+        // centred text still starts on a whole column
+        centerX: (cells) => col(Math.round((midFrom + midTo - cells) / 2)),
+        // right-aligned text ends two columns in from the border
+        endX: (cells) => col(gridCols - 2 - cells),
+        rowY,
+        welcomeBase: baseAt,
+        bannerBottom: rowY(bannerRow),
+        clawdX: col(Math.round((midFrom + midTo - CLAWD.cols) / 2)),
+        clawdY: top + (leftRow + 3.5) * row,
+        userBase: baseAt(userRow),
+        spinnerBase: baseAt(spinnerRow),
+        boxTop: rowY(boxRow),
+        boxBottom: rowY(boxRow + 2),
+        inputBase: baseAt(boxRow + 1),
+        hintBase: baseAt(hintRow),
+        height: Math.round(rowY(hintRow) + row / 2 + pad),
+        cols: gridCols - 2,
     };
 }
 
@@ -874,7 +889,7 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     const len = (cells) => round(cells * V.cell);
     const words = [];
     const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
-    const centered = (row, cls, t) => say(G.leftMid - (cellsIn(t) / 2) * V.cell, row, cls, t);
+    const centered = (row, cls, t) => say(G.centerX(cellsIn(t)), row, cls, t);
     centered(G.leftRow, 't b', BANNER.welcome);
     centered(G.leftRow + 8, 'd', `${model} · ${BANNER.plan}`);
     centered(G.leftRow + 9, 'd', BANNER.cwd);
@@ -895,12 +910,12 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
         const total = weeks.reduce((n, w) => n + (w.count ?? 0), 0).toLocaleString('en');
         const captions = [`${total} contributions in the last ${Math.round((weeks.length * 7) / 30.44)} months`, `${total} contributions`];
         const caption = captions.find((c) => cellsIn('Recent activity') + 2 + cellsIn(c) <= G.rightCols);
-        if (caption) say(x1 - cellsIn(caption) * V.cell, R + 5, 'd', caption);
+        if (caption) say(G.endX(cellsIn(caption)), R + 5, 'd', caption);
     } else say(G.rightX, R + 6, 'd', 'No recent activity');
 
     const title = `Claude Code v${claudeVersion}`;
     const titleX = round(G.left + 3 * V.cell);
-    const [x0, y0, x1, y1, r] = [G.left, G.left, G.right, G.bannerBottom, 5];
+    const [x0, y0, x1, y1, r] = [G.left, G.top, G.right, G.bannerBottom, 5];
     const box = `M${round(titleX + (cellsIn(title) + 1) * V.cell)} ${y0}H${x1 - r}A${r} ${r} 0 0 1 ${x1} ${y0 + r}V${y1 - r}A${r} ${r} 0 0 1 ${x1 - r} ${y1}`
         + `H${x0 + r}A${r} ${r} 0 0 1 ${x0} ${y1 - r}V${y0 + r}A${r} ${r} 0 0 1 ${x0 + r} ${y0}H${round(titleX - V.cell)}`;
     const stroke = (id, ya, yb, d) => line(ya, yb, id, `<path d="${d}" fill="none" style="stroke:${theme.claude}"/>`);
@@ -910,7 +925,7 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
         line(...textBand(G.welcomeBase(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.welcomeBase(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
         G.divider ? stroke('Ldiv', y0 + 0.6 * V.row, y1 - 0.6 * V.row, `M${G.divider} ${round(y0 + 0.6 * V.row)}V${round(y1 - 0.6 * V.row)}`) : '',
         G.splitRow ? rule('Lsplit', G.textX, G.splitRow) : '',
-        rule('Lrule', G.rightX, R + 3.5),
+        rule('Lrule', G.rightX, R + 4),
         chart,
         ...words.map(([x, row, cls, t], k) => line(...textBand(G.welcomeBase(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.welcomeBase(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
     ].filter(Boolean).join('\n');
