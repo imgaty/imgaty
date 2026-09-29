@@ -906,11 +906,12 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     let chart = '';
     if (calendar?.weeks.length) {
         const pitch = G.heatPitch, weeks = calendar.weeks.slice(-HEAT.weeks);
-        const top = G.rowY(A + 0.5) + (G.heatRows * V.row - 7 * pitch) / 2;
         const size = round(pitch * HEAT.fill);
+        // its last row of squares ends on the baseline of the column's last text row, like the text beside it
+        const bottom = G.baseAt(A + G.heatRows), top = bottom - 6 * pitch - size;
         const start = G.endX(0) - weeks.length * pitch;
         const cells = weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
-        chart = line(G.rowY(A + 0.5), top + 7 * pitch, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>${cells.join('')}`);
+        chart = line(top, bottom, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>${cells.join('')}`);
         const total = weeks.reduce((n, w) => n + (w.count ?? 0), 0).toLocaleString('en');
         const captions = [`${total} contributions in the last ${Math.round((weeks.length * 7) / 30.44)} months`, `${total} contributions`];
         const caption = captions.find((c) => cellsIn('Recent activity') + 2 + cellsIn(c) <= G.rightCols);
