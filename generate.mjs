@@ -192,7 +192,7 @@ const BANNER = {
     plan: 'Claude Max',
     cwd: '/home/imgaty',
     about: ['Professional Claude Verbal Abuser™', 'Making whatever since 2024'],
-    leftRows: 10,
+    leftRows: 8,
 };
 const HEAT = { weeks: 53, fill: 0.8, radius: 2, labelSize: 11, levels: ['NONE', 'FIRST_QUARTILE', 'SECOND_QUARTILE', 'THIRD_QUARTILE', 'FOURTH_QUARTILE'] };
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
@@ -228,8 +228,7 @@ const CLAWD = {
             return hold(`scene:${name}:${frame}`, ticks);
         });
     };
-    // after peeking in from the box's edge and ducking back out, he hops back in the way he first arrived
-    CLAWD.loop = [...idle, ...scene('study'), ...idle, ...jump, ...idle, ...look, ...scene('bath'), ...idle, ...spin, ...idle, ...celebrate, ...scene('peek'), ...CLAWD.entrance];
+    CLAWD.loop = [...idle, ...jump, ...idle, ...look, ...scene('dance'), ...idle, ...spin, ...idle, ...celebrate];
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
@@ -270,7 +269,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
         rowY: (line) => round(left + line * row),
         welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
         clawdX: round(leftMid - (CLAWD.cols / 2) * cell),
-        clawdY: left + (leftRow + 3.5) * row,
+        clawdY: left + (leftRow + 1.5) * row,
         userBase: round(userBase),
         spinnerBase: round(spinnerBase),
         inputBase: round((boxTop + boxBottom) / 2 + fontSize * 0.35),
@@ -816,8 +815,8 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
     const centered = (row, cls, t) => say(G.leftMid - (cellsIn(t) / 2) * V.cell, row, cls, t);
     centered(G.leftRow, 't b', BANNER.welcome);
-    centered(G.leftRow + 8, 'd', `${model} · ${BANNER.plan}`);
-    centered(G.leftRow + 9, 'd', BANNER.cwd);
+    centered(G.leftRow + 6, 'd', `${model} · ${BANNER.plan}`);
+    centered(G.leftRow + 7, 'd', BANNER.cwd);
     const R = G.rightRow;
     say(G.rightX, R, 'v', 'About me');
     BANNER.about.forEach((t, k) => say(G.rightX, R + 1 + k, 't', t));
@@ -864,9 +863,9 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
 
 function renderClawd(V, G) {
     const { cell, row, fontSize } = V;
-    // square pixels, sized so his body is as wide as the terminal sprite's; his arms start at `left` and his feet stand on `floor`
+    // square pixels, sized so his body is as wide as the terminal sprite's; his arms start at `left`
     const block = (13 * cell) / 16;
-    const [left, floor] = [G.clawdX + 4.75 * cell - 6 * block, G.clawdY + 8 * block];
+    const left = G.clawdX + 4.75 * cell - 6 * block;
     const draw = (grid, x0, y0, size = block) => Object.entries(SCENE_PALETTE).map(([letter, color]) => {
         let d = '';
         grid.forEach((line, y) => {
@@ -878,10 +877,9 @@ function renderClawd(V, G) {
         return d && `<path fill="${color}" d="${d}"/>`;
     }).join('');
     const sceneFrame = (k, name, frame) => {
-        const { body, cell: scale = 1, edge, frames } = SCENES[name], grid = frames[frame], size = scale * block;
-        // an edge scene peeks in from behind the box's border; the others line his resting body up with the terminal Clawd
-        const [x0, y0] = edge ? [G.left + 0.5, floor - grid.length * size] : [left - body[0] * size, G.clawdY - body[1] * size];
-        return `<g class="c${k}">${draw(grid, x0, y0, size)}</g>`;
+        // line his resting body up with the terminal Clawd's
+        const { body, cell: scale = 1, frames } = SCENES[name], size = scale * block;
+        return `<g class="c${k}">${draw(frames[frame], left - body[0] * size, G.clawdY - body[1] * size, size)}</g>`;
     };
     const frameKey = (frame) => frame.join('/');
     const keys = [...new Set([...CLAWD.entrance, ...CLAWD.loop].map(frameKey))];
