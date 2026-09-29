@@ -192,7 +192,7 @@ const BANNER = {
     plan: 'Claude Max',
     cwd: '/home/imgaty',
     about: ['Professional Claude Verbal Abuser™', 'Making whatever since 2024'],
-    leftRows: 8,
+    leftRows: 9,
 };
 const HEAT = { weeks: 53, fill: 0.8, radius: 2, labelSize: 11, levels: ['NONE', 'FIRST_QUARTILE', 'SECOND_QUARTILE', 'THIRD_QUARTILE', 'FOURTH_QUARTILE'] };
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
@@ -269,7 +269,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
         rowY: (line) => round(left + line * row),
         welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
         clawdX: round(leftMid - (CLAWD.cols / 2) * cell),
-        clawdY: left + (leftRow + 1.5) * row,
+        clawdY: left + (leftRow + 2.5) * row,
         userBase: round(userBase),
         spinnerBase: round(spinnerBase),
         inputBase: round((boxTop + boxBottom) / 2 + fontSize * 0.35),
@@ -815,8 +815,8 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
     const centered = (row, cls, t) => say(G.leftMid - (cellsIn(t) / 2) * V.cell, row, cls, t);
     centered(G.leftRow, 't b', BANNER.welcome);
-    centered(G.leftRow + 6, 'd', `${model} · ${BANNER.plan}`);
-    centered(G.leftRow + 7, 'd', BANNER.cwd);
+    centered(G.leftRow + 7, 'd', `${model} · ${BANNER.plan}`);
+    centered(G.leftRow + 8, 'd', BANNER.cwd);
     const R = G.rightRow;
     say(G.rightX, R, 'v', 'About me');
     BANNER.about.forEach((t, k) => say(G.rightX, R + 1 + k, 't', t));
