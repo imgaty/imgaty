@@ -797,7 +797,7 @@ function renderBanner(V, G, claudeVersion, { model, weeks }, line, textBand, the
         const [x0, x1, bottom, eighth] = [G.rightX, G.right - 2 * V.cell, G.rowY(R + 7.5) - 2, V.row / 8];
         const [slot, peak] = [(x1 - x0) / weeks.length, Math.max(...weeks)];
         const bars = weeks.map((n, k) => {
-            const h = n && Math.max(1, Math.round((n / peak) * 23)) * eighth;
+            const h = n && Math.max(1, Math.round(Math.sqrt(n / peak) * 23)) * eighth;
             return h ? `M${round(x0 + k * slot + slot * 0.15)} ${round(bottom)}h${round(slot * 0.7)}v${round(-h)}h${round(-slot * 0.7)}Z` : '';
         }).join('');
         chart = line(G.rowY(R + 4.5), bottom + 1, 'Lchart', `<path d="M${round(x0)} ${round(bottom + 0.5)}H${round(x1)}" style="stroke:${theme.border}"/><path d="${bars}" style="fill:${theme.claude}"/>`);
