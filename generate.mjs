@@ -195,7 +195,7 @@ const BANNER = {
     leftRows: 10,
 };
 const HEAT = { weeks: 53, fill: 0.8, radius: 2, labelSize: 11, levels: ['NONE', 'FIRST_QUARTILE', 'SECOND_QUARTILE', 'THIRD_QUARTILE', 'FOURTH_QUARTILE'] };
-const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
+const STORY = { lead: 3.5, pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
     // The Claude Code CLI's poses at the Claude app's resolution (square pixels). default is the app's own still; the others
@@ -234,11 +234,12 @@ const CLAWD = {
         jump, look, spin, celebrate,
         ...Object.fromEntries(['dancing', 'jumping', 'jumpinghappy', 'soccer', 'crabwalking', 'racingcar', 'magnifier', 'cloud', 'book', 'lurking'].map((name) => [name, scene(name)])),
     };
-    CLAWD.rest = Math.round(15000 / (idle.length * CLAWD.frameMs));
+    // between actions he mostly stands still, with one slow glance around halfway through (about 15 s in all)
+    CLAWD.rest = [...hold('default', 120), ...hold('look-right', 10), ...hold('look-left', 10), ...hold('default', 110)];
 }
 
 // After his intro he idles about 15 s between actions, taking them in an order shuffled for the day.
-const clawdLoop = (date) => makeRng(`${date}/clawd`).shuffle(Object.keys(CLAWD.actions)).flatMap((a) => [...Array(CLAWD.rest).fill(CLAWD.idle).flat(), ...CLAWD.actions[a]]);
+const clawdLoop = (date) => makeRng(`${date}/clawd`).shuffle(Object.keys(CLAWD.actions)).flatMap((a) => [...CLAWD.rest, ...CLAWD.actions[a]]);
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
 const VIEWS = {
@@ -550,7 +551,8 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
     let clock = 0;
     const eps = episodes.map((ep) => {
         const [start, chars, typedAt] = [clock, [...ep.prompt], []];
-        clock += STORY.pause;
+        // the first prompt waits for Clawd's entrance and wave before it starts typing
+        clock += STORY.pause + (start === 0 ? STORY.lead : 0);
         for (const ch of chars) {
             typedAt.push(clock);
             clock += STORY.perChar * rng.range(0.6, 1.5) * (ch === ' ' ? 1.4 : 1);
