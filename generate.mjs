@@ -245,9 +245,10 @@ const CLAWD = {
         ['glance', 'jump'],
         ['crouch', 'hop', 'spin', 'crouch'],
     ].map((combo) => combo.flatMap((move, k) => [...(k ? beat : []), ...moves[move]]));
-    // the Claude app's scenes, one after every CLAWD.combosPerScene combos
-    CLAWD.actions = Object.fromEntries(['dancing', 'jumping', 'jumpinghappy', 'soccer', 'crabwalking', 'racingcar', 'magnifier', 'cloud', 'book', 'lurking'].map((name) => [name, scene(name)]));
-    CLAWD.combosPerScene = 5;
+    // the Claude app's scenes, one after every CLAWD.combosPerScene combos; weight is how often each plays per cycle
+    CLAWD.weights = { dancing: 3, book: 3, magnifier: 3, jumping: 2, jumpinghappy: 2, soccer: 2, crabwalking: 2, racingcar: 1, cloud: 1 };
+    CLAWD.actions = Object.fromEntries(Object.keys(CLAWD.weights).map((name) => [name, scene(name)]));
+    CLAWD.combosPerScene = 3;
 }
 
 // After his intro he loops through every scene in an order shuffled for the day, with idle combos drawn from a shuffled
@@ -259,7 +260,11 @@ function clawdLoop(date) {
         if (!deck.length) deck = rng.shuffle(CLAWD.combos);
         return [...CLAWD.still, ...deck.pop()];
     };
-    return rng.shuffle(Object.keys(CLAWD.actions)).flatMap((name) => [...Array.from({ length: CLAWD.combosPerScene }, idle).flat(), ...CLAWD.still, ...CLAWD.actions[name]]);
+    // the day's scene order, reshuffled until the same scene never plays twice in a row (wrapping around the loop too)
+    const pool = Object.entries(CLAWD.weights).flatMap(([name, n]) => Array(n).fill(name));
+    let order = rng.shuffle(pool);
+    for (let tries = 0; tries < 200 && order.some((name, i) => name === order[(i + 1) % order.length]); tries++) order = rng.shuffle(pool);
+    return order.flatMap((name) => [...Array.from({ length: CLAWD.combosPerScene }, idle).flat(), ...CLAWD.still, ...CLAWD.actions[name]]);
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
@@ -909,10 +914,9 @@ function renderClawd(V, G, loop) {
         return d && `<path fill="${color}" d="${d}"/>`;
     }).join('');
     const sceneFrame = (k, name, frame) => {
-        // line his resting body up with the terminal Clawd's, or peek in from behind the box's border
-        const { body, cell: scale = 1, edge, frames } = SCENES[name], grid = frames[frame], size = scale * block;
-        const [x0, y0] = edge ? [G.left + 0.5, G.clawdY + 8 * block - grid.length * size] : [left - body[0] * size, G.clawdY - body[1] * size];
-        return `<g class="c${k}">${draw(grid, x0, y0, size)}</g>`;
+        // line his resting body up with the terminal Clawd's
+        const { body, cell: scale = 1, frames } = SCENES[name], size = scale * block;
+        return `<g class="c${k}">${draw(frames[frame], left - body[0] * size, G.clawdY - body[1] * size, size)}</g>`;
     };
     const frameKey = (frame) => frame.join('/');
     const keys = [...new Set([...CLAWD.intro, ...loop].map(frameKey))];
