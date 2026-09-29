@@ -194,8 +194,8 @@ const BANNER = {
     about: ['Professional Claude Verbal Abuser™', 'Making whatever since 2024'],
     leftRows: 10,
 };
-const HEAT = { weeks: 53, fill: 0.8, radius: 2, labelSize: 11, levels: ['NONE', 'FIRST_QUARTILE', 'SECOND_QUARTILE', 'THIRD_QUARTILE', 'FOURTH_QUARTILE'] };
-const STORY = { lead: 3.5, pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
+const HEAT = { weeks: 44, fill: 0.85, radius: 2, levels: ['NONE', 'FIRST_QUARTILE', 'SECOND_QUARTILE', 'THIRD_QUARTILE', 'FOURTH_QUARTILE'] };
+const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
     // The Claude Code CLI's poses at the Claude app's resolution (square pixels). default is the app's own still; the others
@@ -224,7 +224,7 @@ const CLAWD = {
         });
     };
     CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, poof)];
-    CLAWD.intro = [...CLAWD.entrance, ...scene('waving')];
+    CLAWD.intro = scene('waving');
     CLAWD.still = hold('default', Math.round(3000 / CLAWD.frameMs));
     // small moves from the CLI, chained into combos with a short beat between moves; one combo after every 3 s still
     const moves = {
@@ -250,6 +250,9 @@ const CLAWD = {
     CLAWD.actions = Object.fromEntries(Object.keys(CLAWD.weights).map((name) => [name, scene(name)]));
     CLAWD.combosPerScene = 3;
 }
+
+// Only on first load: the banner holds still while Clawd hops in, then everything starts together (restarts don't wait).
+const LEAD = round((CLAWD.entrance.length * CLAWD.frameMs) / 1000, 3);
 
 // Clawd runs on the banner's own clock: forward while prompts play, backwards through each VHS rewind (to where he was
 // when that prompt started, eased like the spinner lines), then on from where he left off. His routine spans as many
@@ -310,7 +313,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
     const rightCols = Math.floor((right - 2 * cell - rightX) / cell);
     const heatPitch = (right - 2 * cell - rightX) / HEAT.weeks;
     const heatRows = Math.ceil((7 * heatPitch) / row);
-    const rightRows = 7 + heatRows;
+    const rightRows = 6 + heatRows;
     // stacked: the left block, a rule, then the right block; side by side: the left block centred against the right
     const leftRow = stacked ? 1.5 : 1 + (Math.max(BANNER.leftRows, rightRows) - BANNER.leftRows) / 2;
     const splitRow = stacked ? leftRow + BANNER.leftRows : null;
@@ -439,7 +442,7 @@ async function latestModel() {
 async function contributionCalendar() {
     const token = process.env.GITHUB_TOKEN;
     if (!token) return null;
-    const query = 'query($login:String!){user(login:$login){contributionsCollection{contributionCalendar{totalContributions weeks{firstDay contributionDays{weekday contributionLevel}}}}}}';
+    const query = 'query($login:String!){user(login:$login){contributionsCollection{contributionCalendar{totalContributions weeks{firstDay contributionDays{weekday contributionLevel contributionCount}}}}}}';
     const res = await fetch('https://api.github.com/graphql', {
         method: 'POST',
         headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
@@ -449,11 +452,10 @@ async function contributionCalendar() {
     const calendar = (await res.json()).data?.user?.contributionsCollection.contributionCalendar;
     if (!calendar) return null;
     return {
-        total: calendar.totalContributions,
         weeks: calendar.weeks.slice(-HEAT.weeks).map((w) => {
             const levels = Array(7).fill(' ');
             for (const d of w.contributionDays) levels[d.weekday] = String(Math.max(0, HEAT.levels.indexOf(d.contributionLevel)));
-            return { first: w.firstDay, levels: levels.join('') };
+            return { levels: levels.join(''), count: w.contributionDays.reduce((n, d) => n + d.contributionCount, 0) };
         }),
     };
 }
@@ -600,8 +602,7 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
     let clock = 0;
     const eps = episodes.map((ep) => {
         const [start, chars, typedAt] = [clock, [...ep.prompt], []];
-        // the first prompt waits for Clawd's entrance and wave before it starts typing
-        clock += STORY.pause + (start === 0 ? STORY.lead : 0);
+        clock += STORY.pause;
         for (const ch of chars) {
             typedAt.push(clock);
             clock += STORY.perChar * rng.range(0.6, 1.5) * (ch === ' ' ? 1.4 : 1);
@@ -625,7 +626,7 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
             if (mode !== 'discrete' || keys.at(-1)?.[1] !== String(v)) keys.push([k, String(v)]);
         }
         const tag = attr === 'transform' ? `animateTransform type="${type}"` : 'animate';
-        return `<${tag} attributeName="${attr}"${add ? ' additive="sum"' : ''} calcMode="${mode}" dur="${round(T, 3)}s" repeatCount="indefinite" keyTimes="${keys.map(([k]) => k).join(';')}" values="${keys.map(([, v]) => v).join(';')}"/>`;
+        return `<${tag} attributeName="${attr}"${add ? ' additive="sum"' : ''} calcMode="${mode}" begin="${LEAD}s" dur="${round(T, 3)}s" repeatCount="indefinite" keyTimes="${keys.map(([k]) => k).join(';')}" values="${keys.map(([, v]) => v).join(';')}"/>`;
     };
     const onRow = (prefix, steps) => animate('xlink:href', steps.map(([t, r]) => [t, r === EMPTY ? '#none' : `#${prefix}${r}`]));
     const spans = (attr, on, off, list) => animate(attr, [[0, off], ...list.flatMap(([a, b]) => [[a, on], [b, off]])]);
@@ -822,7 +823,7 @@ ${shimmerDefs.join('\n')}
 ${clawd.defs}
 <clipPath id="input"><rect x="${round(inputX)}" y="${inputY}" height="${V.caret}" width="0">${animate('width', typedCells.map(([t, c]) => [t, len(c)]))}</rect></clipPath>
 <g id="none"/>
-<rect width="0" height="0"><set id="loop" attributeName="visibility" to="hidden" begin="0s;loop.end" dur="${round(T, 3)}s"/></rect>
+<rect width="0" height="0"><set id="loop" attributeName="visibility" to="hidden" begin="${LEAD}s;loop.end" dur="${round(T, 3)}s"/></rect>
 ${[...tails.values()].join('\n')}
 ${statusRows.join('\n')}
 ${verbRows.join('\n')}
@@ -885,20 +886,14 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     let chart = '';
     if (calendar?.weeks.length) {
         const [x0, x1, pitch] = [G.rightX, G.right - 2 * V.cell, G.heatPitch];
-        const top = G.rowY(R + 5.5) + 5;
+        const weeks = calendar.weeks.slice(-HEAT.weeks), rows = Math.ceil((7 * pitch) / V.row);
+        const top = G.rowY(R + 5.5) + (rows * V.row - 7 * pitch) / 2;
         const size = round(pitch * HEAT.fill);
-        const start = x1 - calendar.weeks.length * pitch;
-        const cells = calendar.weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
-        const labelW = 3 * HEAT.labelSize * 0.6;
-        const months = calendar.weeks.map((w, k) => [k, new Date(`${w.first}T00:00:00Z`).getUTCMonth()])
-            .filter(([k, m], i, all) => i === 0 || m !== all[i - 1][1])
-            .map(([k, m]) => [round(start + k * pitch), new Date(Date.UTC(2000, m, 1)).toLocaleString('en', { month: 'short', timeZone: 'UTC' })])
-            .filter(([x], i, all) => x + labelW <= x1 && (i === all.length - 1 || all[i + 1][0] - x >= labelW + 4));
-        const labelY = round(top + 7 * pitch + HEAT.labelSize + 3);
-        chart = line(G.rowY(R + 5.5), labelY, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>`
-            + months.map(([x, name]) => `<text class="d" style="font-size:${HEAT.labelSize}px" x="${x}" y="${labelY}">${name}</text>`).join('')
-            + cells.join(''));
-        const captions = [`${calendar.total.toLocaleString('en')} contributions in the last year`, `${calendar.total.toLocaleString('en')} contributions`];
+        const start = x1 - weeks.length * pitch;
+        const cells = weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
+        chart = line(G.rowY(R + 5.5), top + 7 * pitch, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>${cells.join('')}`);
+        const total = weeks.reduce((n, w) => n + (w.count ?? 0), 0).toLocaleString('en');
+        const captions = [`${total} contributions in the last ${Math.round((weeks.length * 7) / 30.44)} months`, `${total} contributions`];
         const caption = captions.find((c) => cellsIn('Recent activity') + 2 + cellsIn(c) <= G.rightCols);
         if (caption) say(x1 - cellsIn(caption) * V.cell, R + 5, 'd', caption);
     } else say(G.rightX, R + 6, 'd', 'No recent activity');
@@ -938,7 +933,7 @@ function renderClawd(V, G, track, duration) {
         return d && `<path fill="${color}" d="${d}"/>`;
     }).join('')}</g>`;
     const frameKey = (frame) => frame.join('/');
-    const keys = [...new Set(track.map(frameKey))];
+    const keys = [...new Set([...CLAWD.entrance, ...track].map(frameKey))];
     const isScene = (key) => key.startsWith('scene:');
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
@@ -951,7 +946,13 @@ function renderClawd(V, G, track, duration) {
         const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.clawdX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
         return `<g class="c${k}">${draw(CLAWD.poses[pose], left + +shift * cell, G.clawdY + +crouch * row, block)}${puffs}</g>`;
     });
-    const css = keys.map((key, k) => `.c${k}{visibility:hidden;animation:l${k} ${round(duration, 3)}s step-end infinite}${frameKeyframes(`l${k}`, track, (f) => frameKey(f) === key)}`);
+    const css = keys.map((key, k) => {
+        const [inEntrance, inTrack] = [CLAWD.entrance, track].map((frames) => frames.some((f) => frameKey(f) === key));
+        const uses = [inEntrance && `e${k} ${LEAD}s step-end both`, inTrack && `l${k} ${round(duration, 3)}s step-end ${LEAD}s infinite`].filter(Boolean);
+        return `.c${k}{visibility:hidden;animation:${uses.join(',')}}`
+            + (inEntrance ? frameKeyframes(`e${k}`, CLAWD.entrance, (f) => frameKey(f) === key) : '')
+            + (inTrack ? frameKeyframes(`l${k}`, track, (f) => frameKey(f) === key) : '');
+    });
     return {
         css: css.join('\n'),
         defs: `<clipPath id="clawd"><rect x="${round(left)}" y="${G.clawdY}" width="${round(12 * block)}" height="${round(8 * block)}"/></clipPath>`,
