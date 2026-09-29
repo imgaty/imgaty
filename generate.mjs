@@ -234,8 +234,13 @@ const CLAWD = {
         jump, look, spin, celebrate,
         ...Object.fromEntries(['dancing', 'jumping', 'jumpinghappy', 'soccer', 'crabwalking', 'racingcar', 'magnifier', 'cloud', 'book', 'lurking'].map((name) => [name, scene(name)])),
     };
-    // between actions he mostly stands still, with one slow glance around halfway through (about 15 s in all)
-    CLAWD.rest = [...hold('default', 120), ...hold('look-right', 10), ...hold('look-left', 10), ...hold('default', 110)];
+    // between actions (about 15 s) he stays loose: a quick crouch, a slow glance around, then a little hop
+    const crouch = [...hold('default', 3, 1), ...hold('default', 1)];
+    const hopUp = [...hold('default', 2, 1), ...hold('arms-up', 3), ...hold('default', 1)];
+    CLAWD.rest = [
+        ...hold('default', 50), ...crouch, ...hold('default', 60), ...hold('look-right', 10), ...hold('look-left', 10),
+        ...hold('default', 60), ...hopUp, ...hold('default', 40),
+    ];
 }
 
 // After his intro he idles about 15 s between actions, taking them in an order shuffled for the day.
