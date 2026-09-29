@@ -225,8 +225,8 @@ const CLAWD = {
     };
     CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, poof)];
     CLAWD.intro = [...CLAWD.entrance, ...scene('waving')];
-    CLAWD.still = hold('default', Math.round(5000 / CLAWD.frameMs));
-    // small moves from the CLI, one after every 5 s of standing still
+    CLAWD.still = hold('default', Math.round(3000 / CLAWD.frameMs));
+    // small moves from the CLI, one after every 3 s of standing still
     CLAWD.idles = {
         crouch: [...hold('default', 3, 1), ...hold('default', 1)],
         hop: [...hold('default', 2, 1), ...hold('arms-up', 3), ...hold('default', 1)],
