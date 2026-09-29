@@ -182,7 +182,17 @@ const GLYPH_SHAPES = [dot(0.2), petals(4, 0.24), spokes(8, 0.09), star(6, 0.47),
 const SHIMMER = { step: 0.05, width: 3, idle: 0.3 };
 const CURSOR_BLINK = 1.06;
 const WAVE = { step: 0.05, patterns: 8, scale: 16, frequency: 0.035, fringe: 3, red: 'rgba(255,26,64,.6)', cyan: 'rgba(0,230,255,.6)' };
-const HEADER = { title: 'Gaty · Professional Claude Verbal Abuser™', lines: ['Claude Code v{version}', '/home/imgaty'] };
+const BANNER = {
+    user: 'imgaty',
+    title: 'Gaty · Professional Claude Verbal Abuser™',
+    welcome: 'Welcome back Gaty!',
+    plan: 'Opus 5.5 · Claude Max',
+    cwd: '/home/imgaty',
+    tagline: 'Professional Claude Verbal Abuser™',
+    recent: 3,
+    leftRows: 8,
+    rightRows: 9,
+};
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
@@ -208,30 +218,39 @@ const CLAWD = {
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
 const VIEWS = {
-    desktop: { ...TEXT, file: 'spinner.svg', width: 820, pad: 24, clawdGap: 3, splitTitle: false, shortLimit: false, badgeBox: false },
-    mobile: { ...TEXT, file: 'spinner-mobile.svg', width: 470, pad: 16, clawdGap: 2, splitTitle: true, shortLimit: true, badgeBox: true },
+    desktop: { ...TEXT, file: 'spinner.svg', width: 820, pad: 24, stacked: false, shortLimit: false, badgeBox: false },
+    mobile: { ...TEXT, file: 'spinner-mobile.svg', width: 470, pad: 16, stacked: true, shortLimit: true, badgeBox: true },
 };
 const FONT = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 const cellsIn = (text) => [...text].length;
 const LAYOUTS = Object.fromEntries(Object.entries(VIEWS).map(([name, view]) => [name, makeLayout(view)]));
 const MIN_COLS = Math.min(...Object.values(LAYOUTS).map((l) => l.cols));
 
-function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, clawdGap, splitTitle }) {
+function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stacked }) {
     const left = pad + 0.5;
+    const right = width - left;
     const textX = round(left + 2 * cell);
-    const welcome = [...(splitTitle ? HEADER.title.split(' · ') : [HEADER.title]).map((text) => ['t', text]), ...HEADER.lines.map((text) => ['d', text])];
-    const welcomeX = round(textX + (CLAWD.cols + clawdGap) * cell);
-    const welcomeBottom = left + (Math.max(3, welcome.length) + 1) * row;
-    const userBase = welcomeBottom + pad + capHeight;
+    const leftCells = Math.max(...[BANNER.welcome, BANNER.plan, BANNER.cwd].map(cellsIn), CLAWD.cols) + 4;
+    const divider = stacked ? null : round(left + leftCells * cell);
+    const leftMid = stacked ? (left + right) / 2 : (left + divider) / 2;
+    const rightX = stacked ? textX : round(divider + 2 * cell);
+    const rows = stacked ? BANNER.leftRows + 1 + BANNER.rightRows : Math.max(BANNER.leftRows, BANNER.rightRows);
+    const leftRow = stacked ? 1 : 1 + (rows - BANNER.leftRows) / 2;
+    const bannerBottom = left + (rows + 1) * row;
+    const userBase = bannerBottom + pad + capHeight;
     const spinnerBase = userBase + 2 * row;
     const boxTop = Math.round(spinnerBase + pad) + 0.5;
     const boxBottom = boxTop + 2 * row;
     const hintBase = boxBottom + hintGap + capHeight;
     return {
-        left, right: width - left, textX, welcome, welcomeX, welcomeBottom, boxTop, boxBottom, hintBase,
-        welcomeRight: Math.round(welcomeX + (Math.max(...welcome.map(([, s]) => cellsIn(s))) + 2) * cell) + 0.5,
+        left, right, textX, divider, leftMid, rightX, leftRow, bannerBottom, boxTop, boxBottom, hintBase,
+        rightRow: stacked ? BANNER.leftRows + 2 : 1,
+        splitRow: stacked ? BANNER.leftRows + 1 : null,
+        rightCols: Math.floor((right - 2 * cell - rightX) / cell),
+        rowY: (line) => round(left + line * row),
         welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
-        clawdY: left + row / 2,
+        clawdX: round(leftMid - (CLAWD.cols / 2) * cell),
+        clawdY: left + (leftRow + 1.5) * row,
         userBase: round(userBase),
         spinnerBase: round(spinnerBase),
         inputBase: round((boxTop + boxBottom) / 2 + fontSize * 0.35),
@@ -263,6 +282,7 @@ async function main() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || new Date(Date.parse(date) || 0).toISOString().slice(0, 10) !== date) fail(`"${date}" is not a date\n${USAGE}`);
 
     const version = args['dry-run'] ? null : claudeCodeVersion();
+    const github = args['dry-run'] ? null : githubProfile();
     const episodes = pickEpisodes(date);
     if (args['dry-run']) {
         for (const ep of episodes) {
@@ -272,10 +292,10 @@ async function main() {
         return;
     }
 
-    const claudeVersion = await version;
+    const [claudeVersion, profile] = await Promise.all([version, github]);
     const hash = createHash('sha1');
     for (const [name, { file: out }] of Object.entries(VIEWS)) {
-        const svg = renderSvg(episodes, date, claudeVersion, name);
+        const svg = renderSvg(episodes, date, claudeVersion, profile, name);
         writeFileSync(file(out), svg);
         hash.update(svg);
         console.log(`wrote ${out} (${(Buffer.byteLength(svg) / 1024).toFixed(1)} KB)`);
@@ -298,6 +318,49 @@ async function claudeCodeVersion() {
     const previous = (existsSync(out) && readFileSync(out, 'utf8').match(/Claude Code v(\d+\.\d+\.\d+)/)?.[1]) || '2.1.282';
     console.warn(`warning: couldn't reach npm for the latest Claude Code version; keeping ${previous}`);
     return previous;
+}
+
+async function githubProfile() {
+    const headers = { accept: 'application/vnd.github+json', ...(process.env.GITHUB_TOKEN && { authorization: `Bearer ${process.env.GITHUB_TOKEN}` }) };
+    const get = async (path) => {
+        const res = await fetch(`https://api.github.com/${path}`, { headers, signal: AbortSignal.timeout(5000) });
+        if (!res.ok) throw new Error(`${res.status} on ${path}`);
+        return res.json();
+    };
+    try {
+        const [user, repos] = await Promise.all([get(`users/${BANNER.user}`), get(`users/${BANNER.user}/repos?type=owner&sort=pushed&per_page=100`)]);
+        return {
+            name: user.name, location: user.location, since: user.created_at,
+            repos: repos.filter((r) => !r.fork && !r.archived && !r.private).map((r) => ({ name: r.name, language: r.language, description: r.description, pushed: r.pushed_at })),
+        };
+    } catch {}
+    const out = file(VIEWS.desktop.file);
+    const previous = existsSync(out) && readFileSync(out, 'utf8').match(/<!-- profile ([\w+/=]+) -->/)?.[1];
+    console.warn(`warning: couldn't reach GitHub for ${BANNER.user}'s profile; ${previous ? 'keeping the last one' : 'leaving it empty'}`);
+    return previous ? JSON.parse(Buffer.from(previous, 'base64').toString('utf8')) : { repos: [] };
+}
+
+function bannerLines(profile, date) {
+    const today = Date.parse(`${date}T23:59:59Z`);
+    const ago = (at) => {
+        const d = Math.max(0, Math.floor((today - Date.parse(at)) / 864e5));
+        return d < 1 ? 'today' : d < 14 ? `${d}d ago` : d < 60 ? `${Math.floor(d / 7)}w ago` : d < 365 ? `${Math.floor(d / 30)}mo ago` : `${Math.floor(d / 365)}y ago`;
+    };
+    const since = profile.since && `on GitHub since ${new Date(profile.since).toLocaleString('en', { month: 'short', year: 'numeric', timeZone: 'UTC' })}`;
+    const counts = new Map();
+    for (const r of profile.repos) if (r.language) counts.set(r.language, (counts.get(r.language) ?? 0) + 1);
+    const langs = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 3).map(([l]) => l);
+    const about = [
+        BANNER.tagline,
+        [profile.name, profile.location, since].filter(Boolean).join(' · '),
+        langs.length && `Mostly writes ${langs.length > 1 ? `${langs.slice(0, -1).join(', ')} and ${langs.at(-1)}` : langs[0]}`,
+    ].filter(Boolean);
+    const recent = profile.repos
+        .filter((r) => r.name.toLowerCase() !== BANNER.user.toLowerCase())
+        .sort((a, b) => Date.parse(b.pushed) - Date.parse(a.pushed))
+        .slice(0, BANNER.recent)
+        .map((r) => [ago(r.pushed), [r.name, r.description || r.language].filter(Boolean).join(' · ')]);
+    return { about, recent };
 }
 
 function pickEpisodes(date) {
@@ -432,7 +495,7 @@ function statusFor(verb, samples, cols) {
     return out;
 }
 
-function renderSvg(episodes, version, claudeVersion, name) {
+function renderSvg(episodes, version, claudeVersion, profile, name) {
     const theme = Object.fromEntries(Object.keys(THEMES.dark).map((k) => [k, `var(--${k})`]));
     const [V, G] = [VIEWS[name], LAYOUTS[name]];
     const D = TICKS_PER_LINE * TICK;
@@ -631,14 +694,12 @@ function renderSvg(episodes, version, claudeVersion, name) {
         return `<clipPath id="s${cells}"><rect y="${round(headY - 6 - G.spinnerBase)}" width="${len(SHIMMER.width)}" height="${V.caret + 12}"><animate attributeName="x" calcMode="discrete" dur="${round(xs.length * SHIMMER.step, 3)}s" repeatCount="indefinite" values="${xs.join(';')}"/></rect></clipPath>`;
     });
     const clawd = renderClawd(V, G);
-    const welcome = G.welcome.map(([cls, text], k) => {
-        const line = text.replace('{version}', claudeVersion);
-        return `<text class="${cls}" x="${G.welcomeX}" y="${G.welcomeBase(1 + k)}" textLength="${len([...line].length)}">${xml(line)}</text>`;
-    });
+    const banner = renderBanner(V, G, claudeVersion, bannerLines(profile, version), line, textBand, theme);
     const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(';');
     const tint = (color) => `${Object.keys(THEMES.dark).map((k) => `--${k}:${color}`).join(';')};--solo:none`;
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${V.width}" height="${G.height}" viewBox="0 0 ${V.width} ${G.height}" role="img">
 <!-- Generated by generate.mjs for ${version}: ${eps.length} prompts, ${g} lines, ${round(T)} s loop. Edit PROMPTS in generate.mjs, not this file. -->
+<!-- profile ${Buffer.from(JSON.stringify(profile)).toString('base64')} -->
 <title>${xml(describe(eps))}</title>
 <style>
 :root{${vars(THEMES.light)}}
@@ -673,9 +734,8 @@ ${verbRows.join('\n')}
 <rect x="0.5" y="0.5" width="${V.width - 1}" height="${G.height - 1}" rx="10" style="fill:${theme.bg};stroke:${theme.frame}"/>
 <g clip-path="url(#screen)">
 <g>${animate('transform', shake)}<g>${animate('transform', [[0, 0], ...rewinds.flatMap(([a, b]) => [...whoosh(a, 1), ...whoosh(b, -1)])], { type: 'skewX' })}
-${line(G.left, G.welcomeBottom, 'Lbox', `<rect x="${G.left}" y="${G.left}" width="${G.welcomeRight - G.left}" height="${G.welcomeBottom - G.left}" rx="5" fill="none" style="stroke:${theme.claude}"/>`)}
+${banner}
 ${waved(G.clawdY, G.clawdY + 3 * V.row, clawd.svg)}
-${welcome.map((w, k) => line(...textBand(G.welcomeBase(1 + k)), `Lw${k}`, w)).join('\n')}
 ${line(badgeY - 13, badgeY + 5, 'Lrew', `<g display="none" style="fill:${theme.text}">${during(...blink)}
 ${V.badgeBox ? `<rect x="${round(badgeLeft - 6)}" y="${round(badgeY - 13)}" width="${round(badgeRight - badgeLeft + 12)}" height="18" rx="3" style="fill:${theme.bg}"/>` : ''}<path d="${tri(badgeLeft)}${tri(badgeLeft + 8)}"/>
 <text class="t b" x="${round(badgeRight - 3 * V.cell)}" y="${badgeY}" textLength="${len(3)}">REW</text>
@@ -713,6 +773,43 @@ ${[G.height, G.height - half].map((y) => `<rect y="${round(y)}" width="${V.width
 `;
 }
 
+function renderBanner(V, G, claudeVersion, { about, recent }, line, textBand, theme) {
+    const len = (cells) => round(cells * V.cell);
+    const fit = (s, cells) => (cellsIn(s) <= cells ? s : `${[...s].slice(0, cells - 1).join('').trimEnd()}…`);
+    const words = [];
+    const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
+    const centered = (row, cls, t) => say(G.leftMid - (cellsIn(t) / 2) * V.cell, row, cls, t);
+    centered(G.leftRow, 't b', BANNER.welcome);
+    centered(G.leftRow + 6, 'd', BANNER.plan);
+    centered(G.leftRow + 7, 'd', BANNER.cwd);
+    const R = G.rightRow;
+    say(G.rightX, R, 'v', 'About me');
+    about.slice(0, 3).forEach((t, k) => say(G.rightX, R + 1 + k, 't', fit(t, G.rightCols)));
+    say(G.rightX, R + 5, 'v', 'Recent activity');
+    if (!recent.length) say(G.rightX, R + 6, 'd', 'No recent activity');
+    const agoCells = Math.max(0, ...recent.map(([ago]) => cellsIn(ago))) + 2;
+    recent.forEach(([ago, what], k) => {
+        say(G.rightX, R + 6 + k, 'd', ago);
+        say(G.rightX + agoCells * V.cell, R + 6 + k, 't', fit(what, G.rightCols - agoCells));
+    });
+
+    const title = `Claude Code v${claudeVersion}`;
+    const titleX = round(G.left + 3 * V.cell);
+    const [x0, y0, x1, y1, r] = [G.left, G.left, G.right, G.bannerBottom, 5];
+    const box = `M${round(titleX + (cellsIn(title) + 1) * V.cell)} ${y0}H${x1 - r}A${r} ${r} 0 0 1 ${x1} ${y0 + r}V${y1 - r}A${r} ${r} 0 0 1 ${x1 - r} ${y1}`
+        + `H${x0 + r}A${r} ${r} 0 0 1 ${x0} ${y1 - r}V${y0 + r}A${r} ${r} 0 0 1 ${x0 + r} ${y0}H${round(titleX - V.cell)}`;
+    const stroke = (id, ya, yb, d) => line(ya, yb, id, `<path d="${d}" fill="none" style="stroke:${theme.claude}"/>`);
+    const rule = (id, x, row) => stroke(id, G.rowY(row) - 1, G.rowY(row) + 1, `M${round(x)} ${G.rowY(row)}H${round(G.right - 2 * V.cell)}`);
+    return [
+        stroke('Lbox', y0, y1, box),
+        line(...textBand(G.welcomeBase(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.welcomeBase(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
+        G.divider ? stroke('Ldiv', y0 + 0.6 * V.row, y1 - 0.6 * V.row, `M${G.divider} ${round(y0 + 0.6 * V.row)}V${round(y1 - 0.6 * V.row)}`) : '',
+        G.splitRow ? rule('Lsplit', G.textX, G.splitRow) : '',
+        rule('Lrule', G.rightX, R + 4),
+        ...words.map(([x, row, cls, t], k) => line(...textBand(G.welcomeBase(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.welcomeBase(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
+    ].filter(Boolean).join('\n');
+}
+
 function renderClawd(V, G) {
     const { cell, row, fontSize } = V;
     const QUADS = { '▘': 8, '▝': 4, '▖': 2, '▗': 1, '▀': 12, '▄': 3, '▌': 10, '▐': 5, '▛': 14, '▜': 13, '▙': 11, '▟': 7, '█': 15 };
@@ -722,7 +819,7 @@ function renderClawd(V, G) {
             let d = '';
             for (let x = 0, end; x < cols.length; x = end + 1) {
                 for (end = x; cols[end] && cols[end + 1]; end++);
-                if (cols[x]) d += `M${round(G.textX + dx + x * px)} ${round(G.clawdY + dy + y * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
+                if (cols[x]) d += `M${round(G.clawdX + dx + x * px)} ${round(G.clawdY + dy + y * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
             }
             return d;
         }).join('');
@@ -740,7 +837,7 @@ function renderClawd(V, G) {
             }
         }));
         const [dx, dy] = [+shift * cell, +crouch * row];
-        const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.textX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
+        const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.clawdX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
         return `<g class="c${k}"><path fill="#D77757" d="${rects(body, dx, dy)}"/><path fill="#000000" d="${rects(eyes, dx, dy)}"/>${puffs}</g>`;
     });
     const seconds = (frames) => round((frames.length * CLAWD.frameMs) / 1000);
@@ -753,7 +850,7 @@ function renderClawd(V, G) {
     });
     return {
         css: css.join('\n'),
-        defs: `<clipPath id="clawd"><rect x="${G.textX}" y="${G.clawdY}" width="${round(CLAWD.cols * cell)}" height="${3 * row}"/></clipPath>`,
+        defs: `<clipPath id="clawd"><rect x="${G.clawdX}" y="${G.clawdY}" width="${round(CLAWD.cols * cell)}" height="${3 * row}"/></clipPath>`,
         svg: `<g clip-path="url(#clawd)">\n${groups.join('\n')}\n</g>`,
     };
 }
@@ -797,7 +894,7 @@ function round(n, digits = 2) {
 }
 
 const describe = (eps) =>
-    `${HEADER.title} A Claude Code terminal. Prompts like "${eps.map((e) => e.prompt).join('", "')}" are sent; the spinner cycles through made-up verbs until the usage limit hits, then it all rewinds like a VHS tape and the next prompt is typed`;
+    `${BANNER.title} A Claude Code terminal. Prompts like "${eps.map((e) => e.prompt).join('", "')}" are sent; the spinner cycles through made-up verbs until the usage limit hits, then it all rewinds like a VHS tape and the next prompt is typed`;
 
 function xml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

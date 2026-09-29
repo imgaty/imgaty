@@ -21,6 +21,8 @@ jobs:
 
       - name: Generate today's spinner
         run: node generate.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Commit if anything changed
         run: |
