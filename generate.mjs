@@ -228,7 +228,8 @@ const CLAWD = {
             return hold(`scene:${name}:${frame}`, ticks);
         });
     };
-    CLAWD.loop = [...idle, ...scene('study'), ...idle, ...jump, ...idle, ...look, ...scene('bath'), ...idle, ...spin, ...idle, ...celebrate];
+    // after peeking in from the box's edge and ducking back out, he hops back in the way he first arrived
+    CLAWD.loop = [...idle, ...scene('study'), ...idle, ...jump, ...idle, ...look, ...scene('bath'), ...idle, ...spin, ...idle, ...celebrate, ...scene('peek'), ...CLAWD.entrance];
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
@@ -863,20 +864,25 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
 
 function renderClawd(V, G) {
     const { cell, row, fontSize } = V;
-    // square pixels, sized so his body is as wide as the terminal sprite's; [bx, by] is where the arms and the top of the head sit in the grid
+    // square pixels, sized so his body is as wide as the terminal sprite's; his arms start at `left` and his feet stand on `floor`
     const block = (13 * cell) / 16;
-    const left = G.clawdX + 4.75 * cell - 6 * block;
-    const draw = (grid, [bx, by], dx = 0, dy = 0) => Object.entries(SCENE_PALETTE).map(([letter, color]) => {
+    const [left, floor] = [G.clawdX + 4.75 * cell - 6 * block, G.clawdY + 8 * block];
+    const draw = (grid, x0, y0, size = block) => Object.entries(SCENE_PALETTE).map(([letter, color]) => {
         let d = '';
         grid.forEach((line, y) => {
             for (let x = 0, end; x < line.length; x = end + 1) {
                 for (end = x; line[x] === letter && line[end + 1] === letter; end++);
-                if (line[x] === letter) d += `M${round(left + dx + (x - bx) * block)} ${round(G.clawdY + dy + (y - by) * block)}h${round((end - x + 1) * block)}v${round(block)}h${round(-(end - x + 1) * block)}Z`;
+                if (line[x] === letter) d += `M${round(x0 + x * size)} ${round(y0 + y * size)}h${round((end - x + 1) * size)}v${round(size)}h${round(-(end - x + 1) * size)}Z`;
             }
         });
         return d && `<path fill="${color}" d="${d}"/>`;
     }).join('');
-    const sceneFrame = (k, name, frame) => `<g class="c${k}">${draw(SCENES[name].frames[frame], SCENES[name].body)}</g>`;
+    const sceneFrame = (k, name, frame) => {
+        const { body, cell: scale = 1, edge, frames } = SCENES[name], grid = frames[frame], size = scale * block;
+        // an edge scene peeks in from behind the box's border; the others line his resting body up with the terminal Clawd
+        const [x0, y0] = edge ? [G.left + 0.5, floor - grid.length * size] : [left - body[0] * size, G.clawdY - body[1] * size];
+        return `<g class="c${k}">${draw(grid, x0, y0, size)}</g>`;
+    };
     const frameKey = (frame) => frame.join('/');
     const keys = [...new Set([...CLAWD.entrance, ...CLAWD.loop].map(frameKey))];
     const groups = keys.map((key, k) => {
@@ -884,7 +890,7 @@ function renderClawd(V, G) {
         if (+shift <= -CLAWD.cols) return `<g class="c${k}"/>`;
         if (pose.startsWith('scene:')) return sceneFrame(k, ...pose.split(':').slice(1));
         const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.clawdX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
-        return `<g class="c${k}">${draw(CLAWD.poses[pose], [0, 0], +shift * cell, +crouch * row)}${puffs}</g>`;
+        return `<g class="c${k}">${draw(CLAWD.poses[pose], left + +shift * cell, G.clawdY + +crouch * row)}${puffs}</g>`;
     });
     const seconds = (frames) => round((frames.length * CLAWD.frameMs) / 1000);
     const [inFor, loopFor] = [seconds(CLAWD.entrance), seconds(CLAWD.loop)];

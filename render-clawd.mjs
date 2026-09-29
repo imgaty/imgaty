@@ -8,25 +8,26 @@ const { PALETTE, SCENES } = await import(repo + '/clawd-scenes.mjs');
 // Pull CLAWD poses + sequences straight out of generate.mjs so the gallery can't drift from the banner.
 const src = readFileSync(repo + '/generate.mjs', 'utf8');
 const block = src.slice(src.indexOf('const CLAWD = {'), src.indexOf('\nconst TEXT ='));
-const CLAWD = new Function('SCENES', block.replace('CLAWD.loop =', 'CLAWD.seq = { idle, spin, look, jump, celebrate, study: scene("study"), bath: scene("bath") }; CLAWD.loop =') + '\nreturn CLAWD;')(SCENES);
+const CLAWD = new Function('SCENES', block.replace('CLAWD.loop =', 'CLAWD.seq = { idle, spin, look, jump, celebrate, study: scene("study"), bath: scene("bath"), peek: scene("peek") }; CLAWD.loop =') + '\nreturn CLAWD;')(SCENES);
 
 // Same square pixels and anchoring as renderClawd in generate.mjs, at twice the banner's scale.
 const [cell, row] = [16.8, 36], sq = (13 * cell) / 16;
 const r2 = (n) => Math.round(n * 100) / 100;
 const left = (ox) => ox + 4.75 * cell - 6 * sq;
-const draw = (grid, [bx, by], x0, y0) => Object.entries(PALETTE).map(([l, c]) => {
-    const d = grid.map((line, y) => { let s = ''; for (let x = 0, e; x < line.length; x = e + 1) { for (e = x; line[x] === l && line[e + 1] === l; e++); if (line[x] === l) s += `M${r2(x0 + (x - bx) * sq)} ${r2(y0 + (y - by) * sq)}h${r2((e - x + 1) * sq)}v${r2(sq)}h${r2(-(e - x + 1) * sq)}Z`; } return s; }).join('');
+const draw = (grid, x0, y0, size = sq) => Object.entries(PALETTE).map(([l, c]) => {
+    const d = grid.map((line, y) => { let s = ''; for (let x = 0, e; x < line.length; x = e + 1) { for (e = x; line[x] === l && line[e + 1] === l; e++); if (line[x] === l) s += `M${r2(x0 + x * size)} ${r2(y0 + y * size)}h${r2((e - x + 1) * size)}v${r2(size)}h${r2(-(e - x + 1) * size)}Z`; } return s; }).join('');
     return d && `<path fill="${c}" d="${d}"/>`;
 }).join('');
 
-function drawFrame([pose, crouch, puff, shift], ox, oy) {
+// edge scenes peek in from the tile's left edge (the banner uses the box's border)
+function drawFrame([pose, crouch, puff, shift], ox, oy, edgeX) {
     if (pose.startsWith('scene:')) {
-        const [, name, f] = pose.split(':');
-        return draw(SCENES[name].frames[f], SCENES[name].body, left(ox), oy);
+        const [, name, f] = pose.split(':'), { body, cell: scale = 1, edge, frames } = SCENES[name], grid = frames[f], size = scale * sq;
+        return edge ? draw(grid, edgeX, oy + 8 * sq - grid.length * size, size) : draw(grid, left(ox) - body[0] * size, oy - body[1] * size, size);
     }
     if (shift <= -CLAWD.cols) return '';
     const puffs = puff ? [0, 8].map((c) => `<text x="${r2(ox + c * cell)}" y="${r2(oy + 2.5 * row + 5)}" fill="#999" font-size="28">${CLAWD.puffs[puff]}</text>`).join('') : '';
-    return `<g clip-path="url(#cl-${ox}-${oy})">${draw(CLAWD.poses[pose], [0, 0], left(ox) + shift * cell, oy + crouch * row)}</g>${puffs}`;
+    return `<g clip-path="url(#cl-${ox}-${oy})">${draw(CLAWD.poses[pose], left(ox) + shift * cell, oy + crouch * row)}</g>${puffs}`;
 }
 
 const tiles = [
@@ -38,8 +39,9 @@ const tiles = [
     ['Celebrate', 'CLI', CLAWD.seq.celebrate],
     ['Study', 'Claude app', CLAWD.seq.study],
     ['Bath', 'Claude app', CLAWD.seq.bath],
+    ['Peek', 'Claude app', CLAWD.seq.peek],
 ];
-const [TW, TH, COLS] = [380, 290, 4];
+const [TW, TH, COLS] = [380, 290, 3];
 let css = '', body = '', defs = '';
 tiles.forEach(([title, source, seq], t) => {
     const [tx, ty] = [(t % COLS) * TW, Math.floor(t / COLS) * TH];
@@ -53,7 +55,7 @@ tiles.forEach(([title, source, seq], t) => {
         const stops = keys.map((kk, i) => (i === 0 || (kk === k) !== (keys[i - 1] === k) ? `${r2((i / keys.length) * 100)}%{visibility:${kk === k ? 'visible' : 'hidden'}}` : '')).join('');
         css += `.${name}{visibility:hidden;animation:${name} ${dur}s step-end infinite}@keyframes ${name}{${stops}100%{visibility:hidden}}\n`;
         const [pose, crouch, puff, shift] = k.split('/');
-        body += `<g class="${name}">${drawFrame([pose, +crouch, puff, +shift], ox, oy)}</g>`;
+        body += `<g class="${name}">${drawFrame([pose, +crouch, puff, +shift], ox, oy, tx + 8)}</g>`;
     });
     body += `</g><text x="${tx + 26}" y="${ty + TH - 40}" fill="#E5E5E5" font-size="18" font-weight="700">${title}</text><text x="${tx + 26}" y="${ty + TH - 20}" fill="#888" font-size="14">${source} · ${dur.toFixed(2)}s loop</text>`;
 });
