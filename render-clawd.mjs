@@ -19,16 +19,18 @@ const draw = (grid, x0, y0, size = sq) => Object.entries(PALETTE).map(([l, c]) =
     return d && `<path fill="${c}" d="${d}"/>`;
 }).join('');
 
-function drawFrame([pose, crouch, puff, shift], ox, oy) {
+// edge scenes peek in from the tile's left edge (the banner uses the box's border)
+function drawFrame([pose, crouch, puff, shift], ox, oy, edgeX) {
     if (pose.startsWith('scene:')) {
-        const [, name, f] = pose.split(':'), { body, cell: scale = 1, frames } = SCENES[name], size = scale * sq;
-        return draw(frames[f], left(ox) - body[0] * size, oy - body[1] * size, size);
+        const [, name, f] = pose.split(':'), { body, cell: scale = 1, edge, frames } = SCENES[name], grid = frames[f], size = scale * sq;
+        return edge ? draw(grid, edgeX, oy + 8 * sq - grid.length * size, size) : draw(grid, left(ox) - body[0] * size, oy - body[1] * size, size);
     }
     if (shift <= -CLAWD.cols) return '';
     const puffs = puff ? [0, 8].map((c) => `<text x="${r2(ox + c * cell)}" y="${r2(oy + 2.5 * row + 5)}" fill="#999" font-size="28">${CLAWD.puffs[puff]}</text>`).join('') : '';
     return `<g clip-path="url(#cl-${ox}-${oy})">${draw(CLAWD.poses[pose], left(ox) + shift * cell, oy + crouch * row)}</g>${puffs}`;
 }
 
+const APP = { waving: 'Waving', dancing: 'Dancing', jumping: 'Jumping', jumpinghappy: 'Jumping happy', soccer: 'Soccer', crabwalking: 'Crab walking', racingcar: 'Racing car', magnifier: 'Magnifier', cloud: 'Cloud', book: 'Book', lurking: 'Lurking' };
 const tiles = [
     ['Entrance', 'CLI · first launch', CLAWD.entrance],
     ['Idle', 'CLI · look around', CLAWD.idle],
@@ -36,13 +38,14 @@ const tiles = [
     ['Spin', 'CLI', CLAWD.actions.spin],
     ['Jump', 'CLI', CLAWD.actions.jump],
     ['Celebrate', 'CLI', CLAWD.actions.celebrate],
-    ['Football', 'Claude app', CLAWD.actions.football],
+    ['Waving', 'Claude app · intro', CLAWD.intro.slice(CLAWD.entrance.length)],
+    ...Object.entries(APP).filter(([n]) => n !== 'waving').map(([n, title]) => [title, 'Claude app', CLAWD.actions[n]]),
 ];
-const [TW, TH, COLS] = [380, 290, 4];
+const [TW, TH, COLS] = [380, 310, 4];
 let css = '', body = '', defs = '';
 tiles.forEach(([title, source, seq], t) => {
     const [tx, ty] = [(t % COLS) * TW, Math.floor(t / COLS) * TH];
-    const [ox, oy] = [r2(tx + TW / 2 - 4.75 * cell), ty + 125];
+    const [ox, oy] = [r2(tx + TW / 2 - 4.75 * cell), ty + 145];
     defs += `<clipPath id="cl-${ox}-${oy}"><rect x="${r2(left(ox))}" y="${oy}" width="${r2(12 * sq)}" height="${r2(8 * sq)}"/></clipPath><clipPath id="t${t}"><rect x="${tx + 8}" y="${ty + 8}" width="${TW - 16}" height="${TH - 16}" rx="10"/></clipPath>`;
     // collapse identical consecutive frames, then emit one visibility timeline per unique frame
     const keys = seq.map((f) => f.join('/')), uniq = [...new Set(keys)], dur = (seq.length * CLAWD.frameMs) / 1000;
@@ -52,7 +55,7 @@ tiles.forEach(([title, source, seq], t) => {
         const stops = keys.map((kk, i) => (i === 0 || (kk === k) !== (keys[i - 1] === k) ? `${r2((i / keys.length) * 100)}%{visibility:${kk === k ? 'visible' : 'hidden'}}` : '')).join('');
         css += `.${name}{visibility:hidden;animation:${name} ${dur}s step-end infinite}@keyframes ${name}{${stops}100%{visibility:hidden}}\n`;
         const [pose, crouch, puff, shift] = k.split('/');
-        body += `<g class="${name}">${drawFrame([pose, +crouch, puff, +shift], ox, oy)}</g>`;
+        body += `<g class="${name}">${drawFrame([pose, +crouch, puff, +shift], ox, oy, tx + 8)}</g>`;
     });
     body += `</g><text x="${tx + 26}" y="${ty + TH - 40}" fill="#E5E5E5" font-size="18" font-weight="700">${title}</text><text x="${tx + 26}" y="${ty + TH - 20}" fill="#888" font-size="14">${source} · ${dur.toFixed(2)}s loop</text>`;
 });
