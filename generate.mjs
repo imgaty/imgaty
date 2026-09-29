@@ -191,10 +191,9 @@ const BANNER = {
     plan: 'Claude Max',
     cwd: '/home/imgaty',
     about: ['Professional Claude Verbal Abuser™', 'Making whatever since 2024'],
-    weeks: 52,
     leftRows: 8,
-    rightRows: 9,
 };
+const HEAT = { weeks: 53, fill: 0.8, radius: 2, labelSize: 11, levels: ['NONE', 'FIRST_QUARTILE', 'SECOND_QUARTILE', 'THIRD_QUARTILE', 'FOURTH_QUARTILE'] };
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
@@ -204,10 +203,87 @@ const CLAWD = {
         'look-right': [' ▐█▟███▟', '▝▜██████▀', ' ▝▝   ▝▝ '],
         'arms-up': ['▗▟▛███▛█▄', ' ▜██████▘', ' ▝▝   ▝▝ '],
     },
+    sprites: {
+        blink: [
+            '....................',
+            '....................',
+            '...CCCCCCCCCCCCC....',
+            '...CCCCCCCCCCCCC....',
+            '.CCCCCCCCCCCCCCCCC..',
+            '...CCCCCCCCCCCCC....',
+            '...C.C.......C.C....',
+            '....................'],
+        'wave-out': [
+            '....................',
+            '....................',
+            '...CCCCCCCCCCCCC....',
+            '...CCECCCCCCCECCCC..',
+            '.CCCCCCCCCCCCCCCC...',
+            '...CCCCCCCCCCCCC....',
+            '...C.C.......C.C....',
+            '....................'],
+        'wave-up': [
+            '....................',
+            '....................',
+            '...CCCCCCCCCCCCC.C..',
+            '...CCECCCCCCCECC.C..',
+            '.CCCCCCCCCCCCCCCC...',
+            '...CCCCCCCCCCCCC....',
+            '...C.C.......C.C....',
+            '....................'],
+        flower: [
+            '..................P.',
+            '.................PYP',
+            '...CCCECCCCCCCEC..G.',
+            '...CCCCCCCCCCCCCCCG.',
+            '.CCCCCCCCCCCCCCCC...',
+            '...CCCCCCCCCCCCC....',
+            '...C.C.......C.C....',
+            '....................'],
+        'flower-sniff': [
+            '..................P.',
+            '.................PYP',
+            '...CCCCCCCCCCCCC..G.',
+            '...CCCCCCCCCCCCCCCG.',
+            '.CCCCCCCCCCCCCCCC...',
+            '...CCCCCCCCCCCCC....',
+            '...C.C.......C.C....',
+            '....................'],
+        'laptop-open': [
+            '....................',
+            '....................',
+            '...CCCCCCCCCCCCC....',
+            '...CCECCCCCCCECC....',
+            '.CCCCCCCCCCCCCCCCC..',
+            '...CCCCCCCCCCCCC....',
+            '..LLLLLLLWLLLLLLL...',
+            'KKKKKKKKKKKKKKKKKKK.'],
+        'type-right': [
+            '....................',
+            '....................',
+            '...CCCCCCCCCCCCC....',
+            '...CCCCCCCCCCCCC....',
+            '...CCECCCCCCCECCCC..',
+            '..LLLLLLLLLLLLLLL...',
+            '..LLLLLLLWLLLLLLL...',
+            'KKKKKKKKKKKKKKKKKKK.'],
+        'type-left': [
+            '....................',
+            '....................',
+            '...CCCCCCCCCCCCC....',
+            '...CCCCCCCCCCCCC....',
+            '.CCCCECCCCCCCECC....',
+            '..LLLLLLLLLLLLLLL...',
+            '..LLLLLLLWLLLLLLL...',
+            'KKKKKKKKKKKKKKKKKKK.'],
+    },
+    palette: { C: '#D77757', E: '#000000', L: '#9A9DA4', W: '#C9CDD4', K: '#5E6168', G: '#3FB950', P: '#F778BA', Y: '#F2CC60' },
     eyes: { line: 0, from: 2, to: 8 },
     puffs: { dot: '·', wave: '~' },
     frameMs: 60,
     cols: 9,
+    above: 2,
+    width: 20,
 };
 {
     const hold = (pose, frames, crouch = 0, x = 0) => Array(frames).fill([pose, crouch, '', x]);
@@ -215,7 +291,13 @@ const CLAWD = {
     const idle = [...hold('default', 12), ...hold('look-right', 5), ...hold('look-left', 5)];
     const spin = [...hold('look-left', 2), ...hold('look-right', 2), ...hold('look-left', 2), ...hold('arms-up', 3), ...hold('default', 1)];
     CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, [['default', 1, 'dot', 0], ['default', 1, 'wave', 0]])];
-    CLAWD.loop = [...idle, ...idle, ...idle, ...spin];
+    const jump = [...hold('default', 1, 1), ...[['default', 1, 'dot', 0], ['default', 1, 'wave', 0]], ...hold('arms-up', 3), ...hold('default', 1)];
+    const blinking = [...hold('default', 10), ...hold('blink', 2), ...hold('default', 10)];
+    const wave = [...hold('wave-out', 2), ...[3, 3, 3, 3, 3].flatMap((n, k) => hold(k % 2 ? 'wave-out' : 'wave-up', n)), ...hold('default', 4)];
+    const flower = [...hold('wave-out', 2), ...hold('flower', 14), ...hold('flower-sniff', 10), ...hold('flower', 8), ...hold('wave-out', 2), ...hold('default', 4)];
+    const typing = [4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].flatMap((n, k) => hold(k % 2 ? 'type-left' : 'type-right', n));
+    const laptop = [...hold('laptop-open', 3), ...typing, ...hold('type-right', 8), ...hold('laptop-open', 3), ...hold('default', 4)];
+    CLAWD.loop = [...idle, ...wave, ...idle, ...jump, ...jump, ...blinking, ...laptop, ...idle, ...spin, ...blinking, ...flower];
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
@@ -236,7 +318,11 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
     const divider = stacked ? null : round(left + leftCells * cell);
     const leftMid = stacked ? (left + right) / 2 : (left + divider) / 2;
     const rightX = stacked ? textX : round(divider + 2 * cell);
-    const rows = stacked ? BANNER.leftRows + 1 + BANNER.rightRows : Math.max(BANNER.leftRows, BANNER.rightRows);
+    const rightCols = Math.floor((right - 2 * cell - rightX) / cell);
+    const heatPitch = (right - 2 * cell - rightX) / HEAT.weeks;
+    const heatRows = Math.ceil((7 * heatPitch) / row);
+    const rightRows = 7 + heatRows;
+    const rows = stacked ? BANNER.leftRows + 1 + rightRows : Math.max(BANNER.leftRows, rightRows);
     const leftRow = stacked ? 1 : 1 + (rows - BANNER.leftRows) / 2;
     const bannerBottom = left + (rows + 1) * row;
     const userBase = bannerBottom + pad + capHeight;
@@ -248,7 +334,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
         left, right, textX, divider, leftMid, rightX, leftRow, bannerBottom, boxTop, boxBottom, hintBase,
         rightRow: stacked ? BANNER.leftRows + 2 : 1,
         splitRow: stacked ? BANNER.leftRows + 1 : null,
-        rightCols: Math.floor((right - 2 * cell - rightX) / cell),
+        rightCols, heatPitch, heatRows,
         rowY: (line) => round(left + line * row),
         welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
         clawdX: round(leftMid - (CLAWD.cols / 2) * cell),
@@ -262,8 +348,14 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
 }
 
 const THEMES = {
-    dark: { bg: '#000000', frame: '#333333', claude: '#D77757', shimmer: '#EB9F7F', text: '#E5E5E5', dim: '#999999', border: '#6B6B6B', cursor: '#E5E5E5', error: '#FF6B80' },
-    light: { bg: '#FAFAFA', frame: '#DDDDDD', claude: '#BC522F', shimmer: '#D77757', text: '#1F1F1F', dim: '#666666', border: '#8C8C8C', cursor: '#1F1F1F', error: '#AB2B3F' },
+    dark: {
+        bg: '#000000', frame: '#333333', claude: '#D77757', shimmer: '#EB9F7F', text: '#E5E5E5', dim: '#999999', border: '#6B6B6B', cursor: '#E5E5E5', error: '#FF6B80',
+        heat0: '#161B22', heat1: '#0E4429', heat2: '#006D32', heat3: '#26A641', heat4: '#39D353',
+    },
+    light: {
+        bg: '#FAFAFA', frame: '#DDDDDD', claude: '#BC522F', shimmer: '#D77757', text: '#1F1F1F', dim: '#666666', border: '#8C8C8C', cursor: '#1F1F1F', error: '#AB2B3F',
+        heat0: '#EBEDF0', heat1: '#9BE9A8', heat2: '#40C463', heat3: '#30A14E', heat4: '#216E39',
+    },
 };
 
 const USAGE = `usage: node generate.mjs [--date YYYY-MM-DD] [--dry-run]
@@ -326,10 +418,10 @@ async function bannerFacts() {
     const out = file(VIEWS.desktop.file);
     const cached = existsSync(out) && readFileSync(out, 'utf8').match(/<!-- banner ([\w+/=]+) -->/)?.[1];
     const last = cached ? JSON.parse(Buffer.from(cached, 'base64').toString('utf8')) : {};
-    const [model, weeks] = await Promise.all([latestModel().catch(() => null), commitWeeks().catch(() => null)]);
+    const [model, calendar] = await Promise.all([latestModel().catch(() => null), contributionCalendar().catch(() => null)]);
     if (!model) console.warn(`warning: couldn't find the latest ${BANNER.families.join('/')} model; keeping ${last.model ?? BANNER.model}`);
-    if (!weeks) console.warn(`warning: couldn't reach GitHub for ${BANNER.user}'s contributions; ${last.weeks ? 'keeping the last chart' : 'leaving the chart empty'}`);
-    return { model: model ?? last.model ?? BANNER.model, weeks: weeks ?? last.weeks ?? [] };
+    if (!calendar) console.warn(`warning: couldn't reach GitHub for ${BANNER.user}'s contributions; ${last.calendar ? 'keeping the last chart' : 'leaving the chart empty'}`);
+    return { model: model ?? last.model ?? BANNER.model, calendar: calendar ?? last.calendar ?? null };
 }
 
 const MODEL_LISTS = [
@@ -354,18 +446,26 @@ async function latestModel() {
     return null;
 }
 
-async function commitWeeks() {
+async function contributionCalendar() {
     const token = process.env.GITHUB_TOKEN;
     if (!token) return null;
-    const query = 'query($login:String!){user(login:$login){contributionsCollection{contributionCalendar{weeks{contributionDays{contributionCount}}}}}}';
+    const query = 'query($login:String!){user(login:$login){contributionsCollection{contributionCalendar{totalContributions weeks{firstDay contributionDays{weekday contributionLevel}}}}}}';
     const res = await fetch('https://api.github.com/graphql', {
         method: 'POST',
         headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
         body: JSON.stringify({ query, variables: { login: BANNER.user } }),
         signal: AbortSignal.timeout(5000),
     });
-    const weeks = (await res.json()).data?.user?.contributionsCollection.contributionCalendar.weeks;
-    return weeks ? weeks.map((w) => w.contributionDays.reduce((n, d) => n + d.contributionCount, 0)).slice(-BANNER.weeks) : null;
+    const calendar = (await res.json()).data?.user?.contributionsCollection.contributionCalendar;
+    if (!calendar) return null;
+    return {
+        total: calendar.totalContributions,
+        weeks: calendar.weeks.slice(-HEAT.weeks).map((w) => {
+            const levels = Array(7).fill(' ');
+            for (const d of w.contributionDays) levels[d.weekday] = String(Math.max(0, HEAT.levels.indexOf(d.contributionLevel)));
+            return { first: w.firstDay, levels: levels.join('') };
+        }),
+    };
 }
 
 function pickEpisodes(date) {
@@ -710,7 +810,7 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
 :root{${vars(THEMES.light)}}
 @media (prefers-color-scheme:dark){:root{${vars(THEMES.dark)}}}
 text{font-family:${FONT};font-size:${V.fontSize}px;white-space:pre;font-variant-ligatures:none;font-kerning:none}
-.t{fill:${theme.text}}.d{fill:${theme.dim}}.b{font-weight:700}.v{fill:${theme.claude}}.sh{fill:${theme.shimmer}}
+.t{fill:${theme.text}}.d{fill:${theme.dim}}${HEAT.levels.map((_, l) => `.h${l}{fill:${theme[`heat${l}`]}}`).join('')}.b{font-weight:700}.v{fill:${theme.claude}}.sh{fill:${theme.shimmer}}
 .g{fill:${theme.claude};visibility:hidden;animation:${round((GLYPH.frames.length * GLYPH.frameMs) / 1000)}s step-end infinite}
 ${GLYPH_SHAPES.map((_, g) => frameKeyframes(`g${g}`, GLYPH.frames, (f) => f === g)).join('\n')}
 ${clawd.css}
@@ -740,7 +840,7 @@ ${verbRows.join('\n')}
 <g clip-path="url(#screen)">
 <g>${animate('transform', shake)}<g>${animate('transform', [[0, 0], ...rewinds.flatMap(([a, b]) => [...whoosh(a, 1), ...whoosh(b, -1)])], { type: 'skewX' })}
 ${banner}
-${waved(G.clawdY, G.clawdY + 3 * V.row, clawd.svg)}
+${waved(G.clawdY - V.row, G.clawdY + 3 * V.row, clawd.svg)}
 ${line(badgeY - 13, badgeY + 5, 'Lrew', `<g display="none" style="fill:${theme.text}">${during(...blink)}
 ${V.badgeBox ? `<rect x="${round(badgeLeft - 6)}" y="${round(badgeY - 13)}" width="${round(badgeRight - badgeLeft + 12)}" height="18" rx="3" style="fill:${theme.bg}"/>` : ''}<path d="${tri(badgeLeft)}${tri(badgeLeft + 8)}"/>
 <text class="t b" x="${round(badgeRight - 3 * V.cell)}" y="${badgeY}" textLength="${len(3)}">REW</text>
@@ -778,7 +878,7 @@ ${[G.height, G.height - half].map((y) => `<rect y="${round(y)}" width="${V.width
 `;
 }
 
-function renderBanner(V, G, claudeVersion, { model, weeks }, line, textBand, theme) {
+function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, theme) {
     const len = (cells) => round(cells * V.cell);
     const words = [];
     const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
@@ -789,20 +889,28 @@ function renderBanner(V, G, claudeVersion, { model, weeks }, line, textBand, the
     const R = G.rightRow;
     say(G.rightX, R, 'v', 'About me');
     BANNER.about.forEach((t, k) => say(G.rightX, R + 1 + k, 't', t));
-    say(G.rightX, R + 4, 'v', 'Recent activity');
+    say(G.rightX, R + 5, 'v', 'Recent activity');
 
-    const total = weeks.reduce((a, b) => a + b, 0);
     let chart = '';
-    if (total) {
-        const [x0, x1, bottom, eighth] = [G.rightX, G.right - 2 * V.cell, G.rowY(R + 7.5) - 2, V.row / 8];
-        const [slot, peak] = [(x1 - x0) / weeks.length, Math.max(...weeks)];
-        const bars = weeks.map((n, k) => {
-            const h = n && Math.max(1, Math.round(Math.sqrt(n / peak) * 23)) * eighth;
-            return h ? `M${round(x0 + k * slot + slot * 0.15)} ${round(bottom)}h${round(slot * 0.7)}v${round(-h)}h${round(-slot * 0.7)}Z` : '';
-        }).join('');
-        chart = line(G.rowY(R + 4.5), bottom + 1, 'Lchart', `<path d="M${round(x0)} ${round(bottom + 0.5)}H${round(x1)}" style="stroke:${theme.border}"/><path d="${bars}" style="fill:${theme.claude}"/>`);
-        say(G.rightX, R + 8, 'd', `${total.toLocaleString('en')} contributions in the last year`);
-    } else say(G.rightX, R + 5, 'd', 'No recent activity');
+    if (calendar?.weeks.length) {
+        const [x0, x1, pitch] = [G.rightX, G.right - 2 * V.cell, G.heatPitch];
+        const top = G.rowY(R + 6.5) + (G.heatRows * V.row - 7 * pitch) / 2;
+        const size = round(pitch * HEAT.fill);
+        const start = x1 - calendar.weeks.length * pitch;
+        const cells = calendar.weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
+        const labelW = 3 * HEAT.labelSize * 0.6;
+        const months = calendar.weeks.map((w, k) => [k, new Date(`${w.first}T00:00:00Z`).getUTCMonth()])
+            .filter(([k, m], i, all) => i === 0 || m !== all[i - 1][1])
+            .map(([k, m]) => [round(start + k * pitch), new Date(Date.UTC(2000, m, 1)).toLocaleString('en', { month: 'short', timeZone: 'UTC' })])
+            .filter(([x], i, all) => x + labelW <= x1 && (i === all.length - 1 || all[i + 1][0] - x >= labelW + 4));
+        const labelY = round(G.rowY(R + 6.5) - 3);
+        chart = line(G.rowY(R + 5.5), top + 7 * pitch, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>`
+            + months.map(([x, name]) => `<text class="d" style="font-size:${HEAT.labelSize}px" x="${x}" y="${labelY}">${name}</text>`).join('')
+            + cells.join(''));
+        const captions = [`${calendar.total.toLocaleString('en')} contributions in the last year`, `${calendar.total.toLocaleString('en')} contributions`];
+        const caption = captions.find((c) => cellsIn('Recent activity') + 2 + cellsIn(c) <= G.rightCols);
+        if (caption) say(x1 - cellsIn(caption) * V.cell, R + 5, 'd', caption);
+    } else say(G.rightX, R + 6, 'd', 'No recent activity');
 
     const title = `Claude Code v${claudeVersion}`;
     const titleX = round(G.left + 3 * V.cell);
@@ -816,7 +924,7 @@ function renderBanner(V, G, claudeVersion, { model, weeks }, line, textBand, the
         line(...textBand(G.welcomeBase(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.welcomeBase(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
         G.divider ? stroke('Ldiv', y0 + 0.6 * V.row, y1 - 0.6 * V.row, `M${G.divider} ${round(y0 + 0.6 * V.row)}V${round(y1 - 0.6 * V.row)}`) : '',
         G.splitRow ? rule('Lsplit', G.textX, G.splitRow) : '',
-        rule('Lrule', G.rightX, R + 3),
+        rule('Lrule', G.rightX, R + 4),
         chart,
         ...words.map(([x, row, cls, t], k) => line(...textBand(G.welcomeBase(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.welcomeBase(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
     ].filter(Boolean).join('\n');
@@ -826,12 +934,24 @@ function renderClawd(V, G) {
     const { cell, row, fontSize } = V;
     const QUADS = { '▘': 8, '▝': 4, '▖': 2, '▗': 1, '▀': 12, '▄': 3, '▌': 10, '▐': 5, '▛': 14, '▜': 13, '▙': 11, '▟': 7, '█': 15 };
     const [px, py] = [cell / 2, row / 2];
-    const rects = (grid, dx, dy) =>
-        grid.map((cols, y) => {
+    const sprite = (pose) => {
+        if (CLAWD.sprites[pose]) return CLAWD.sprites[pose];
+        const grid = Array.from({ length: CLAWD.above + 6 }, () => Array(CLAWD.width).fill('.'));
+        CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => {
+            for (let b = 0; b < 4; b++) {
+                const [y, x, on] = [2 * l + (b >> 1), 2 * c + (b & 1), ((QUADS[ch] ?? 0) >> (3 - b)) & 1];
+                const eye = !on && l === CLAWD.eyes.line && c >= CLAWD.eyes.from && c < CLAWD.eyes.to;
+                if (on || eye) grid[CLAWD.above + y][x] = on ? 'C' : 'E';
+            }
+        }));
+        return grid.map((r) => r.join(''));
+    };
+    const rects = (grid, letter, dx, dy) =>
+        grid.map((line, y) => {
             let d = '';
-            for (let x = 0, end; x < cols.length; x = end + 1) {
-                for (end = x; cols[end] && cols[end + 1]; end++);
-                if (cols[x]) d += `M${round(G.clawdX + dx + x * px)} ${round(G.clawdY + dy + y * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
+            for (let x = 0, end; x < line.length; x = end + 1) {
+                for (end = x; line[end] === letter && line[end + 1] === letter; end++);
+                if (line[x] === letter) d += `M${round(G.clawdX + dx + x * px)} ${round(G.clawdY + dy + (y - CLAWD.above) * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
             }
             return d;
         }).join('');
@@ -840,17 +960,14 @@ function renderClawd(V, G) {
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
         if (+shift <= -CLAWD.cols) return `<g class="c${k}"/>`;
-        const [body, eyes] = [[], []];
-        CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => {
-            for (let b = 0; b < 4; b++) {
-                const [y, x, on] = [2 * l + (b >> 1), 2 * c + (b & 1), ((QUADS[ch] ?? 0) >> (3 - b)) & 1];
-                (body[y] ??= [])[x] = !!on;
-                (eyes[y] ??= [])[x] = !on && l === CLAWD.eyes.line && c >= CLAWD.eyes.from && c < CLAWD.eyes.to;
-            }
-        }));
+        const grid = sprite(pose);
         const [dx, dy] = [+shift * cell, +crouch * row];
+        const layers = Object.entries(CLAWD.palette).map(([letter, color]) => {
+            const d = rects(grid, letter, dx, dy);
+            return d && `<path fill="${color}" d="${d}"/>`;
+        }).join('');
         const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.clawdX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
-        return `<g class="c${k}"><path fill="#D77757" d="${rects(body, dx, dy)}"/><path fill="#000000" d="${rects(eyes, dx, dy)}"/>${puffs}</g>`;
+        return `<g class="c${k}">${layers}${puffs}</g>`;
     });
     const seconds = (frames) => round((frames.length * CLAWD.frameMs) / 1000);
     const [inFor, loopFor] = [seconds(CLAWD.entrance), seconds(CLAWD.loop)];
@@ -862,7 +979,7 @@ function renderClawd(V, G) {
     });
     return {
         css: css.join('\n'),
-        defs: `<clipPath id="clawd"><rect x="${G.clawdX}" y="${G.clawdY}" width="${round(CLAWD.cols * cell)}" height="${3 * row}"/></clipPath>`,
+        defs: `<clipPath id="clawd"><rect x="${G.clawdX}" y="${round(G.clawdY - CLAWD.above * py)}" width="${round(CLAWD.width * px)}" height="${round(3 * row + CLAWD.above * py)}"/></clipPath>`,
         svg: `<g clip-path="url(#clawd)">\n${groups.join('\n')}\n</g>`,
     };
 }
