@@ -185,11 +185,13 @@ const WAVE = { step: 0.05, patterns: 8, scale: 16, frequency: 0.035, fringe: 3, 
 const BANNER = {
     user: 'imgaty',
     title: 'Gaty · Professional Claude Verbal Abuser™',
-    welcome: 'Welcome back Gaty!',
-    plan: 'Opus 5.5 · Claude Max',
+    welcome: 'Welcome back!',
+    families: ['opus', 'fable'],
+    model: 'Opus 5.5',
+    plan: 'Claude Max',
     cwd: '/home/imgaty',
-    tagline: 'Professional Claude Verbal Abuser™',
-    recent: 3,
+    about: ['Professional Claude Verbal Abuser™', 'Making whatever since 2024'],
+    weeks: 52,
     leftRows: 8,
     rightRows: 9,
 };
@@ -230,7 +232,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
     const left = pad + 0.5;
     const right = width - left;
     const textX = round(left + 2 * cell);
-    const leftCells = Math.max(...[BANNER.welcome, BANNER.plan, BANNER.cwd].map(cellsIn), CLAWD.cols) + 4;
+    const leftCells = Math.max(...[BANNER.welcome, `Fable 99.9 · ${BANNER.plan}`, BANNER.cwd].map(cellsIn), CLAWD.cols) + 4;
     const divider = stacked ? null : round(left + leftCells * cell);
     const leftMid = stacked ? (left + right) / 2 : (left + divider) / 2;
     const rightX = stacked ? textX : round(divider + 2 * cell);
@@ -282,7 +284,7 @@ async function main() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || new Date(Date.parse(date) || 0).toISOString().slice(0, 10) !== date) fail(`"${date}" is not a date\n${USAGE}`);
 
     const version = args['dry-run'] ? null : claudeCodeVersion();
-    const github = args['dry-run'] ? null : githubProfile();
+    const facts = args['dry-run'] ? null : bannerFacts();
     const episodes = pickEpisodes(date);
     if (args['dry-run']) {
         for (const ep of episodes) {
@@ -292,10 +294,10 @@ async function main() {
         return;
     }
 
-    const [claudeVersion, profile] = await Promise.all([version, github]);
+    const [claudeVersion, banner] = await Promise.all([version, facts]);
     const hash = createHash('sha1');
     for (const [name, { file: out }] of Object.entries(VIEWS)) {
-        const svg = renderSvg(episodes, date, claudeVersion, profile, name);
+        const svg = renderSvg(episodes, date, claudeVersion, banner, name);
         writeFileSync(file(out), svg);
         hash.update(svg);
         console.log(`wrote ${out} (${(Buffer.byteLength(svg) / 1024).toFixed(1)} KB)`);
@@ -320,47 +322,50 @@ async function claudeCodeVersion() {
     return previous;
 }
 
-async function githubProfile() {
-    const headers = { accept: 'application/vnd.github+json', ...(process.env.GITHUB_TOKEN && { authorization: `Bearer ${process.env.GITHUB_TOKEN}` }) };
-    const get = async (path) => {
-        const res = await fetch(`https://api.github.com/${path}`, { headers, signal: AbortSignal.timeout(5000) });
-        if (!res.ok) throw new Error(`${res.status} on ${path}`);
-        return res.json();
-    };
-    try {
-        const [user, repos] = await Promise.all([get(`users/${BANNER.user}`), get(`users/${BANNER.user}/repos?type=owner&sort=pushed&per_page=100`)]);
-        return {
-            name: user.name, location: user.location, since: user.created_at,
-            repos: repos.filter((r) => !r.fork && !r.archived && !r.private).map((r) => ({ name: r.name, language: r.language, description: r.description, pushed: r.pushed_at })),
-        };
-    } catch {}
+async function bannerFacts() {
     const out = file(VIEWS.desktop.file);
-    const previous = existsSync(out) && readFileSync(out, 'utf8').match(/<!-- profile ([\w+/=]+) -->/)?.[1];
-    console.warn(`warning: couldn't reach GitHub for ${BANNER.user}'s profile; ${previous ? 'keeping the last one' : 'leaving it empty'}`);
-    return previous ? JSON.parse(Buffer.from(previous, 'base64').toString('utf8')) : { repos: [] };
+    const cached = existsSync(out) && readFileSync(out, 'utf8').match(/<!-- banner ([\w+/=]+) -->/)?.[1];
+    const last = cached ? JSON.parse(Buffer.from(cached, 'base64').toString('utf8')) : {};
+    const [model, weeks] = await Promise.all([latestModel().catch(() => null), commitWeeks().catch(() => null)]);
+    if (!model) console.warn(`warning: couldn't find the latest ${BANNER.families.join('/')} model; keeping ${last.model ?? BANNER.model}`);
+    if (!weeks) console.warn(`warning: couldn't reach GitHub for ${BANNER.user}'s contributions; ${last.weeks ? 'keeping the last chart' : 'leaving the chart empty'}`);
+    return { model: model ?? last.model ?? BANNER.model, weeks: weeks ?? last.weeks ?? [] };
 }
 
-function bannerLines(profile, date) {
-    const today = Date.parse(`${date}T23:59:59Z`);
-    const ago = (at) => {
-        const d = Math.max(0, Math.floor((today - Date.parse(at)) / 864e5));
-        return d < 1 ? 'today' : d < 14 ? `${d}d ago` : d < 60 ? `${Math.floor(d / 7)}w ago` : d < 365 ? `${Math.floor(d / 30)}mo ago` : `${Math.floor(d / 365)}y ago`;
-    };
-    const since = profile.since && `on GitHub since ${new Date(profile.since).toLocaleString('en', { month: 'short', year: 'numeric', timeZone: 'UTC' })}`;
-    const counts = new Map();
-    for (const r of profile.repos) if (r.language) counts.set(r.language, (counts.get(r.language) ?? 0) + 1);
-    const langs = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 3).map(([l]) => l);
-    const about = [
-        BANNER.tagline,
-        [profile.name, profile.location, since].filter(Boolean).join(' · '),
-        langs.length && `Mostly writes ${langs.length > 1 ? `${langs.slice(0, -1).join(', ')} and ${langs.at(-1)}` : langs[0]}`,
-    ].filter(Boolean);
-    const recent = profile.repos
-        .filter((r) => r.name.toLowerCase() !== BANNER.user.toLowerCase())
-        .sort((a, b) => Date.parse(b.pushed) - Date.parse(a.pushed))
-        .slice(0, BANNER.recent)
-        .map((r) => [ago(r.pushed), [r.name, r.description || r.language].filter(Boolean).join(' · ')]);
-    return { about, recent };
+const MODEL_LISTS = [
+    ['https://models.dev/api.json', (json) => Object.values(json.anthropic.models).map((m) => [m.id, Date.parse(m.release_date)])],
+    ['https://openrouter.ai/api/v1/models', (json) => json.data.filter((m) => m.id.startsWith('anthropic/')).map((m) => [m.id, m.created * 1000])],
+];
+
+async function latestModel() {
+    const pattern = new RegExp(`claude-(${BANNER.families.join('|')})-(\\d+)(?:[.-](\\d{1,2}))?(?!\\d)`, 'i');
+    for (const [url, list] of MODEL_LISTS) {
+        try {
+            const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+            const [best] = list(await res.json())
+                .flatMap(([id, at]) => {
+                    const m = id.match(pattern);
+                    return m ? [{ family: m[1].toLowerCase(), major: +m[2], minor: +(m[3] ?? 0), at: at || 0 }] : [];
+                })
+                .sort((a, b) => b.at - a.at || b.major - a.major || b.minor - a.minor);
+            if (best) return `${best.family[0].toUpperCase()}${best.family.slice(1)} ${best.major}${best.minor ? `.${best.minor}` : ''}`;
+        } catch {}
+    }
+    return null;
+}
+
+async function commitWeeks() {
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) return null;
+    const query = 'query($login:String!){user(login:$login){contributionsCollection{contributionCalendar{weeks{contributionDays{contributionCount}}}}}}';
+    const res = await fetch('https://api.github.com/graphql', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ query, variables: { login: BANNER.user } }),
+        signal: AbortSignal.timeout(5000),
+    });
+    const weeks = (await res.json()).data?.user?.contributionsCollection.contributionCalendar.weeks;
+    return weeks ? weeks.map((w) => w.contributionDays.reduce((n, d) => n + d.contributionCount, 0)).slice(-BANNER.weeks) : null;
 }
 
 function pickEpisodes(date) {
@@ -495,7 +500,7 @@ function statusFor(verb, samples, cols) {
     return out;
 }
 
-function renderSvg(episodes, version, claudeVersion, profile, name) {
+function renderSvg(episodes, version, claudeVersion, facts, name) {
     const theme = Object.fromEntries(Object.keys(THEMES.dark).map((k) => [k, `var(--${k})`]));
     const [V, G] = [VIEWS[name], LAYOUTS[name]];
     const D = TICKS_PER_LINE * TICK;
@@ -694,12 +699,12 @@ function renderSvg(episodes, version, claudeVersion, profile, name) {
         return `<clipPath id="s${cells}"><rect y="${round(headY - 6 - G.spinnerBase)}" width="${len(SHIMMER.width)}" height="${V.caret + 12}"><animate attributeName="x" calcMode="discrete" dur="${round(xs.length * SHIMMER.step, 3)}s" repeatCount="indefinite" values="${xs.join(';')}"/></rect></clipPath>`;
     });
     const clawd = renderClawd(V, G);
-    const banner = renderBanner(V, G, claudeVersion, bannerLines(profile, version), line, textBand, theme);
+    const banner = renderBanner(V, G, claudeVersion, facts, line, textBand, theme);
     const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(';');
     const tint = (color) => `${Object.keys(THEMES.dark).map((k) => `--${k}:${color}`).join(';')};--solo:none`;
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${V.width}" height="${G.height}" viewBox="0 0 ${V.width} ${G.height}" role="img">
 <!-- Generated by generate.mjs for ${version}: ${eps.length} prompts, ${g} lines, ${round(T)} s loop. Edit PROMPTS in generate.mjs, not this file. -->
-<!-- profile ${Buffer.from(JSON.stringify(profile)).toString('base64')} -->
+<!-- banner ${Buffer.from(JSON.stringify(facts)).toString('base64')} -->
 <title>${xml(describe(eps))}</title>
 <style>
 :root{${vars(THEMES.light)}}
@@ -773,25 +778,31 @@ ${[G.height, G.height - half].map((y) => `<rect y="${round(y)}" width="${V.width
 `;
 }
 
-function renderBanner(V, G, claudeVersion, { about, recent }, line, textBand, theme) {
+function renderBanner(V, G, claudeVersion, { model, weeks }, line, textBand, theme) {
     const len = (cells) => round(cells * V.cell);
-    const fit = (s, cells) => (cellsIn(s) <= cells ? s : `${[...s].slice(0, cells - 1).join('').trimEnd()}…`);
     const words = [];
     const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
     const centered = (row, cls, t) => say(G.leftMid - (cellsIn(t) / 2) * V.cell, row, cls, t);
     centered(G.leftRow, 't b', BANNER.welcome);
-    centered(G.leftRow + 6, 'd', BANNER.plan);
+    centered(G.leftRow + 6, 'd', `${model} · ${BANNER.plan}`);
     centered(G.leftRow + 7, 'd', BANNER.cwd);
     const R = G.rightRow;
     say(G.rightX, R, 'v', 'About me');
-    about.slice(0, 3).forEach((t, k) => say(G.rightX, R + 1 + k, 't', fit(t, G.rightCols)));
-    say(G.rightX, R + 5, 'v', 'Recent activity');
-    if (!recent.length) say(G.rightX, R + 6, 'd', 'No recent activity');
-    const agoCells = Math.max(0, ...recent.map(([ago]) => cellsIn(ago))) + 2;
-    recent.forEach(([ago, what], k) => {
-        say(G.rightX, R + 6 + k, 'd', ago);
-        say(G.rightX + agoCells * V.cell, R + 6 + k, 't', fit(what, G.rightCols - agoCells));
-    });
+    BANNER.about.forEach((t, k) => say(G.rightX, R + 1 + k, 't', t));
+    say(G.rightX, R + 4, 'v', 'Recent activity');
+
+    const total = weeks.reduce((a, b) => a + b, 0);
+    let chart = '';
+    if (total) {
+        const [x0, x1, bottom, eighth] = [G.rightX, G.right - 2 * V.cell, G.rowY(R + 7.5) - 2, V.row / 8];
+        const [slot, peak] = [(x1 - x0) / weeks.length, Math.max(...weeks)];
+        const bars = weeks.map((n, k) => {
+            const h = n && Math.max(1, Math.round((n / peak) * 23)) * eighth;
+            return h ? `M${round(x0 + k * slot + slot * 0.15)} ${round(bottom)}h${round(slot * 0.7)}v${round(-h)}h${round(-slot * 0.7)}Z` : '';
+        }).join('');
+        chart = line(G.rowY(R + 4.5), bottom + 1, 'Lchart', `<path d="M${round(x0)} ${round(bottom + 0.5)}H${round(x1)}" style="stroke:${theme.border}"/><path d="${bars}" style="fill:${theme.claude}"/>`);
+        say(G.rightX, R + 8, 'd', `${total.toLocaleString('en')} contributions in the last year`);
+    } else say(G.rightX, R + 5, 'd', 'No recent activity');
 
     const title = `Claude Code v${claudeVersion}`;
     const titleX = round(G.left + 3 * V.cell);
@@ -805,7 +816,8 @@ function renderBanner(V, G, claudeVersion, { about, recent }, line, textBand, th
         line(...textBand(G.welcomeBase(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.welcomeBase(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
         G.divider ? stroke('Ldiv', y0 + 0.6 * V.row, y1 - 0.6 * V.row, `M${G.divider} ${round(y0 + 0.6 * V.row)}V${round(y1 - 0.6 * V.row)}`) : '',
         G.splitRow ? rule('Lsplit', G.textX, G.splitRow) : '',
-        rule('Lrule', G.rightX, R + 4),
+        rule('Lrule', G.rightX, R + 3),
+        chart,
         ...words.map(([x, row, cls, t], k) => line(...textBand(G.welcomeBase(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.welcomeBase(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
     ].filter(Boolean).join('\n');
 }
