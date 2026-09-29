@@ -244,7 +244,7 @@ const CLAWD = {
     ].map((combo) => combo.flatMap((move, k) => [...(k ? beat : []), ...moves[move]]));
     CLAWD.weights = { dancing: 3, book: 3, magnifier: 3, jumping: 2, jumpinghappy: 2, soccer: 2, crabwalking: 2, racingcar: 1, cloud: 1 };
     CLAWD.actions = Object.fromEntries(Object.keys(CLAWD.weights).map((name) => [name, scene(name)]));
-    CLAWD.combosPerScene = 3;
+    CLAWD.combosPerScene = 2;
 }
 
 const LEAD = round((CLAWD.entrance.length * CLAWD.frameMs) / 1000, 3);
