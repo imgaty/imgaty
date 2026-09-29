@@ -251,6 +251,28 @@ const CLAWD = {
     CLAWD.combosPerScene = 3;
 }
 
+// Clawd runs on the banner's own clock: forward while prompts play, backwards through each VHS rewind (to where he was
+// when that prompt started, eased like the spinner lines), then on from where he left off. His routine spans as many
+// banner loops as it needs to play through once.
+function clawdTrack(date, eps, T) {
+    const tick = CLAWD.frameMs / 1000, loop = clawdLoop(date);
+    const forwardPerLoop = T - eps.reduce((n, e) => n + e.unwound - e.rewind, 0);
+    const loops = Math.ceil(((CLAWD.intro.length + loop.length) * tick) / forwardPerLoop);
+    const forward = (t) => t - eps.reduce((n, e) => n + Math.max(0, Math.min(t, e.unwound) - e.rewind), 0);
+    const at = (c) => {
+        const i = Math.max(0, Math.floor(c / tick + 1e-6));
+        return i < CLAWD.intro.length ? CLAWD.intro[i] : loop[(i - CLAWD.intro.length) % loop.length];
+    };
+    const track = Array.from({ length: Math.round((loops * T) / tick) }, (_, i) => {
+        const n = Math.min(loops - 1, Math.floor((i * tick) / T)), t = i * tick - n * T, base = n * forwardPerLoop;
+        const e = eps.find((ep) => t >= ep.rewind && t < ep.unwound);
+        if (!e) return at(base + forward(t));
+        const p = Math.min(1, Math.sqrt((t - e.rewind) / STORY.scrub));
+        return at(base + forward(e.rewind) + (forward(e.start) - forward(e.rewind)) * p);
+    });
+    return [track, loops * T];
+}
+
 // After his intro he loops through every scene in an order shuffled for the day, with idle combos drawn from a shuffled
 // deck (so none repeats until all have played) in between.
 function clawdLoop(date) {
@@ -289,8 +311,11 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
     const heatPitch = (right - 2 * cell - rightX) / HEAT.weeks;
     const heatRows = Math.ceil((7 * heatPitch) / row);
     const rightRows = 7 + heatRows;
-    const rows = stacked ? BANNER.leftRows + 1 + rightRows : Math.max(BANNER.leftRows, rightRows);
-    const leftRow = stacked ? 1 : 1 + (rows - BANNER.leftRows) / 2;
+    // stacked: the left block, a rule, then the right block; side by side: the left block centred against the right
+    const leftRow = stacked ? 1.5 : 1 + (Math.max(BANNER.leftRows, rightRows) - BANNER.leftRows) / 2;
+    const splitRow = stacked ? leftRow + BANNER.leftRows : null;
+    const rightRow = stacked ? splitRow + 1 : 1;
+    const rows = rightRow + rightRows - 1;
     const bannerBottom = left + (rows + 1) * row;
     const userBase = bannerBottom + pad + capHeight;
     const spinnerBase = userBase + 2 * row;
@@ -299,9 +324,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
     const hintBase = boxBottom + hintGap + capHeight;
     return {
         left, right, textX, divider, leftMid, rightX, leftRow, bannerBottom, boxTop, boxBottom, hintBase,
-        rightRow: stacked ? BANNER.leftRows + 2 : 1,
-        splitRow: stacked ? BANNER.leftRows + 1 : null,
-        rightCols, heatPitch, heatRows,
+        rightRow, splitRow, rightCols, heatPitch,
         rowY: (line) => round(left + line * row),
         welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
         clawdX: round(leftMid - (CLAWD.cols / 2) * cell),
@@ -766,7 +789,7 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
         for (let k = 0; k < idle; k++) xs.push(len(cells));
         return `<clipPath id="s${cells}"><rect y="${round(headY - 6 - G.spinnerBase)}" width="${len(SHIMMER.width)}" height="${V.caret + 12}"><animate attributeName="x" calcMode="discrete" dur="${round(xs.length * SHIMMER.step, 3)}s" repeatCount="indefinite" values="${xs.join(';')}"/></rect></clipPath>`;
     });
-    const clawd = renderClawd(V, G, clawdLoop(version));
+    const clawd = renderClawd(V, G, ...clawdTrack(version, eps, T));
     const banner = renderBanner(V, G, claudeVersion, facts, line, textBand, theme);
     const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(';');
     const tint = (color) => `${Object.keys(THEMES.dark).map((k) => `--${k}:${color}`).join(';')};--solo:none`;
@@ -862,7 +885,7 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     let chart = '';
     if (calendar?.weeks.length) {
         const [x0, x1, pitch] = [G.rightX, G.right - 2 * V.cell, G.heatPitch];
-        const top = G.rowY(R + 6.5) + (G.heatRows * V.row - 7 * pitch) / 2;
+        const top = G.rowY(R + 5.5) + 5;
         const size = round(pitch * HEAT.fill);
         const start = x1 - calendar.weeks.length * pitch;
         const cells = calendar.weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
@@ -871,8 +894,8 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
             .filter(([k, m], i, all) => i === 0 || m !== all[i - 1][1])
             .map(([k, m]) => [round(start + k * pitch), new Date(Date.UTC(2000, m, 1)).toLocaleString('en', { month: 'short', timeZone: 'UTC' })])
             .filter(([x], i, all) => x + labelW <= x1 && (i === all.length - 1 || all[i + 1][0] - x >= labelW + 4));
-        const labelY = round(G.rowY(R + 6.5) - 3);
-        chart = line(G.rowY(R + 5.5), top + 7 * pitch, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>`
+        const labelY = round(top + 7 * pitch + HEAT.labelSize + 3);
+        chart = line(G.rowY(R + 5.5), labelY, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>`
             + months.map(([x, name]) => `<text class="d" style="font-size:${HEAT.labelSize}px" x="${x}" y="${labelY}">${name}</text>`).join('')
             + cells.join(''));
         const captions = [`${calendar.total.toLocaleString('en')} contributions in the last year`, `${calendar.total.toLocaleString('en')} contributions`];
@@ -892,53 +915,47 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
         line(...textBand(G.welcomeBase(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.welcomeBase(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
         G.divider ? stroke('Ldiv', y0 + 0.6 * V.row, y1 - 0.6 * V.row, `M${G.divider} ${round(y0 + 0.6 * V.row)}V${round(y1 - 0.6 * V.row)}`) : '',
         G.splitRow ? rule('Lsplit', G.textX, G.splitRow) : '',
-        rule('Lrule', G.rightX, R + 4),
+        rule('Lrule', G.rightX, R + 3.5),
         chart,
         ...words.map(([x, row, cls, t], k) => line(...textBand(G.welcomeBase(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.welcomeBase(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
     ].filter(Boolean).join('\n');
 }
 
-function renderClawd(V, G, loop) {
+function renderClawd(V, G, track, duration) {
     const { cell, row, fontSize } = V;
     // square pixels, sized so his body is as wide as the terminal sprite's; his arms start at `left`
     const block = (13 * cell) / 16;
     const left = G.clawdX + 4.75 * cell - 6 * block;
-    const draw = (grid, x0, y0, size = block) => Object.entries(SCENE_PALETTE).map(([letter, color]) => {
+    // pixel art is drawn in its own grid units and placed with one transform, which keeps the paths short
+    const draw = (grid, x, y, size) => `<g transform="translate(${round(x)} ${round(y)}) scale(${round(size, 4)})">${Object.entries(SCENE_PALETTE).map(([letter, color]) => {
         let d = '';
-        grid.forEach((line, y) => {
-            for (let x = 0, end; x < line.length; x = end + 1) {
-                for (end = x; line[x] === letter && line[end + 1] === letter; end++);
-                if (line[x] === letter) d += `M${round(x0 + x * size)} ${round(y0 + y * size)}h${round((end - x + 1) * size)}v${round(size)}h${round(-(end - x + 1) * size)}Z`;
+        grid.forEach((line, r) => {
+            for (let c = 0, end; c < line.length; c = end + 1) {
+                for (end = c; line[c] === letter && line[end + 1] === letter; end++);
+                if (line[c] === letter) d += `M${c} ${r}h${end - c + 1}v1H${c}Z`;
             }
         });
         return d && `<path fill="${color}" d="${d}"/>`;
-    }).join('');
-    const sceneFrame = (k, name, frame) => {
-        // line his resting body up with the terminal Clawd's
-        const { body, cell: scale = 1, frames } = SCENES[name], size = scale * block;
-        return `<g class="c${k}">${draw(frames[frame], left - body[0] * size, G.clawdY - body[1] * size, size)}</g>`;
-    };
+    }).join('')}</g>`;
     const frameKey = (frame) => frame.join('/');
-    const keys = [...new Set([...CLAWD.intro, ...loop].map(frameKey))];
+    const keys = [...new Set(track.map(frameKey))];
+    const isScene = (key) => key.startsWith('scene:');
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
+        if (isScene(key)) {
+            // line his resting body up with the terminal Clawd's
+            const [, name, frame] = pose.split(':'), { body, cell: scale = 1, frames } = SCENES[name], size = scale * block;
+            return `<g class="c${k}">${draw(frames[frame], left - body[0] * size, G.clawdY - body[1] * size, size)}</g>`;
+        }
         if (+shift <= -CLAWD.cols) return `<g class="c${k}"/>`;
-        if (pose.startsWith('scene:')) return sceneFrame(k, ...pose.split(':').slice(1));
         const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.clawdX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
-        return `<g class="c${k}">${draw(CLAWD.poses[pose], left + +shift * cell, G.clawdY + +crouch * row)}${puffs}</g>`;
+        return `<g class="c${k}">${draw(CLAWD.poses[pose], left + +shift * cell, G.clawdY + +crouch * row, block)}${puffs}</g>`;
     });
-    const seconds = (frames) => round((frames.length * CLAWD.frameMs) / 1000);
-    const [inFor, loopFor] = [seconds(CLAWD.intro), seconds(loop)];
-    const timeline = (name, frames, key) => (frames.some((f) => frameKey(f) === key) ? frameKeyframes(name, frames, (f) => frameKey(f) === key) : null);
-    const css = keys.map((key, k) => {
-        const [inIntro, inLoop] = [timeline(`e${k}`, CLAWD.intro, key), timeline(`l${k}`, loop, key)];
-        const uses = [inIntro && `e${k} ${inFor}s step-end both`, inLoop && `l${k} ${loopFor}s step-end ${inFor}s infinite`].filter(Boolean);
-        return `.c${k}{visibility:hidden;animation:${uses.join(',')}}${inIntro ?? ''}${inLoop ?? ''}`;
-    });
+    const css = keys.map((key, k) => `.c${k}{visibility:hidden;animation:l${k} ${round(duration, 3)}s step-end infinite}${frameKeyframes(`l${k}`, track, (f) => frameKey(f) === key)}`);
     return {
         css: css.join('\n'),
         defs: `<clipPath id="clawd"><rect x="${round(left)}" y="${G.clawdY}" width="${round(12 * block)}" height="${round(8 * block)}"/></clipPath>`,
-        svg: `<g clip-path="url(#clawd)">\n${groups.filter((_, k) => !keys[k].startsWith('scene:')).join('\n')}\n</g>\n${groups.filter((_, k) => keys[k].startsWith('scene:')).join('\n')}`,
+        svg: `<g clip-path="url(#clawd)">\n${groups.filter((_, k) => !isScene(keys[k])).join('\n')}\n</g>\n${groups.filter((_, k) => isScene(keys[k])).join('\n')}`,
     };
 }
 
