@@ -198,8 +198,6 @@ const HEAT = { weeks: 44, fill: 0.85, radius: 2, levels: ['NONE', 'FIRST_QUARTIL
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
-    // The Claude Code CLI's poses at the Claude app's resolution (square pixels). default is the app's own still; the others
-    // move the arms like the CLI's half-block sprites, and glance sideways at eye level (on the head's top row the eyes would read as notches).
     poses: {
         default: ['..CCCCCCCC..', '..CECCCCEC..', 'CCCCCCCCCCCC', 'CCCCCCCCCCCC', '..CCCCCCCC..', '..CCCCCCCC..', '..C.C..C.C..', '..C.C..C.C..'],
         'look-left': ['..CCCCCCCC..', '..ECCCCECC..', 'CCCCCCCCCCCC', 'CCCCCCCCCCCC', '..CCCCCCCC..', '..CCCCCCCC..', '..C.C..C.C..', '..C.C..C.C..'],
@@ -226,7 +224,6 @@ const CLAWD = {
     CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, poof)];
     CLAWD.intro = scene('waving');
     CLAWD.still = hold('default', Math.round(3000 / CLAWD.frameMs));
-    // small moves from the CLI, chained into combos with a short beat between moves; one combo after every 3 s still
     const moves = {
         crouch: [...hold('default', 3, 1), ...hold('default', 1)],
         hop: [...hold('default', 2, 1), ...hold('arms-up', 3), ...hold('default', 1)],
@@ -245,18 +242,13 @@ const CLAWD = {
         ['glance', 'jump'],
         ['crouch', 'hop', 'spin', 'crouch'],
     ].map((combo) => combo.flatMap((move, k) => [...(k ? beat : []), ...moves[move]]));
-    // the Claude app's scenes, one after every CLAWD.combosPerScene combos; weight is how often each plays per cycle
     CLAWD.weights = { dancing: 3, book: 3, magnifier: 3, jumping: 2, jumpinghappy: 2, soccer: 2, crabwalking: 2, racingcar: 1, cloud: 1 };
     CLAWD.actions = Object.fromEntries(Object.keys(CLAWD.weights).map((name) => [name, scene(name)]));
     CLAWD.combosPerScene = 3;
 }
 
-// Only on first load: the banner holds still while Clawd hops in, then everything starts together (restarts don't wait).
 const LEAD = round((CLAWD.entrance.length * CLAWD.frameMs) / 1000, 3);
 
-// Clawd runs on the banner's own clock: forward while prompts play, backwards through each VHS rewind (to where he was
-// when that prompt started, eased like the spinner lines), then on from where he left off. His routine spans as many
-// banner loops as it needs to play through once.
 function clawdTrack(date, eps, T) {
     const tick = CLAWD.frameMs / 1000, loop = clawdLoop(date);
     const forwardPerLoop = T - eps.reduce((n, e) => n + e.unwound - e.rewind, 0);
@@ -276,8 +268,6 @@ function clawdTrack(date, eps, T) {
     return [track, loops * T];
 }
 
-// After his intro he loops through every scene in an order shuffled for the day, with idle combos drawn from a shuffled
-// deck (so none repeats until all have played) in between.
 function clawdLoop(date) {
     const rng = makeRng(`${date}/clawd`);
     let deck = [];
@@ -285,7 +275,6 @@ function clawdLoop(date) {
         if (!deck.length) deck = rng.shuffle(CLAWD.combos);
         return [...CLAWD.still, ...deck.pop()];
     };
-    // the day's scene order, reshuffled until the same scene never plays twice in a row (wrapping around the loop too)
     const pool = Object.entries(CLAWD.weights).flatMap(([name, n]) => Array(n).fill(name));
     let order = rng.shuffle(pool);
     for (let tries = 0; tries < 200 && order.some((name, i) => name === order[(i + 1) % order.length]); tries++) order = rng.shuffle(pool);
@@ -302,8 +291,6 @@ const cellsIn = (text) => [...text].length;
 const LAYOUTS = Object.fromEntries(Object.entries(VIEWS).map(([name, view]) => [name, makeLayout(view)]));
 const MIN_COLS = Math.min(...Object.values(LAYOUTS).map((l) => l.cols));
 
-// Everything sits on one character grid, like a real terminal: text starts on whole columns and every baseline sits on a
-// whole row; box borders and rules take a row (or column) of their own, like box-drawing characters would.
 function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
     const gridCols = Math.floor((width - 2 * pad) / cell);
     const left = Math.round((width - gridCols * cell) / 2) + 0.5;
@@ -318,15 +305,12 @@ function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
     const rightCols = gridCols - 2 - rightCol;
     const heatPitch = (rightCols * cell) / HEAT.weeks;
     const heatRows = Math.ceil((7 * heatPitch) / row);
-    // side by side, the rule takes the blank row under About me so the right column ends with the left one
     const ruleRow = stacked ? 4 : 3;
     const rightRows = ruleRow + 2 + heatRows;
-    // stacked: the left block, a rule, then the right block; side by side: the left block centred against the right
     const leftRow = stacked ? 1 : 1 + Math.floor((Math.max(BANNER.leftRows, rightRows) - BANNER.leftRows) / 2);
     const splitRow = stacked ? leftRow + BANNER.leftRows : null;
     const rightRow = stacked ? splitRow + 1 : 1;
     const rows = Math.max(rightRow + rightRows - 1, leftRow + BANNER.leftRows - 1);
-    // below the banner, one blank row between each piece: the sent prompt, the spinner, the input box, then its hint
     const bannerRow = rows + 1;
     const userRow = bannerRow + 2;
     const spinnerRow = userRow + 2;
@@ -339,9 +323,7 @@ function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
         len: (cells) => round(cells * cell),
         ruleRow: rightRow + ruleRow, activityRow: rightRow + ruleRow + 1,
         rightX: col(rightCol),
-        // centred text still starts on a whole column
         centerX: (cells) => col(Math.round((midFrom + midTo - cells) / 2)),
-        // right-aligned text ends two columns in from the border
         endX: (cells) => col(gridCols - 2 - cells),
         rowY,
         baseAt,
@@ -907,7 +889,6 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     if (calendar?.weeks.length) {
         const pitch = G.heatPitch, weeks = calendar.weeks.slice(-HEAT.weeks);
         const size = round(pitch * HEAT.fill);
-        // its last row of squares ends on the baseline of the column's last text row, like the text beside it
         const bottom = G.baseAt(A + G.heatRows), top = bottom - 6 * pitch - size;
         const start = G.endX(0) - weeks.length * pitch;
         const cells = weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
@@ -938,11 +919,8 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
 
 function renderClawd(V, G, track, duration) {
     const { cell, row, fontSize } = V;
-    // square pixels, sized so his body is as wide as the terminal sprite's; his arms start at `left`
     const block = (13 * cell) / 16;
     const left = G.clawdX + 4.75 * cell - 6 * block;
-    // pixel art is drawn in its own grid units and placed with one transform; each colour's pixels are merged into
-    // rectangles (a run of a row, stretched down as far as the rows below match), which keeps the paths short
     const draw = (grid, x, y, size) => `<g transform="translate(${round(x)} ${round(y)}) scale(${round(size, 4)})">${Object.entries(SCENE_PALETTE).map(([letter, color]) => {
         const taken = grid.map((line) => [...line].map((ch) => ch !== letter));
         const free = (r, c, w) => taken[r] && taken[r].slice(c, c + w).every((t) => !t);
@@ -966,7 +944,6 @@ function renderClawd(V, G, track, duration) {
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
         if (isScene(key)) {
-            // line his resting body up with the terminal Clawd's
             const [, name, frame] = pose.split(':'), { body, cell: scale = 1, frames } = SCENES[name], size = scale * block;
             return `<g class="c${k}">${draw(frames[frame], left - body[0] * size, G.clawdY - body[1] * size, size)}</g>`;
         }

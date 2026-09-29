@@ -1,6 +1,3 @@
-// Official Clawd animations from the Claude app (12 fps GIFs), traced 1:1 onto their half-pixel grid (each cell is half of
-// Clawd's pixel, since they move in half steps). Letters index PALETTE; each scene lists its unique frames and plays them
-// as [frame, ms] steps. body is the cell where his arms start and the top of his head sits when he's resting.
 export const PALETTE = {"C":"#D77757","E":"#000000","O":"#BF694D","W":"#FAF9F5","B":"#141413","M":"#9C9A92","P":"#30302E","S":"#5E5D59","T":"#4D4C48","G":"#D98977","H":"#F1DEDA","K":"#D1CFC5","L":"#4A484C","N":"#61380A","Q":"#3E387D","R":"#C5D3E0","U":"#6A9BCC","V":"#571B2F","X":"#E3DACC"};
 
 export const SCENES = {
