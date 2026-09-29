@@ -8,7 +8,7 @@ const { PALETTE, SCENES } = await import(repo + '/clawd-scenes.mjs');
 // Pull CLAWD poses + sequences straight out of generate.mjs so the gallery can't drift from the banner.
 const src = readFileSync(repo + '/generate.mjs', 'utf8');
 const block = src.slice(src.indexOf('const CLAWD = {'), src.indexOf('\nconst TEXT ='));
-const CLAWD = new Function('SCENES', block.replace('CLAWD.loop =', 'CLAWD.seq = { idle, spin, look, jump, celebrate, dance: scene("dance") }; CLAWD.loop =') + '\nreturn CLAWD;')(SCENES);
+const CLAWD = new Function('SCENES', 'makeRng', block + '\nreturn CLAWD;')(SCENES);
 
 // Same square pixels and anchoring as renderClawd in generate.mjs, at twice the banner's scale.
 const [cell, row] = [16.8, 36], sq = (13 * cell) / 16;
@@ -31,12 +31,12 @@ function drawFrame([pose, crouch, puff, shift], ox, oy) {
 
 const tiles = [
     ['Entrance', 'CLI · first launch', CLAWD.entrance],
-    ['Idle', 'CLI · look around', CLAWD.seq.idle],
-    ['Look', 'CLI', CLAWD.seq.look],
-    ['Spin', 'CLI', CLAWD.seq.spin],
-    ['Jump', 'CLI', CLAWD.seq.jump],
-    ['Celebrate', 'CLI', CLAWD.seq.celebrate],
-    ['Dance', 'Claude app', CLAWD.seq.dance],
+    ['Idle', 'CLI · look around', CLAWD.idle],
+    ['Look', 'CLI', CLAWD.actions.look],
+    ['Spin', 'CLI', CLAWD.actions.spin],
+    ['Jump', 'CLI', CLAWD.actions.jump],
+    ['Celebrate', 'CLI', CLAWD.actions.celebrate],
+    ['Football', 'Claude app', CLAWD.actions.football],
 ];
 const [TW, TH, COLS] = [380, 290, 4];
 let css = '', body = '', defs = '';

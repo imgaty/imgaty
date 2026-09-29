@@ -228,8 +228,14 @@ const CLAWD = {
             return hold(`scene:${name}:${frame}`, ticks);
         });
     };
-    CLAWD.loop = [...idle, ...jump, ...idle, ...look, ...scene('dance'), ...idle, ...spin, ...idle, ...celebrate];
+    CLAWD.idle = idle;
+    CLAWD.intro = CLAWD.entrance;
+    CLAWD.actions = { jump, look, spin, celebrate, football: scene('football') };
+    CLAWD.rest = Math.round(15000 / (idle.length * CLAWD.frameMs));
 }
+
+// After his intro he idles about 15 s between actions, taking them in an order shuffled for the day.
+const clawdLoop = (date) => makeRng(`${date}/clawd`).shuffle(Object.keys(CLAWD.actions)).flatMap((a) => [...Array(CLAWD.rest).fill(CLAWD.idle).flat(), ...CLAWD.actions[a]]);
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
 const VIEWS = {
@@ -729,7 +735,7 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
         for (let k = 0; k < idle; k++) xs.push(len(cells));
         return `<clipPath id="s${cells}"><rect y="${round(headY - 6 - G.spinnerBase)}" width="${len(SHIMMER.width)}" height="${V.caret + 12}"><animate attributeName="x" calcMode="discrete" dur="${round(xs.length * SHIMMER.step, 3)}s" repeatCount="indefinite" values="${xs.join(';')}"/></rect></clipPath>`;
     });
-    const clawd = renderClawd(V, G);
+    const clawd = renderClawd(V, G, clawdLoop(version));
     const banner = renderBanner(V, G, claudeVersion, facts, line, textBand, theme);
     const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(';');
     const tint = (color) => `${Object.keys(THEMES.dark).map((k) => `--${k}:${color}`).join(';')};--solo:none`;
@@ -861,7 +867,7 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     ].filter(Boolean).join('\n');
 }
 
-function renderClawd(V, G) {
+function renderClawd(V, G, loop) {
     const { cell, row, fontSize } = V;
     // square pixels, sized so his body is as wide as the terminal sprite's; his arms start at `left`
     const block = (13 * cell) / 16;
@@ -882,7 +888,7 @@ function renderClawd(V, G) {
         return `<g class="c${k}">${draw(frames[frame], left - body[0] * size, G.clawdY - body[1] * size, size)}</g>`;
     };
     const frameKey = (frame) => frame.join('/');
-    const keys = [...new Set([...CLAWD.entrance, ...CLAWD.loop].map(frameKey))];
+    const keys = [...new Set([...CLAWD.intro, ...loop].map(frameKey))];
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
         if (+shift <= -CLAWD.cols) return `<g class="c${k}"/>`;
@@ -891,12 +897,12 @@ function renderClawd(V, G) {
         return `<g class="c${k}">${draw(CLAWD.poses[pose], left + +shift * cell, G.clawdY + +crouch * row)}${puffs}</g>`;
     });
     const seconds = (frames) => round((frames.length * CLAWD.frameMs) / 1000);
-    const [inFor, loopFor] = [seconds(CLAWD.entrance), seconds(CLAWD.loop)];
+    const [inFor, loopFor] = [seconds(CLAWD.intro), seconds(loop)];
     const timeline = (name, frames, key) => (frames.some((f) => frameKey(f) === key) ? frameKeyframes(name, frames, (f) => frameKey(f) === key) : null);
     const css = keys.map((key, k) => {
-        const [entrance, loop] = [timeline(`e${k}`, CLAWD.entrance, key), timeline(`l${k}`, CLAWD.loop, key)];
-        const uses = [entrance && `e${k} ${inFor}s step-end both`, loop && `l${k} ${loopFor}s step-end ${inFor}s infinite`].filter(Boolean);
-        return `.c${k}{visibility:hidden;animation:${uses.join(',')}}${entrance ?? ''}${loop ?? ''}`;
+        const [inIntro, inLoop] = [timeline(`e${k}`, CLAWD.intro, key), timeline(`l${k}`, loop, key)];
+        const uses = [inIntro && `e${k} ${inFor}s step-end both`, inLoop && `l${k} ${loopFor}s step-end ${inFor}s infinite`].filter(Boolean);
+        return `.c${k}{visibility:hidden;animation:${uses.join(',')}}${inIntro ?? ''}${inLoop ?? ''}`;
     });
     return {
         css: css.join('\n'),
