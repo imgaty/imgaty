@@ -212,14 +212,9 @@ const CLAWD = {
 };
 {
     const hold = (pose, frames, crouch = 0, x = 0) => Array(frames).fill([pose, crouch, '', x]);
-    const hop = (x, land = []) => [...hold('default', 1, 1, x - 3), ...hold('arms-up', 2, 0, x), ...land, ...hold('default', 1, 0, x)];
-    const idle = [...hold('default', 12), ...hold('look-right', 5), ...hold('look-left', 5)];
-    const spin = [...hold('look-left', 2), ...hold('look-right', 2), ...hold('look-left', 2), ...hold('arms-up', 3), ...hold('default', 1)];
-    CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, [['default', 1, 'dot', 0], ['default', 1, 'wave', 0]])];
     const poof = [['default', 1, 'dot', 0], ['default', 1, 'wave', 0]];
+    const hop = (x, land = []) => [...hold('default', 1, 1, x - 3), ...hold('arms-up', 2, 0, x), ...land, ...hold('default', 1, 0, x)];
     const jump = [...poof, ...hold('arms-up', 3), ...hold('default', 1), ...poof, ...hold('arms-up', 3), ...hold('default', 1)];
-    const look = [...hold('look-right', 5), ...hold('look-left', 5), ...hold('default', 1)];
-    const celebrate = [...jump, ...hold('default', 3, 1)];
     const scene = (name) => {
         let [at, tick] = [0, 0];
         return SCENES[name].play.flatMap(([frame, ms]) => {
@@ -228,23 +223,34 @@ const CLAWD = {
             return hold(`scene:${name}:${frame}`, ticks);
         });
     };
-    CLAWD.idle = idle;
+    CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, poof)];
     CLAWD.intro = [...CLAWD.entrance, ...scene('waving')];
-    CLAWD.actions = {
-        jump, look, spin, celebrate,
-        ...Object.fromEntries(['dancing', 'jumping', 'jumpinghappy', 'soccer', 'crabwalking', 'racingcar', 'magnifier', 'cloud', 'book', 'lurking'].map((name) => [name, scene(name)])),
+    CLAWD.still = hold('default', Math.round(5000 / CLAWD.frameMs));
+    // small moves from the CLI, one after every 5 s of standing still
+    CLAWD.idles = {
+        crouch: [...hold('default', 3, 1), ...hold('default', 1)],
+        hop: [...hold('default', 2, 1), ...hold('arms-up', 3), ...hold('default', 1)],
+        glance: [...hold('look-right', 10), ...hold('look-left', 10), ...hold('default', 1)],
+        spin: [...hold('look-left', 2), ...hold('look-right', 2), ...hold('look-left', 2), ...hold('arms-up', 3), ...hold('default', 1)],
+        jump,
+        celebrate: [...jump, ...hold('default', 3, 1)],
     };
-    // between actions (about 15 s) he stays loose: a quick crouch, a slow glance around, then a little hop
-    const crouch = [...hold('default', 3, 1), ...hold('default', 1)];
-    const hopUp = [...hold('default', 2, 1), ...hold('arms-up', 3), ...hold('default', 1)];
-    CLAWD.rest = [
-        ...hold('default', 50), ...crouch, ...hold('default', 60), ...hold('look-right', 10), ...hold('look-left', 10),
-        ...hold('default', 60), ...hopUp, ...hold('default', 40),
-    ];
+    // the Claude app's scenes, one after every CLAWD.idlesPerAction idle moves
+    CLAWD.actions = Object.fromEntries(['dancing', 'jumping', 'jumpinghappy', 'soccer', 'crabwalking', 'racingcar', 'magnifier', 'cloud', 'book', 'lurking'].map((name) => [name, scene(name)]));
+    CLAWD.idlesPerAction = 5;
 }
 
-// After his intro he idles about 15 s between actions, taking them in an order shuffled for the day.
-const clawdLoop = (date) => makeRng(`${date}/clawd`).shuffle(Object.keys(CLAWD.actions)).flatMap((a) => [...CLAWD.rest, ...CLAWD.actions[a]]);
+// After his intro he loops through every scene in an order shuffled for the day, with idle moves drawn from a shuffled
+// deck (so none repeats until all have played) in between.
+function clawdLoop(date) {
+    const rng = makeRng(`${date}/clawd`);
+    let deck = [];
+    const idle = () => {
+        if (!deck.length) deck = rng.shuffle(Object.values(CLAWD.idles));
+        return [...CLAWD.still, ...deck.pop()];
+    };
+    return rng.shuffle(Object.keys(CLAWD.actions)).flatMap((name) => [...Array.from({ length: CLAWD.idlesPerAction }, idle).flat(), ...CLAWD.still, ...CLAWD.actions[name]]);
+}
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
 const VIEWS = {
