@@ -318,7 +318,9 @@ function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
     const rightCols = gridCols - 2 - rightCol;
     const heatPitch = (rightCols * cell) / HEAT.weeks;
     const heatRows = Math.ceil((7 * heatPitch) / row);
-    const rightRows = 6 + heatRows;
+    // side by side, the rule takes the blank row under About me so the right column ends with the left one
+    const ruleRow = stacked ? 4 : 3;
+    const rightRows = ruleRow + 2 + heatRows;
     // stacked: the left block, a rule, then the right block; side by side: the left block centred against the right
     const leftRow = stacked ? 1 : 1 + Math.floor((Math.max(BANNER.leftRows, rightRows) - BANNER.leftRows) / 2);
     const splitRow = stacked ? leftRow + BANNER.leftRows : null;
@@ -334,6 +336,7 @@ function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
     const baseAt = (line) => round(top + line * row + fontSize * 0.35);
     return {
         left, right, top, textX, divider, leftRow, rightRow, splitRow, rightCols, heatPitch,
+        ruleRow: rightRow + ruleRow, activityRow: rightRow + ruleRow + 1,
         rightX: col(rightCol),
         // centred text still starts on a whole column
         centerX: (cells) => col(Math.round((midFrom + midTo - cells) / 2)),
@@ -896,22 +899,23 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     const R = G.rightRow;
     say(G.rightX, R, 'v', 'About me');
     BANNER.about.forEach((t, k) => say(G.rightX, R + 1 + k, 't', t));
-    say(G.rightX, R + 5, 'v', 'Recent activity');
+    const A = G.activityRow;
+    say(G.rightX, A, 'v', 'Recent activity');
 
     let chart = '';
     if (calendar?.weeks.length) {
         const [x0, x1, pitch] = [G.rightX, G.right - 2 * V.cell, G.heatPitch];
         const weeks = calendar.weeks.slice(-HEAT.weeks), rows = Math.ceil((7 * pitch) / V.row);
-        const top = G.rowY(R + 5.5) + (rows * V.row - 7 * pitch) / 2;
+        const top = G.rowY(A + 0.5) + (rows * V.row - 7 * pitch) / 2;
         const size = round(pitch * HEAT.fill);
         const start = x1 - weeks.length * pitch;
         const cells = weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
-        chart = line(G.rowY(R + 5.5), top + 7 * pitch, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>${cells.join('')}`);
+        chart = line(G.rowY(A + 0.5), top + 7 * pitch, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>${cells.join('')}`);
         const total = weeks.reduce((n, w) => n + (w.count ?? 0), 0).toLocaleString('en');
         const captions = [`${total} contributions in the last ${Math.round((weeks.length * 7) / 30.44)} months`, `${total} contributions`];
         const caption = captions.find((c) => cellsIn('Recent activity') + 2 + cellsIn(c) <= G.rightCols);
-        if (caption) say(G.endX(cellsIn(caption)), R + 5, 'd', caption);
-    } else say(G.rightX, R + 6, 'd', 'No recent activity');
+        if (caption) say(G.endX(cellsIn(caption)), A, 'd', caption);
+    } else say(G.rightX, A + 1, 'd', 'No recent activity');
 
     const title = `Claude Code v${claudeVersion}`;
     const titleX = round(G.left + 3 * V.cell);
@@ -925,7 +929,7 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
         line(...textBand(G.welcomeBase(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.welcomeBase(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
         G.divider ? stroke('Ldiv', y0 + 0.6 * V.row, y1 - 0.6 * V.row, `M${G.divider} ${round(y0 + 0.6 * V.row)}V${round(y1 - 0.6 * V.row)}`) : '',
         G.splitRow ? rule('Lsplit', G.textX, G.splitRow) : '',
-        rule('Lrule', G.rightX, R + 4),
+        rule('Lrule', G.rightX, G.ruleRow),
         chart,
         ...words.map(([x, row, cls, t], k) => line(...textBand(G.welcomeBase(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.welcomeBase(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
     ].filter(Boolean).join('\n');
