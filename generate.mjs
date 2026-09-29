@@ -231,6 +231,8 @@ const CLAWD = {
         spin: [...hold('look-left', 2), ...hold('look-right', 2), ...hold('look-left', 2), ...hold('arms-up', 3), ...hold('default', 1)],
         jump,
         celebrate: [...jump, ...hold('default', 3, 1)],
+        dancing: scene('dancing'),
+        jumping: scene('jumping'),
     };
     const beat = hold('default', 6);
     CLAWD.combos = [
@@ -241,7 +243,9 @@ const CLAWD = {
         ['spin', 'hop', 'crouch', 'glance'],
         ['glance', 'jump'],
         ['crouch', 'hop', 'spin', 'crouch'],
-    ].map((combo) => combo.flatMap((move, k) => [...(k ? beat : []), ...moves[move]]));
+        ['dancing'],
+        ['jumping'],
+    ].map((combo) => ({ scenes: combo.filter((move) => SCENES[move]), frames: combo.flatMap((move, k) => [...(k ? beat : []), ...moves[move]]) }));
     CLAWD.weights = { dancing: 3, book: 3, magnifier: 3, jumping: 2, jumpinghappy: 2, soccer: 2, crabwalking: 2, racingcar: 1, cloud: 1 };
     CLAWD.actions = Object.fromEntries(Object.keys(CLAWD.weights).map((name) => [name, scene(name)]));
     CLAWD.combosPerScene = 2;
@@ -271,14 +275,18 @@ function clawdTrack(date, eps, T) {
 function clawdLoop(date) {
     const rng = makeRng(`${date}/clawd`);
     let deck = [];
-    const idle = () => {
+    const idle = (avoid) => {
         if (!deck.length) deck = rng.shuffle(CLAWD.combos);
-        return [...CLAWD.still, ...deck.pop()];
+        const k = deck.findLastIndex((combo) => !combo.scenes.some((name) => avoid.includes(name)));
+        return [...CLAWD.still, ...deck.splice(k < 0 ? deck.length - 1 : k, 1)[0].frames];
     };
     const pool = Object.entries(CLAWD.weights).flatMap(([name, n]) => Array(n).fill(name));
     let order = rng.shuffle(pool);
     for (let tries = 0; tries < 200 && order.some((name, i) => name === order[(i + 1) % order.length]); tries++) order = rng.shuffle(pool);
-    return order.flatMap((name) => [...Array.from({ length: CLAWD.combosPerScene }, idle).flat(), ...CLAWD.still, ...CLAWD.actions[name]]);
+    return order.flatMap((name, i) => {
+        const avoid = [order.at(i - 1), name];
+        return [...Array.from({ length: CLAWD.combosPerScene }, () => idle(avoid)).flat(), ...CLAWD.still, ...CLAWD.actions[name]];
+    });
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18 };
