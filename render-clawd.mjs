@@ -11,15 +11,14 @@ const block = src.slice(src.indexOf('const CLAWD = {'), src.indexOf('\nconst TEX
 const CLAWD = new Function('SCENES', block.replace('CLAWD.loop =', 'CLAWD.seq = { idle, spin, look, jump, celebrate, study: scene("study"), bath: scene("bath") }; CLAWD.loop =') + '\nreturn CLAWD;')(SCENES);
 
 const QUADS = { '▘': 8, '▝': 4, '▖': 2, '▗': 1, '▀': 12, '▄': 3, '▌': 10, '▐': 5, '▛': 14, '▜': 13, '▙': 11, '▟': 7, '█': 15 };
-const [cell, row] = [16.8, 36], [px, py] = [cell / 2, row / 2], sb = (13 * px) / 8;
+const [cell, row] = [16.8, 36], [px, py] = [cell / 2, row / 2];
 const r2 = (n) => Math.round(n * 100) / 100;
 const runs = (grid, x0, y0, w, h, on) => grid.map((line, y) => { let d = ''; for (let x = 0, e; x < line.length; x = e + 1) { for (e = x; on(line[x]) && on(line[e + 1]); e++); if (on(line[x])) d += `M${r2(x0 + x * w)} ${r2(y0 + y * h)}h${r2((e - x + 1) * w)}v${r2(h)}h${r2(-(e - x + 1) * w)}Z`; } return d; }).join('');
 
 function drawFrame([pose, crouch, puff, shift], ox, oy) {
     if (pose.startsWith('scene:')) {
-        const [, name, f] = pose.split(':'), { body: [bx, by], frames } = SCENES[name];
-        const [x0, y0] = [ox + 9.5 * px - (bx + 6) * sb, oy - by * sb];
-        return Object.entries(PALETTE).map(([l, c]) => { const d = runs(frames[f], x0, y0, sb, sb, (ch) => ch === l); return d && `<path fill="${c}" d="${d}"/>`; }).join('');
+        const [, name, f] = pose.split(':'), { origin: [gx, gy], frames } = SCENES[name];
+        return Object.entries(PALETTE).map(([l, c]) => { const d = runs(frames[f], ox + gx * px, oy + gy * py, px, py, (ch) => ch === l); return d && `<path fill="${c}" d="${d}"/>`; }).join('');
     }
     const body = [], eyes = [];
     CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => { for (let b = 0; b < 4; b++) {

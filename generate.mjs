@@ -874,15 +874,13 @@ function renderClawd(V, G) {
             return d;
         }).join('');
     const sceneFrame = (k, name, frame) => {
-        const { body: [bx, by], frames } = SCENES[name];
-        const block = (13 * px) / 8;
-        const [x0, y0] = [G.clawdX + 9.5 * px - (bx + 6) * block, G.clawdY - by * block];
+        const { origin: [ox, oy], frames } = SCENES[name];
         const layers = Object.entries(SCENE_PALETTE).map(([letter, color]) => {
             let d = '';
             frames[frame].forEach((line, y) => {
                 for (let x = 0, end; x < line.length; x = end + 1) {
                     for (end = x; line[x] === letter && line[end + 1] === letter; end++);
-                    if (line[x] === letter) d += `M${round(x0 + x * block)} ${round(y0 + y * block)}h${round((end - x + 1) * block)}v${round(block)}h${round(-(end - x + 1) * block)}Z`;
+                    if (line[x] === letter) d += `M${round(G.clawdX + (ox + x) * px)} ${round(G.clawdY + (oy + y) * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
                 }
             });
             return d && `<path fill="${color}" d="${d}"/>`;
