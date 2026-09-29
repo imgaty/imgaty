@@ -10,23 +10,23 @@ const src = readFileSync(repo + '/generate.mjs', 'utf8');
 const block = src.slice(src.indexOf('const CLAWD = {'), src.indexOf('\nconst TEXT ='));
 const CLAWD = new Function('SCENES', block.replace('CLAWD.loop =', 'CLAWD.seq = { idle, spin, look, jump, celebrate, study: scene("study"), bath: scene("bath") }; CLAWD.loop =') + '\nreturn CLAWD;')(SCENES);
 
-const QUADS = { '▘': 8, '▝': 4, '▖': 2, '▗': 1, '▀': 12, '▄': 3, '▌': 10, '▐': 5, '▛': 14, '▜': 13, '▙': 11, '▟': 7, '█': 15 };
-const [cell, row] = [16.8, 36], [px, py] = [cell / 2, row / 2];
+// Same square pixels and anchoring as renderClawd in generate.mjs, at twice the banner's scale.
+const [cell, row] = [16.8, 36], sq = (13 * cell) / 16;
 const r2 = (n) => Math.round(n * 100) / 100;
-const runs = (grid, x0, y0, w, h, on) => grid.map((line, y) => { let d = ''; for (let x = 0, e; x < line.length; x = e + 1) { for (e = x; on(line[x]) && on(line[e + 1]); e++); if (on(line[x])) d += `M${r2(x0 + x * w)} ${r2(y0 + y * h)}h${r2((e - x + 1) * w)}v${r2(h)}h${r2(-(e - x + 1) * w)}Z`; } return d; }).join('');
+const left = (ox) => ox + 4.75 * cell - 6 * sq;
+const draw = (grid, [bx, by], x0, y0) => Object.entries(PALETTE).map(([l, c]) => {
+    const d = grid.map((line, y) => { let s = ''; for (let x = 0, e; x < line.length; x = e + 1) { for (e = x; line[x] === l && line[e + 1] === l; e++); if (line[x] === l) s += `M${r2(x0 + (x - bx) * sq)} ${r2(y0 + (y - by) * sq)}h${r2((e - x + 1) * sq)}v${r2(sq)}h${r2(-(e - x + 1) * sq)}Z`; } return s; }).join('');
+    return d && `<path fill="${c}" d="${d}"/>`;
+}).join('');
 
 function drawFrame([pose, crouch, puff, shift], ox, oy) {
     if (pose.startsWith('scene:')) {
-        const [, name, f] = pose.split(':'), { origin: [gx, gy], frames } = SCENES[name];
-        return Object.entries(PALETTE).map(([l, c]) => { const d = runs(frames[f], ox + gx * px, oy + gy * py, px, py, (ch) => ch === l); return d && `<path fill="${c}" d="${d}"/>`; }).join('');
+        const [, name, f] = pose.split(':');
+        return draw(SCENES[name].frames[f], SCENES[name].body, left(ox), oy);
     }
-    const body = [], eyes = [];
-    CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => { for (let b = 0; b < 4; b++) {
-        const [y, x, on] = [2 * l + (b >> 1), 2 * c + (b & 1), ((QUADS[ch] ?? 0) >> (3 - b)) & 1];
-        (body[y] ??= [])[x] = !!on; (eyes[y] ??= [])[x] = !on && l === 0 && c >= 2 && c < 8; } }));
-    const [dx, dy] = [shift * cell, crouch * row];
+    if (shift <= -CLAWD.cols) return '';
     const puffs = puff ? [0, 8].map((c) => `<text x="${r2(ox + c * cell)}" y="${r2(oy + 2.5 * row + 5)}" fill="#999" font-size="28">${CLAWD.puffs[puff]}</text>`).join('') : '';
-    return `<g clip-path="url(#cl-${ox}-${oy})"><path fill="#D77757" d="${runs(body, ox + dx, oy + dy, px, py, Boolean)}"/><path fill="#000" d="${runs(eyes, ox + dx, oy + dy, px, py, Boolean)}"/></g>${puffs}`;
+    return `<g clip-path="url(#cl-${ox}-${oy})">${draw(CLAWD.poses[pose], [0, 0], left(ox) + shift * cell, oy + crouch * row)}</g>${puffs}`;
 }
 
 const tiles = [
@@ -43,8 +43,8 @@ const [TW, TH, COLS] = [380, 290, 4];
 let css = '', body = '', defs = '';
 tiles.forEach(([title, source, seq], t) => {
     const [tx, ty] = [(t % COLS) * TW, Math.floor(t / COLS) * TH];
-    const [ox, oy] = [r2(tx + TW / 2 - 9.5 * px), ty + 125];
-    defs += `<clipPath id="cl-${ox}-${oy}"><rect x="${ox}" y="${oy}" width="${9 * cell}" height="${3 * row}"/></clipPath><clipPath id="t${t}"><rect x="${tx + 8}" y="${ty + 8}" width="${TW - 16}" height="${TH - 16}" rx="10"/></clipPath>`;
+    const [ox, oy] = [r2(tx + TW / 2 - 4.75 * cell), ty + 125];
+    defs += `<clipPath id="cl-${ox}-${oy}"><rect x="${r2(left(ox))}" y="${oy}" width="${r2(12 * sq)}" height="${r2(8 * sq)}"/></clipPath><clipPath id="t${t}"><rect x="${tx + 8}" y="${ty + 8}" width="${TW - 16}" height="${TH - 16}" rx="10"/></clipPath>`;
     // collapse identical consecutive frames, then emit one visibility timeline per unique frame
     const keys = seq.map((f) => f.join('/')), uniq = [...new Set(keys)], dur = (seq.length * CLAWD.frameMs) / 1000;
     body += `<rect x="${tx + 8}" y="${ty + 8}" width="${TW - 16}" height="${TH - 16}" rx="10" fill="#0b0b0b" stroke="#2a2a2a"/><g clip-path="url(#t${t})">`;

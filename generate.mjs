@@ -198,13 +198,14 @@ const HEAT = { weeks: 53, fill: 0.8, radius: 2, labelSize: 11, levels: ['NONE', 
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
 
 const CLAWD = {
+    // The Claude Code CLI's poses at the Claude app's resolution (square pixels). default is the app's own still; the others
+    // move the arms like the CLI's half-block sprites, and glance sideways at eye level (on the head's top row the eyes would read as notches).
     poses: {
-        default: [' ▐▛███▛█', '▝▜██████▀', ' ▝▝   ▝▝ '],
-        'look-left': [' ▐▟███▟█', '▝▜██████▀', ' ▝▝   ▝▝ '],
-        'look-right': [' ▐█▟███▟', '▝▜██████▀', ' ▝▝   ▝▝ '],
-        'arms-up': ['▗▟▛███▛█▄', ' ▜██████▘', ' ▝▝   ▝▝ '],
+        default: ['..CCCCCCCC..', '..CECCCCEC..', 'CCCCCCCCCCCC', 'CCCCCCCCCCCC', '..CCCCCCCC..', '..CCCCCCCC..', '..C.C..C.C..', '..C.C..C.C..'],
+        'look-left': ['..CCCCCCCC..', '..ECCCCECC..', 'CCCCCCCCCCCC', 'CCCCCCCCCCCC', '..CCCCCCCC..', '..CCCCCCCC..', '..C.C..C.C..', '..C.C..C.C..'],
+        'look-right': ['..CCCCCCCC..', '..CCECCCCE..', 'CCCCCCCCCCCC', 'CCCCCCCCCCCC', '..CCCCCCCC..', '..CCCCCCCC..', '..C.C..C.C..', '..C.C..C.C..'],
+        'arms-up': ['..CCCCCCCC..', 'CCCECCCCECCC', '.CCCCCCCCCC.', '.CCCCCCCCCC.', '..CCCCCCCC..', '..CCCCCCCC..', '..C.C..C.C..', '..C.C..C.C..'],
     },
-    eyes: { line: 0, from: 2, to: 8 },
     puffs: { dot: '·', wave: '~' },
     frameMs: 60,
     cols: 9,
@@ -862,48 +863,28 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
 
 function renderClawd(V, G) {
     const { cell, row, fontSize } = V;
-    const QUADS = { '▘': 8, '▝': 4, '▖': 2, '▗': 1, '▀': 12, '▄': 3, '▌': 10, '▐': 5, '▛': 14, '▜': 13, '▙': 11, '▟': 7, '█': 15 };
-    const [px, py] = [cell / 2, row / 2];
-    const rects = (grid, dx, dy) =>
-        grid.map((cols, y) => {
-            let d = '';
-            for (let x = 0, end; x < cols.length; x = end + 1) {
-                for (end = x; cols[end] && cols[end + 1]; end++);
-                if (cols[x]) d += `M${round(G.clawdX + dx + x * px)} ${round(G.clawdY + dy + y * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
+    // square pixels, sized so his body is as wide as the terminal sprite's; [bx, by] is where the arms and the top of the head sit in the grid
+    const block = (13 * cell) / 16;
+    const left = G.clawdX + 4.75 * cell - 6 * block;
+    const draw = (grid, [bx, by], dx = 0, dy = 0) => Object.entries(SCENE_PALETTE).map(([letter, color]) => {
+        let d = '';
+        grid.forEach((line, y) => {
+            for (let x = 0, end; x < line.length; x = end + 1) {
+                for (end = x; line[x] === letter && line[end + 1] === letter; end++);
+                if (line[x] === letter) d += `M${round(left + dx + (x - bx) * block)} ${round(G.clawdY + dy + (y - by) * block)}h${round((end - x + 1) * block)}v${round(block)}h${round(-(end - x + 1) * block)}Z`;
             }
-            return d;
-        }).join('');
-    const sceneFrame = (k, name, frame) => {
-        const { origin: [ox, oy], frames } = SCENES[name];
-        const layers = Object.entries(SCENE_PALETTE).map(([letter, color]) => {
-            let d = '';
-            frames[frame].forEach((line, y) => {
-                for (let x = 0, end; x < line.length; x = end + 1) {
-                    for (end = x; line[x] === letter && line[end + 1] === letter; end++);
-                    if (line[x] === letter) d += `M${round(G.clawdX + (ox + x) * px)} ${round(G.clawdY + (oy + y) * py)}h${round((end - x + 1) * px)}v${py}h${round(-(end - x + 1) * px)}Z`;
-                }
-            });
-            return d && `<path fill="${color}" d="${d}"/>`;
-        }).join('');
-        return `<g class="c${k}">${layers}</g>`;
-    };
+        });
+        return d && `<path fill="${color}" d="${d}"/>`;
+    }).join('');
+    const sceneFrame = (k, name, frame) => `<g class="c${k}">${draw(SCENES[name].frames[frame], SCENES[name].body)}</g>`;
     const frameKey = (frame) => frame.join('/');
     const keys = [...new Set([...CLAWD.entrance, ...CLAWD.loop].map(frameKey))];
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
         if (+shift <= -CLAWD.cols) return `<g class="c${k}"/>`;
         if (pose.startsWith('scene:')) return sceneFrame(k, ...pose.split(':').slice(1));
-        const [body, eyes] = [[], []];
-        CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => {
-            for (let b = 0; b < 4; b++) {
-                const [y, x, on] = [2 * l + (b >> 1), 2 * c + (b & 1), ((QUADS[ch] ?? 0) >> (3 - b)) & 1];
-                (body[y] ??= [])[x] = !!on;
-                (eyes[y] ??= [])[x] = !on && l === CLAWD.eyes.line && c >= CLAWD.eyes.from && c < CLAWD.eyes.to;
-            }
-        }));
-        const [dx, dy] = [+shift * cell, +crouch * row];
         const puffs = puff ? [0, CLAWD.cols - 1].map((c) => `<text class="d" x="${round(G.clawdX + c * cell)}" y="${round(G.clawdY + 2.5 * row + fontSize * 0.35)}">${CLAWD.puffs[puff]}</text>`).join('') : '';
-        return `<g class="c${k}"><path fill="#D77757" d="${rects(body, dx, dy)}"/><path fill="#000000" d="${rects(eyes, dx, dy)}"/>${puffs}</g>`;
+        return `<g class="c${k}">${draw(CLAWD.poses[pose], [0, 0], +shift * cell, +crouch * row)}${puffs}</g>`;
     });
     const seconds = (frames) => round((frames.length * CLAWD.frameMs) / 1000);
     const [inFor, loopFor] = [seconds(CLAWD.entrance), seconds(CLAWD.loop)];
@@ -915,7 +896,7 @@ function renderClawd(V, G) {
     });
     return {
         css: css.join('\n'),
-        defs: `<clipPath id="clawd"><rect x="${G.clawdX}" y="${G.clawdY}" width="${round(CLAWD.cols * cell)}" height="${3 * row}"/></clipPath>`,
+        defs: `<clipPath id="clawd"><rect x="${round(left)}" y="${G.clawdY}" width="${round(12 * block)}" height="${round(8 * block)}"/></clipPath>`,
         svg: `<g clip-path="url(#clawd)">\n${groups.filter((_, k) => !keys[k].startsWith('scene:')).join('\n')}\n</g>\n${groups.filter((_, k) => keys[k].startsWith('scene:')).join('\n')}`,
     };
 }
