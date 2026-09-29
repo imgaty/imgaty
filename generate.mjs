@@ -335,7 +335,8 @@ function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
     const rowY = (line) => round(top + line * row);
     const baseAt = (line) => round(top + line * row + fontSize * 0.35);
     return {
-        left, right, top, textX, divider, leftRow, rightRow, splitRow, rightCols, heatPitch,
+        left, right, top, textX, divider, leftRow, rightRow, splitRow, rightCols, heatPitch, heatRows,
+        len: (cells) => round(cells * cell),
         ruleRow: rightRow + ruleRow, activityRow: rightRow + ruleRow + 1,
         rightX: col(rightCol),
         // centred text still starts on a whole column
@@ -343,7 +344,7 @@ function makeLayout({ width, pad, cell, row, fontSize, stacked }) {
         // right-aligned text ends two columns in from the border
         endX: (cells) => col(gridCols - 2 - cells),
         rowY,
-        welcomeBase: baseAt,
+        baseAt,
         bannerBottom: rowY(bannerRow),
         clawdX: col(Math.round((midFrom + midTo - CLAWD.cols) / 2)),
         clawdY: top + (leftRow + 3.5) * row,
@@ -614,7 +615,7 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
     const theme = Object.fromEntries(Object.keys(THEMES.dark).map((k) => [k, `var(--${k})`]));
     const [V, G] = [VIEWS[name], LAYOUTS[name]];
     const D = TICKS_PER_LINE * TICK;
-    const len = (cells) => round(cells * V.cell);
+    const { len } = G;
     const rng = makeRng(`${version}/story`);
 
     let clock = 0;
@@ -775,7 +776,7 @@ function renderSvg(episodes, version, claudeVersion, facts, name) {
     const bandH = 26;
     const half = (G.height + bandH) / 2;
     const roll = Array.from({ length: 9 }, (_, k) => `0 ${round((-k * half) / 9)}`).join(';');
-    const badgeY = G.welcomeBase(1);
+    const badgeY = G.baseAt(1);
     const badgeRight = G.right - V.cell;
     const badgeLeft = badgeRight - 3 * V.cell - 22;
     const tri = (x) => `M${round(x)} ${round(badgeY - 4.5)}l7 -4.5v9Z`;
@@ -858,8 +859,8 @@ ${V.badgeBox ? `<rect x="${round(badgeLeft - 6)}" y="${round(badgeY - 13)}" widt
 ${waved(...textBand(G.userBase), user.join('\n'))}
 <g display="none">${during(...eps.map((e) => [e.limit, e.rewind]))}
 <path d="M${round(hookX)} ${round(errorBase - V.capHeight)}V${round(errorBase - 3)}H${round(hookX + V.cell)}" fill="none" style="stroke:${theme.dim}"/>
-<text style="fill:${theme.error}" x="${round(G.textX + 5 * V.cell)}" y="${errorBase}" textLength="${len([...limitText].length)}">${xml(limitText)}</text>
-<text class="d" x="${round(G.textX + 5 * V.cell)}" y="${G.spinnerBase}" textLength="${len(upgradeText.length)}">${xml(upgradeText)}</text>
+<text style="fill:${theme.error}" x="${round(G.textX + 5 * V.cell)}" y="${errorBase}" textLength="${len(cellsIn(limitText))}">${xml(limitText)}</text>
+<text class="d" x="${round(G.textX + 5 * V.cell)}" y="${G.spinnerBase}" textLength="${len(cellsIn(upgradeText))}">${xml(upgradeText)}</text>
 </g>
 ${waved(...textBand(G.spinnerBase), `${rowFringes()}<g clip-path="url(#row)">${animate('transform', jitter)}
 <g display="none">${during(...spinning)}
@@ -889,7 +890,7 @@ ${[G.height, G.height - half].map((y) => `<rect y="${round(y)}" width="${V.width
 }
 
 function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, theme) {
-    const len = (cells) => round(cells * V.cell);
+    const { len } = G;
     const words = [];
     const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
     const centered = (row, cls, t) => say(G.centerX(cellsIn(t)), row, cls, t);
@@ -904,11 +905,10 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
 
     let chart = '';
     if (calendar?.weeks.length) {
-        const [x0, x1, pitch] = [G.rightX, G.right - 2 * V.cell, G.heatPitch];
-        const weeks = calendar.weeks.slice(-HEAT.weeks), rows = Math.ceil((7 * pitch) / V.row);
-        const top = G.rowY(A + 0.5) + (rows * V.row - 7 * pitch) / 2;
+        const pitch = G.heatPitch, weeks = calendar.weeks.slice(-HEAT.weeks);
+        const top = G.rowY(A + 0.5) + (G.heatRows * V.row - 7 * pitch) / 2;
         const size = round(pitch * HEAT.fill);
-        const start = x1 - weeks.length * pitch;
+        const start = G.endX(0) - weeks.length * pitch;
         const cells = weeks.flatMap((w, k) => [...w.levels].flatMap((l, d) => (l === ' ' ? [] : [`<use xlink:href="#hc" class="h${l}" x="${round(start + k * pitch)}" y="${round(top + d * pitch)}"/>`])));
         chart = line(G.rowY(A + 0.5), top + 7 * pitch, 'Lchart', `<defs><rect id="hc" width="${size}" height="${size}" rx="${HEAT.radius}"/></defs>${cells.join('')}`);
         const total = weeks.reduce((n, w) => n + (w.count ?? 0), 0).toLocaleString('en');
@@ -926,12 +926,12 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     const rule = (id, x, row) => stroke(id, G.rowY(row) - 1, G.rowY(row) + 1, `M${round(x)} ${G.rowY(row)}H${round(G.right - 2 * V.cell)}`);
     return [
         stroke('Lbox', y0, y1, box),
-        line(...textBand(G.welcomeBase(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.welcomeBase(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
+        line(...textBand(G.baseAt(0)), 'Ltitle', `<text class="v" x="${titleX}" y="${G.baseAt(0)}" textLength="${len(cellsIn(title))}">${xml(title)}</text>`),
         G.divider ? stroke('Ldiv', y0 + 0.6 * V.row, y1 - 0.6 * V.row, `M${G.divider} ${round(y0 + 0.6 * V.row)}V${round(y1 - 0.6 * V.row)}`) : '',
         G.splitRow ? rule('Lsplit', G.textX, G.splitRow) : '',
         rule('Lrule', G.rightX, G.ruleRow),
         chart,
-        ...words.map(([x, row, cls, t], k) => line(...textBand(G.welcomeBase(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.welcomeBase(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
+        ...words.map(([x, row, cls, t], k) => line(...textBand(G.baseAt(row)), `Lb${k}`, `<text class="${cls}" x="${x}" y="${G.baseAt(row)}" textLength="${len(cellsIn(t))}">${xml(t)}</text>`)),
     ].filter(Boolean).join('\n');
 }
 
@@ -940,19 +940,27 @@ function renderClawd(V, G, track, duration) {
     // square pixels, sized so his body is as wide as the terminal sprite's; his arms start at `left`
     const block = (13 * cell) / 16;
     const left = G.clawdX + 4.75 * cell - 6 * block;
-    // pixel art is drawn in its own grid units and placed with one transform, which keeps the paths short
+    // pixel art is drawn in its own grid units and placed with one transform; each colour's pixels are merged into
+    // rectangles (a run of a row, stretched down as far as the rows below match), which keeps the paths short
     const draw = (grid, x, y, size) => `<g transform="translate(${round(x)} ${round(y)}) scale(${round(size, 4)})">${Object.entries(SCENE_PALETTE).map(([letter, color]) => {
+        const taken = grid.map((line) => [...line].map((ch) => ch !== letter));
+        const free = (r, c, w) => taken[r] && taken[r].slice(c, c + w).every((t) => !t);
         let d = '';
-        grid.forEach((line, r) => {
-            for (let c = 0, end; c < line.length; c = end + 1) {
-                for (end = c; line[c] === letter && line[end + 1] === letter; end++);
-                if (line[c] === letter) d += `M${c} ${r}h${end - c + 1}v1H${c}Z`;
+        taken.forEach((line, r) => {
+            for (let c = 0; c < line.length; c++) {
+                if (line[c]) continue;
+                let [w, h] = [1, 1];
+                while (c + w < line.length && !line[c + w]) w++;
+                while (free(r + h, c, w)) h++;
+                for (let k = 0; k < h; k++) taken[r + k].fill(true, c, c + w);
+                d += `M${c} ${r}h${w}v${h}H${c}Z`;
             }
         });
         return d && `<path fill="${color}" d="${d}"/>`;
     }).join('')}</g>`;
     const frameKey = (frame) => frame.join('/');
-    const keys = [...new Set([...CLAWD.entrance, ...track].map(frameKey))];
+    const [entranceKeys, trackKeys] = [CLAWD.entrance, track].map((frames) => frames.map(frameKey));
+    const keys = [...new Set([...entranceKeys, ...trackKeys])];
     const isScene = (key) => key.startsWith('scene:');
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
@@ -966,11 +974,11 @@ function renderClawd(V, G, track, duration) {
         return `<g class="c${k}">${draw(CLAWD.poses[pose], left + +shift * cell, G.clawdY + +crouch * row, block)}${puffs}</g>`;
     });
     const css = keys.map((key, k) => {
-        const [inEntrance, inTrack] = [CLAWD.entrance, track].map((frames) => frames.some((f) => frameKey(f) === key));
+        const [inEntrance, inTrack] = [entranceKeys, trackKeys].map((list) => list.includes(key));
         const uses = [inEntrance && `e${k} ${LEAD}s step-end both`, inTrack && `l${k} ${round(duration, 3)}s step-end ${LEAD}s infinite`].filter(Boolean);
         return `.c${k}{visibility:hidden;animation:${uses.join(',')}}`
-            + (inEntrance ? frameKeyframes(`e${k}`, CLAWD.entrance, (f) => frameKey(f) === key) : '')
-            + (inTrack ? frameKeyframes(`l${k}`, track, (f) => frameKey(f) === key) : '');
+            + (inEntrance ? frameKeyframes(`e${k}`, entranceKeys, (f) => f === key) : '')
+            + (inTrack ? frameKeyframes(`l${k}`, trackKeys, (f) => f === key) : '');
     });
     return {
         css: css.join('\n'),
