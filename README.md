@@ -1,6 +1,6 @@
 <div align="center">
   <picture>
-    <source media="(max-width: 600px)" srcset="spinner-mobile.svg?v=54d699b8">
-    <img alt="Gaty · Professional Claude Verbal Abuser™ A Claude Code terminal. Prompts like &quot;make me breakfast&quot;, &quot;fix ts&quot;, &quot;hack the pentagon&quot; are sent; the spinner cycles through made-up verbs until the usage limit hits, then it all rewinds like a VHS tape and the next prompt is typed" src="spinner.svg?v=54d699b8" width="100%">
+    <source media="(max-width: 600px)" srcset="spinner-mobile.svg?v=8eba3220">
+    <img alt="Gaty · Professional Claude Verbal Abuser™ A Claude Code terminal. Prompts like &quot;make me breakfast&quot;, &quot;fix ts&quot;, &quot;hack the pentagon&quot; are sent; the spinner cycles through made-up verbs until the usage limit hits, then it all rewinds like a VHS tape and the next prompt is typed" src="spinner.svg?v=8eba3220" width="100%">
   </picture>
 </div>
