@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
+import { PALETTE as SCENE_PALETTE, SCENES } from './clawd-scenes.mjs';
 
 const PROMPTS = {
     'coach me to pro': [
@@ -191,7 +192,7 @@ const BANNER = {
     plan: 'Claude Max',
     cwd: '/home/imgaty',
     about: ['Professional Claude Verbal Abuser™', 'Making whatever since 2024'],
-    leftRows: 8,
+    leftRows: 10,
 };
 const HEAT = { weeks: 53, fill: 0.8, radius: 2, labelSize: 11, levels: ['NONE', 'FIRST_QUARTILE', 'SECOND_QUARTILE', 'THIRD_QUARTILE', 'FOURTH_QUARTILE'] };
 const STORY = { pause: 0.6, perChar: 0.045, hold: 0.4, limit: 3.5, scrub: 1.5, scrubFrames: 30, slide: 0.2, untype: 0.035, settle: 0.1 };
@@ -218,7 +219,15 @@ const CLAWD = {
     const jump = [...poof, ...hold('arms-up', 3), ...hold('default', 1), ...poof, ...hold('arms-up', 3), ...hold('default', 1)];
     const look = [...hold('look-right', 5), ...hold('look-left', 5), ...hold('default', 1)];
     const celebrate = [...jump, ...hold('default', 3, 1)];
-    CLAWD.loop = [...idle, ...jump, ...idle, ...look, ...idle, ...spin, ...idle, ...celebrate];
+    const scene = (name) => {
+        let [at, tick] = [0, 0];
+        return SCENES[name].play.flatMap(([frame, ms]) => {
+            const ticks = Math.round((at += ms) / CLAWD.frameMs) - tick;
+            tick += ticks;
+            return hold(`scene:${name}:${frame}`, ticks);
+        });
+    };
+    CLAWD.loop = [...idle, ...scene('study'), ...idle, ...jump, ...idle, ...look, ...scene('bath'), ...idle, ...spin, ...idle, ...celebrate];
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
@@ -259,7 +268,7 @@ function makeLayout({ width, pad, cell, row, fontSize, capHeight, hintGap, stack
         rowY: (line) => round(left + line * row),
         welcomeBase: (line) => round(left + line * row + fontSize * 0.35),
         clawdX: round(leftMid - (CLAWD.cols / 2) * cell),
-        clawdY: left + (leftRow + 1.5) * row,
+        clawdY: left + (leftRow + 3.5) * row,
         userBase: round(userBase),
         spinnerBase: round(spinnerBase),
         inputBase: round((boxTop + boxBottom) / 2 + fontSize * 0.35),
@@ -761,7 +770,7 @@ ${verbRows.join('\n')}
 <g clip-path="url(#screen)">
 <g>${animate('transform', shake)}<g>${animate('transform', [[0, 0], ...rewinds.flatMap(([a, b]) => [...whoosh(a, 1), ...whoosh(b, -1)])], { type: 'skewX' })}
 ${banner}
-${waved(G.clawdY, G.clawdY + 3 * V.row, clawd.svg)}
+${waved(G.clawdY - 3 * V.row, G.clawdY + 3 * V.row, clawd.svg)}
 ${line(badgeY - 13, badgeY + 5, 'Lrew', `<g display="none" style="fill:${theme.text}">${during(...blink)}
 ${V.badgeBox ? `<rect x="${round(badgeLeft - 6)}" y="${round(badgeY - 13)}" width="${round(badgeRight - badgeLeft + 12)}" height="18" rx="3" style="fill:${theme.bg}"/>` : ''}<path d="${tri(badgeLeft)}${tri(badgeLeft + 8)}"/>
 <text class="t b" x="${round(badgeRight - 3 * V.cell)}" y="${badgeY}" textLength="${len(3)}">REW</text>
@@ -805,8 +814,8 @@ function renderBanner(V, G, claudeVersion, { model, calendar }, line, textBand, 
     const say = (x, row, cls, t) => words.push([round(x), row, cls, t]);
     const centered = (row, cls, t) => say(G.leftMid - (cellsIn(t) / 2) * V.cell, row, cls, t);
     centered(G.leftRow, 't b', BANNER.welcome);
-    centered(G.leftRow + 6, 'd', `${model} · ${BANNER.plan}`);
-    centered(G.leftRow + 7, 'd', BANNER.cwd);
+    centered(G.leftRow + 8, 'd', `${model} · ${BANNER.plan}`);
+    centered(G.leftRow + 9, 'd', BANNER.cwd);
     const R = G.rightRow;
     say(G.rightX, R, 'v', 'About me');
     BANNER.about.forEach((t, k) => say(G.rightX, R + 1 + k, 't', t));
@@ -864,11 +873,28 @@ function renderClawd(V, G) {
             }
             return d;
         }).join('');
+    const sceneFrame = (k, name, frame) => {
+        const { body: [bx, by], frames } = SCENES[name];
+        const block = (13 * px) / 8;
+        const [x0, y0] = [G.clawdX + 9.5 * px - (bx + 6) * block, G.clawdY - by * block];
+        const layers = Object.entries(SCENE_PALETTE).map(([letter, color]) => {
+            let d = '';
+            frames[frame].forEach((line, y) => {
+                for (let x = 0, end; x < line.length; x = end + 1) {
+                    for (end = x; line[x] === letter && line[end + 1] === letter; end++);
+                    if (line[x] === letter) d += `M${round(x0 + x * block)} ${round(y0 + y * block)}h${round((end - x + 1) * block)}v${round(block)}h${round(-(end - x + 1) * block)}Z`;
+                }
+            });
+            return d && `<path fill="${color}" d="${d}"/>`;
+        }).join('');
+        return `<g class="c${k}">${layers}</g>`;
+    };
     const frameKey = (frame) => frame.join('/');
     const keys = [...new Set([...CLAWD.entrance, ...CLAWD.loop].map(frameKey))];
     const groups = keys.map((key, k) => {
         const [pose, crouch, puff, shift] = key.split('/');
         if (+shift <= -CLAWD.cols) return `<g class="c${k}"/>`;
+        if (pose.startsWith('scene:')) return sceneFrame(k, ...pose.split(':').slice(1));
         const [body, eyes] = [[], []];
         CLAWD.poses[pose].forEach((line, l) => [...line].forEach((ch, c) => {
             for (let b = 0; b < 4; b++) {
@@ -892,7 +918,7 @@ function renderClawd(V, G) {
     return {
         css: css.join('\n'),
         defs: `<clipPath id="clawd"><rect x="${G.clawdX}" y="${G.clawdY}" width="${round(CLAWD.cols * cell)}" height="${3 * row}"/></clipPath>`,
-        svg: `<g clip-path="url(#clawd)">\n${groups.join('\n')}\n</g>`,
+        svg: `<g clip-path="url(#clawd)">\n${groups.filter((_, k) => !keys[k].startsWith('scene:')).join('\n')}\n</g>\n${groups.filter((_, k) => keys[k].startsWith('scene:')).join('\n')}`,
     };
 }
 
