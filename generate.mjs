@@ -226,8 +226,8 @@ const CLAWD = {
     CLAWD.entrance = [...hold('default', 8, 0, -9), ...hop(-6), ...hop(-3), ...hop(0, poof)];
     CLAWD.intro = [...CLAWD.entrance, ...scene('waving')];
     CLAWD.still = hold('default', Math.round(3000 / CLAWD.frameMs));
-    // small moves from the CLI, one after every 3 s of standing still
-    CLAWD.idles = {
+    // small moves from the CLI, chained into combos with a short beat between moves; one combo after every 3 s still
+    const moves = {
         crouch: [...hold('default', 3, 1), ...hold('default', 1)],
         hop: [...hold('default', 2, 1), ...hold('arms-up', 3), ...hold('default', 1)],
         glance: [...hold('look-right', 10), ...hold('look-left', 10), ...hold('default', 1)],
@@ -235,21 +235,31 @@ const CLAWD = {
         jump,
         celebrate: [...jump, ...hold('default', 3, 1)],
     };
-    // the Claude app's scenes, one after every CLAWD.idlesPerAction idle moves
+    const beat = hold('default', 6);
+    CLAWD.combos = [
+        ['crouch', 'glance', 'jump', 'crouch'],
+        ['hop', 'hop', 'glance'],
+        ['glance', 'crouch', 'spin'],
+        ['crouch', 'crouch', 'celebrate'],
+        ['spin', 'hop', 'crouch', 'glance'],
+        ['glance', 'jump'],
+        ['crouch', 'hop', 'spin', 'crouch'],
+    ].map((combo) => combo.flatMap((move, k) => [...(k ? beat : []), ...moves[move]]));
+    // the Claude app's scenes, one after every CLAWD.combosPerScene combos
     CLAWD.actions = Object.fromEntries(['dancing', 'jumping', 'jumpinghappy', 'soccer', 'crabwalking', 'racingcar', 'magnifier', 'cloud', 'book', 'lurking'].map((name) => [name, scene(name)]));
-    CLAWD.idlesPerAction = 5;
+    CLAWD.combosPerScene = 5;
 }
 
-// After his intro he loops through every scene in an order shuffled for the day, with idle moves drawn from a shuffled
+// After his intro he loops through every scene in an order shuffled for the day, with idle combos drawn from a shuffled
 // deck (so none repeats until all have played) in between.
 function clawdLoop(date) {
     const rng = makeRng(`${date}/clawd`);
     let deck = [];
     const idle = () => {
-        if (!deck.length) deck = rng.shuffle(Object.values(CLAWD.idles));
+        if (!deck.length) deck = rng.shuffle(CLAWD.combos);
         return [...CLAWD.still, ...deck.pop()];
     };
-    return rng.shuffle(Object.keys(CLAWD.actions)).flatMap((name) => [...Array.from({ length: CLAWD.idlesPerAction }, idle).flat(), ...CLAWD.still, ...CLAWD.actions[name]]);
+    return rng.shuffle(Object.keys(CLAWD.actions)).flatMap((name) => [...Array.from({ length: CLAWD.combosPerScene }, idle).flat(), ...CLAWD.still, ...CLAWD.actions[name]]);
 }
 
 const TEXT = { fontSize: 14, cell: 8.4, row: 18, capHeight: 10, caret: 18, hintGap: 12 };
